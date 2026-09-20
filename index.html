@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="PEC - Programming Excellence Community. Learn. Practice. Collaborate. Grow.">
+  <title>PEC — Programming Excellence Community</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="container">
+      <a href="index.html" class="navbar-brand">
+        <div class="navbar-logo">P</div>
+        <div class="navbar-brand-text">
+          <span class="navbar-brand-name">PEC</span>
+          <span class="navbar-brand-tagline">Programming Excellence Community</span>
+        </div>
+      </a>
+      <div class="navbar-nav">
+        <a href="pages/public.html#home" class="active">Home</a>
+        <a href="pages/public.html#about">About</a>
+        <a href="pages/public.html#activities">Activities</a>
+        <a href="pages/public.html#mentorship">Mentorship</a>
+        <a href="pages/public.html#events">Events</a>
+        <a href="pages/public.html#leaderboard">Leaderboard</a>
+        <a href="pages/public.html#contact">Contact</a>
+      </div>
+      <div class="navbar-actions">
+        <button class="theme-toggle" aria-label="Toggle theme">&#127769;</button>
+        <a href="pages/auth.html" class="navbar-login">Login</a>
+        <button class="hamburger" aria-label="Toggle navigation">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Mobile Menu -->
+  <div class="mobile-menu">
+    <a href="pages/public.html#home">Home</a>
+    <a href="pages/public.html#about">About</a>
+    <a href="pages/public.html#activities">Activities</a>
+    <a href="pages/public.html#mentorship">Mentorship</a>
+    <a href="pages/public.html#events">Events</a>
+    <a href="pages/public.html#leaderboard">Leaderboard</a>
+    <a href="pages/public.html#contact">Contact</a>
+    <a href="pages/auth.html" class="btn btn-primary">Login</a>
+  </div>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="container">
+      <div class="hero-content">
+        <span class="hero-label"><i class="fas fa-code"></i> Welcome to PEC</span>
+        <h1>Programming Excellence Community</h1>
+        <p class="subtitle">Learn. Practice. Collaborate. Grow.</p>
+        <p>PEC is a programming community focused on strengthening problem-solving skills, encouraging practical development, connecting students with mentors, and creating a culture of continuous learning.</p>
+        <div class="hero-buttons">
+          <a href="pages/auth.html" class="btn btn-primary btn-lg">Join PEC</a>
+          <a href="pages/public.html#activities" class="btn btn-secondary btn-lg">Explore Activities</a>
+        </div>
+      </div>
+      <div class="hero-visual">
+        <div class="hero-shapes">
+          <div class="hero-shape hero-shape-1"></div>
+          <div class="hero-shape hero-shape-2"></div>
+          <div class="hero-shape hero-shape-3"></div>
+          <div class="hero-shape hero-shape-4"></div>
+          <div class="hero-code-block">
+            <div class="code-header">
+              <span class="code-dot red"></span>
+              <span class="code-dot yellow"></span>
+              <span class="code-dot green"></span>
+            </div>
+            <div class="code-line"><span class="keyword">function</span> <span class="function">solve</span><span class="bracket">(</span>problem<span class="bracket">)</span> {</div>
+            <div class="code-line">&nbsp;&nbsp;<span class="keyword">const</span> skills = <span class="function">learn</span><span class="bracket">()</span>;</div>
+            <div class="code-line">&nbsp;&nbsp;<span class="keyword">const</span> growth = <span class="function">practice</span><span class="bracket">(</span>skills<span class="bracket">)</span>;</div>
+            <div class="code-line">&nbsp;&nbsp;<span class="keyword">return</span> <span class="function">excellence</span><span class="bracket">(</span>growth<span class="bracket">)</span>;</div>
+            <div class="code-line"><span class="bracket">}</span></div>
+            <div class="code-line"><span class="comment">// Welcome to PEC</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Stats Bar -->
+  <section class="stats-bar">
+    <div class="container">
+      <div class="stat-item"><div class="stat-number" data-count="250">0+</div><div class="stat-label">Active Students</div></div>
+      <div class="stat-item"><div class="stat-number" data-count="1200">0+</div><div class="stat-label">Problems Solved</div></div>
+      <div class="stat-item"><div class="stat-number" data-count="15">0+</div><div class="stat-label">Mentors</div></div>
+      <div class="stat-item"><div class="stat-number" data-count="50">0+</div><div class="stat-label">Activities Completed</div></div>
+    </div>
+  </section>
+
+  <!-- About PEC Section -->
+  <section class="section">
+    <div class="container">
+      <div class="section-header fade-in">
+        <span class="section-label">About PEC</span>
+        <h2>What is PEC?</h2>
+        <p>PEC provides students with a structured environment to learn programming, practice problem solving, participate in technical activities, interact with mentors and improve their skills.</p>
+      </div>
+      <div class="features-grid">
+        <div class="card fade-in"><div class="card-icon blue"><i class="fas fa-brain"></i></div><h4>Problem Solving</h4><p>Develop logical and algorithmic thinking through structured challenges and practice.</p></div>
+        <div class="card fade-in"><div class="card-icon purple"><i class="fas fa-user-tie"></i></div><h4>Mentorship</h4><p>Learn through guidance and feedback from experienced mentors in your journey.</p></div>
+        <div class="card fade-in"><div class="card-icon cyan"><i class="fas fa-book-open"></i></div><h4>Continuous Learning</h4><p>Build consistent programming habits that lead to long-term skill development.</p></div>
+        <div class="card fade-in"><div class="card-icon green"><i class="fas fa-users"></i></div><h4>Collaboration</h4><p>Learn and grow together with fellow students in a supportive community.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- What We Do Section -->
+  <section class="section section-light">
+    <div class="container">
+      <div class="section-header fade-in">
+        <span class="section-label">Our Activities</span>
+        <h2>What We Do</h2>
+        <p>PEC offers a wide range of programming activities designed to enhance your technical skills.</p>
+      </div>
+      <div class="services-grid">
+        <div class="card fade-in"><div class="card-icon blue"><i class="fas fa-tasks"></i></div><h4>Weekly Coding Challenges</h4><p>Regular programming problems and challenges to keep your skills sharp.</p></div>
+        <div class="card fade-in"><div class="card-icon purple"><i class="fas fa-project-diagram"></i></div><h4>DSA Practice</h4><p>Practice data structures and algorithms with curated problem sets.</p></div>
+        <div class="card fade-in"><div class="card-icon cyan"><i class="fas fa-bug"></i></div><h4>Debugging Challenges</h4><p>Find and fix programming bugs to strengthen your debugging skills.</p></div>
+        <div class="card fade-in"><div class="card-icon green"><i class="fas fa-trophy"></i></div><h4>Coding Competitions</h4><p>Participate in coding contests and compete with fellow students.</p></div>
+        <div class="card fade-in"><div class="card-icon yellow"><i class="fas fa-laptop-code"></i></div><h4>Project Development</h4><p>Build practical technical projects to apply your programming knowledge.</p></div>
+        <div class="card fade-in"><div class="card-icon red"><i class="fas fa-chalkboard-teacher"></i></div><h4>Mentorship Sessions</h4><p>Interact with mentors and receive personalized guidance and feedback.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- How PEC Works -->
+  <section class="section">
+    <div class="container">
+      <div class="section-header fade-in">
+        <span class="section-label">How It Works</span>
+        <h2>How PEC Works</h2>
+        <p>A simple and effective process to help you grow as a programmer.</p>
+      </div>
+      <div class="process-steps">
+        <div class="process-step fade-in"><div class="process-step-number">01</div><h4>Learn</h4><p>Learn programming concepts and development skills from the community and mentors.</p></div>
+        <div class="process-step fade-in"><div class="process-step-number">02</div><h4>Practice</h4><p>Solve problems and participate in activities to strengthen your skills.</p></div>
+        <div class="process-step fade-in"><div class="process-step-number">03</div><h4>Get Mentored</h4><p>Receive guidance and feedback from your assigned mentor.</p></div>
+        <div class="process-step fade-in"><div class="process-step-number">04</div><h4>Grow</h4><p>Track improvement and develop stronger technical skills over time.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Mentorship Flow Section -->
+  <section class="section section-light">
+    <div class="container">
+      <div class="section-header fade-in">
+        <span class="section-label">Mentorship</span>
+        <h2>Guided Learning Journey</h2>
+        <p>Each student is connected with an assigned mentor who helps guide their programming journey.</p>
+      </div>
+      <div class="mentorship-flow fade-in">
+        <div class="flow-item"><div class="flow-item-icon"><i class="fas fa-user-graduate"></i></div><span>Student</span></div>
+        <div class="flow-arrow"><i class="fas fa-arrow-right"></i></div>
+        <div class="flow-item"><div class="flow-item-icon"><i class="fas fa-user-tie"></i></div><span>Assigned Mentor</span></div>
+        <div class="flow-arrow"><i class="fas fa-arrow-right"></i></div>
+        <div class="flow-item"><div class="flow-item-icon"><i class="fas fa-handshake"></i></div><span>Guidance</span></div>
+        <div class="flow-arrow"><i class="fas fa-arrow-right"></i></div>
+        <div class="flow-item"><div class="flow-item-icon"><i class="fas fa-comments"></i></div><span>Feedback</span></div>
+        <div class="flow-arrow"><i class="fas fa-arrow-right"></i></div>
+        <div class="flow-item"><div class="flow-item-icon"><i class="fas fa-chart-line"></i></div><span>Progress</span></div>
+      </div>
+      <div class="card fade-in" style="max-width:600px;margin:0 auto;text-align:center;">
+        <div class="card-icon purple" style="margin:0 auto 12px;"><i class="fas fa-lock"></i></div>
+        <h4>Mentor Access</h4>
+        <p>Mentors will later manage and monitor only their assigned mentees. This feature will be implemented in the backend phase.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="cta-section">
+    <div class="container">
+      <h2>Ready to Start Your Journey?</h2>
+      <p>Join PEC today and become part of a growing community of passionate programmers.</p>
+      <a href="pages/auth.html" class="btn btn-lg">Join PEC</a>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <div class="footer-logo"><div class="navbar-logo">P</div><span class="brand-name">PEC</span></div>
+          <p>Programming Excellence Community — A community for students to learn, practice, and grow in programming.</p>
+        </div>
+        <div class="footer-links">
+          <h4>Quick Links</h4>
+          <a href="pages/public.html#home">Home</a><a href="pages/public.html#about">About</a><a href="pages/public.html#activities">Activities</a><a href="pages/public.html#mentorship">Mentorship</a>
+        </div>
+        <div class="footer-links">
+          <h4>Community</h4>
+          <a href="pages/public.html#events">Events</a><a href="pages/public.html#leaderboard">Leaderboard</a><a href="pages/public.html#contact">Contact</a><a href="pages/auth.html">Login</a>
+        </div>
+        <div class="footer-links">
+          <h4>Connect</h4>
+          <a href="#"><i class="fab fa-discord"></i> Discord</a><a href="#"><i class="fab fa-github"></i> GitHub</a><a href="#"><i class="fab fa-linkedin"></i> LinkedIn</a><a href="#"><i class="fab fa-twitter"></i> Twitter</a>
+        </div>
+      </div>
+      <div class="footer-bottom">&copy; 2026 Programming Excellence Community. All rights reserved.</div>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - PEC</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/dashboard.css">
+  <style>
+    .dash-view{display:none}.dash-view.active{display:block}.sub-page{display:none}.sub-page.active{display:block}
+    .podium{display:flex;align-items:flex-end;justify-content:center;gap:16px;margin:32px 0}.podium-item{text-align:center}
+    .podium-item .rank{font-size:14px;color:var(--text-secondary);margin-bottom:8px}
+    .podium-item .avatar{width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;margin:0 auto 8px}
+    .podium-item .name{font-weight:600;font-size:14px}.podium-item .score{font-size:12px;color:var(--text-secondary)}
+    .podium-item .bar{width:80px;margin:0 auto;border-radius:8px 8px 0 0}
+    .podium-1 .bar{height:120px;background:linear-gradient(135deg,#f59e0b,#d97706)}
+    .podium-2 .bar{height:90px;background:linear-gradient(135deg,#94a3b8,#64748b)}
+    .podium-3 .bar{height:70px;background:linear-gradient(135deg,#c2884f,#a16833)}
+    .podium-1 .avatar{width:72px;height:72px;background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;font-size:28px;border:3px solid #f59e0b}
+    .podium-2 .avatar{background:linear-gradient(135deg,#94a3b8,#64748b);color:#fff;border:3px solid #94a3b8}
+    .podium-3 .avatar{background:linear-gradient(135deg,#c2884f,#a16833);color:#fff;border:3px solid #c2884f}
+    .filter-chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+    .chip{padding:6px 14px;border-radius:20px;font-size:13px;font-weight:500;border:1px solid var(--bg-border);background:var(--bg-card);cursor:pointer;transition:all .2s}
+    .chip.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+    .chart-bar{display:flex;align-items:flex-end;gap:8px;height:120px;padding:8px 0}
+    .chart-bar-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px}
+    .chart-bar-item .bar{width:100%;border-radius:4px 4px 0 0;background:var(--primary);transition:height .3s}
+    .chart-bar-item .label{font-size:11px;color:var(--text-secondary)}
+    .notification-item{display:flex;gap:12px;padding:14px 0;border-bottom:1px solid var(--bg-border)}.notification-item:last-child{border-bottom:none}
+    .notification-icon{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:14px}
+    .notification-content{flex:1}.notification-title{font-weight:600;font-size:14px;margin-bottom:2px}
+    .notification-desc{font-size:13px;color:var(--text-secondary)}.notification-time{font-size:12px;color:var(--text-muted);margin-top:4px}
+    .settings-group{margin-bottom:24px}.settings-group h4{margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--bg-border)}
+    .setting-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--bg-border)}.setting-row:last-child{border-bottom:none}
+    .setting-label{font-weight:500;font-size:14px}.setting-desc{font-size:12px;color:var(--text-secondary)}
+    .quick-actions{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px}
+    .quick-action-btn{display:flex;flex-direction:column;align-items:center;gap:8px;padding:16px;border-radius:12px;border:1px solid var(--bg-border);background:var(--bg-card);cursor:pointer;transition:all .2s;text-align:center}
+    .quick-action-btn:hover{border-color:var(--primary);background:var(--primary-bg)}.quick-action-btn i{font-size:20px;color:var(--primary)}.quick-action-btn span{font-size:13px;font-weight:500}
+    .stats-bar{display:flex;gap:16px;margin-bottom:16px}.stats-bar-item{flex:1;padding:12px 16px;border-radius:8px;text-align:center;font-weight:600;font-size:14px}
+    .event-date-box{width:48px;height:48px;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--primary);color:#fff;flex-shrink:0}
+    .event-date-box .day{font-size:18px;font-weight:700;line-height:1}.event-date-box .month{font-size:10px;text-transform:uppercase}
+  </style>
+</head>
+<body>
+
+  <!-- ======================== A. ROLE SELECTION ======================== -->
+  <div id="app-role-select" class="dashboard-layout active">
+    <div class="dashboard-main" style="margin-left:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:24px;min-height:100vh;">
+      <h1>Select Dashboard</h1>
+      <p style="color:var(--text-secondary);">Choose a role to view the dashboard</p>
+      <div style="display:flex;gap:16px;flex-wrap:wrap;justify-content:center;">
+        <button class="btn btn-primary btn-lg" onclick="switchRole('student')">Student Portal</button>
+        <button class="btn btn-secondary btn-lg" onclick="switchRole('mentor')">Mentor Portal</button>
+        <button class="btn btn-ghost btn-lg" onclick="switchRole('coordinator')">Coordinator Portal</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================== B. STUDENT PORTAL ======================== -->
+  <div id="app-student" class="dashboard-layout" style="display:none;">
+    <aside class="sidebar">
+      <div class="sidebar-section">
+        <div class="sidebar-section-title">Menu</div>
+        <nav class="sidebar-nav">
+          <a href="#student-dashboard" class="active" data-page="student-dashboard"><span class="icon"><i class="fas fa-home"></i></span> Dashboard</a>
+          <a href="#student-profile" data-page="student-profile"><span class="icon"><i class="fas fa-user"></i></span> My Profile</a>
+          <a href="#student-mentor" data-page="student-mentor"><span class="icon"><i class="fas fa-chalkboard-teacher"></i></span> My Mentor</a>
+          <a href="#student-learning" data-page="student-learning"><span class="icon"><i class="fas fa-book"></i></span> Learning Hub</a>
+          <a href="#student-challenges" data-page="student-challenges"><span class="icon"><i class="fas fa-fire"></i></span> Weekly Challenges</a>
+          <a href="#student-submissions" data-page="student-submissions"><span class="icon"><i class="fas fa-upload"></i></span> My Submissions</a>
+          <a href="#student-progress" data-page="student-progress"><span class="icon"><i class="fas fa-chart-line"></i></span> My Progress</a>
+          <a href="#student-leaderboard" data-page="student-leaderboard"><span class="icon"><i class="fas fa-trophy"></i></span> Leaderboard</a>
+          <a href="#student-events" data-page="student-events"><span class="icon"><i class="fas fa-calendar-alt"></i></span> Events</a>
+          <a href="#student-news" data-page="student-news"><span class="icon"><i class="fas fa-newspaper"></i></span> News & Announcements</a>
+          <a href="#student-notifications" data-page="student-notifications"><span class="icon"><i class="fas fa-bell"></i></span> Notifications <span class="badge-count">3</span></a>
+          <a href="#student-settings" data-page="student-settings"><span class="icon"><i class="fas fa-cog"></i></span> Settings</a>
+          <a href="#" onclick="switchRole(null)"><span class="icon"><i class="fas fa-sign-out-alt"></i></span> Logout</a>
+        </nav>
+      </div>
+      <div class="sidebar-divider"></div>
+      <div class="sidebar-user">
+        <div class="user-avatar">AK</div>
+        <div class="user-info"><div class="user-name">Arjun Kumar</div><div class="user-role">Student</div></div>
+      </div>
+    </aside>
+    <main class="dashboard-main">
+
+      <!-- Student Dashboard -->
+      <div class="sub-page active" id="student-dashboard">
+        <div class="dashboard-header"><h1>Good Evening, Arjun Kumar</h1><p>Here's what's happening with your progress today.</p></div>
+        <div class="dashboard-stats">
+          <div class="dashboard-stat-card"><div class="stat-header"><div class="stat-icon" style="background:rgba(59,130,246,0.1);color:#3b82f6"><i class="fas fa-fire"></i></div></div><div class="stat-value">24</div><div class="stat-label">Total Challenges</div></div>
+          <div class="dashboard-stat-card"><div class="stat-header"><div class="stat-icon" style="background:rgba(34,197,94,0.1);color:#22c55e"><i class="fas fa-check-circle"></i></div></div><div class="stat-value">18</div><div class="stat-label">Completed</div></div>
+          <div class="dashboard-stat-card"><div class="stat-header"><div class="stat-icon" style="background:rgba(245,158,11,0.1);color:#f59e0b"><i class="fas fa-bolt"></i></div></div><div class="stat-value">7 days</div><div class="stat-label">Current Streak</div></div>
+          <div class="dashboard-stat-card"><div class="stat-header"><div class="stat-icon" style="background:rgba(168,85,247,0.1);color:#a855f7"><i class="fas fa-medal"></i></div></div><div class="stat-value">#5</div><div class="stat-label">Rank</div></div>
+        </div>
+        <div class="dashboard-grid">
+          <div class="dashboard-section"><div class="dashboard-section-header"><h3>Overall Progress</h3></div><div class="dashboard-section-body">
+            <div class="progress-bar-container"><div class="progress-header"><span class="progress-label">Overall Completion</span><span class="progress-value">75%</span></div><div class="progress-bar"><div class="progress-fill blue" style="width:75%"></div></div></div>
+          </div></div>
+          <div class="dashboard-section"><div class="dashboard-section-header"><h3>Skill Progress</h3></div><div class="dashboard-section-body">
+            <div class="progress-bar-container"><div class="progress-header"><span class="progress-label">DSA</span><span class="progress-value">75%</span></div><div class="progress-bar"><div class="progress-fill blue" style="width:75%"></div></div></div>
+            <div class="progress-bar-container"><div class="progress-header"><span class="progress-label">Web Dev</span><span class="progress-value">60%</span></div><div class="progress-bar"><div class="progress-fill green" style="width:60%"></div></div></div>
+            <div class="progress-bar-container"><div class="progress-header"><span class="progress-label">Debugging</span><span class="progress-value">85%</span></div><div class="progress-bar"><div class="progress-fill purple" style="width:85%"></div></div></div>
+          </div></div>
+          <div class="dashboard-section"><div class="dashboard-section-header"><h3>Recent Submissions</h3></div><div class="dashboard-section-body no-padding">
+            <div class="student-list-item"><div class="student-avatar" style="background:rgba(34,197,94,0.1);color:#22c55e"><i class="fas fa-check"></i></div><div class="student-info"><div class="student-name">Binary Search Implementation</div><div class="student-meta">Submitted Sep 19 &middot; Score: 95/100</div></div><span class="student-status status-active">Accepted</span></div>
+            <div class="student-list-item"><div class="student-avatar" style="background:rgba(245,158,11,0.1);color:#f59e0b"><i class="fas fa-clock"></i></div><div class="student-info"><div class="student-name">React Dashboard Project</div><div class="student-meta">Submitted Sep 18 &middot; Pending Review</div></div><span class="student-status status-pending">Pending</span></div>
+            <div class="student-list-item"><div class="student-avatar" style="background:rgba(34,197,94,0.1);color:#22c55e"><i class="fas fa-check"></i></div><div class="student-info"><div class="student-name">Linked List Operations</div><div class="student-meta">Submitted Sep 16 &middot; Score: 92/100</div></div><span class="student-status status-active">Accepted</span></div>
+          </div></div>
+          <div class="dashboard-section"><div class="dashboard-section-header"><h3>Current Challenge</h3></div><div class="dashboard-section-body">
+            <div class="task-item" style="border-left-color:#3b82f6;"><div class="task-title">Implement LRU Cache</div><div class="task-desc">Design and implement an LRU Cache with O(1) get and put operations.</div><div class="task-meta"><span><i class="fas fa-calendar"></i> Due: Sep 26</span><span><i class="fas fa-signal"></i> Hard</span><span><i class="fas fa-star"></i> 50 pts</span></div></div>
+          </div></div>
+          <div class="dashboard-section"><div class="dashboard-section-header"><h3>Assigned Mentor</h3></div><div class="dashboard-section-body">
+            <div class="mentor-info-card"><div class="mentor-avatar">RV</div><div><div class="mentor-name">Rahul Verma</div><div class="mentor-spec">DSA & Problem Solving</div><div class="mentor-status" style="color:#22c55e;">Available</div></div></div>
+          </div></div>
+          <div class="dashboard-section"><div class="dashboard-section-header"><h3>Upcoming Events</h3></div><div class="dashboard-section-body no-padding">
+            <div class="student-list-item"><div class="event-date-box"><span class="day">25</span><span class="month">Sep</span></div><div class="student-info"><div class="student-name">Tech Talk: System Design</div><div class="student-meta">Online &middot; 4:00 PM IST</div></div></div>
+            <div class="student-list-item"><div class="event-date-box" style="background:#22c55e;"><span class="day">30</span><span class="month">Sep</span></div><div class="student-info"><div class="student-name">Hackathon Kickoff</div><div class="student-meta">On-campus &middot; 10:00 AM IST</div></div></div>
+          </div></div>
+          <div class="dashboard-section"><div class="dashboard-section-header"><h3>Latest News</h3></div><div class="dashboard-section-body no-padding">
+            <div class="student-list-item"><div class="student-avatar" style="background:rgba(59,130,246,0.1);color:#3b82f6"><i class="fas fa-newspaper"></i></div><div class="student-info"><div class="student-name">New DSA Batch Starting Oct 1</div><div class="student-meta">Sep 18 &middot; Announcements</div></div></div>
+            <div class="student-list-item"><div class="student-avatar" style="background:rgba(34,197,94,0.1);color:#22c55e"><i class="fas fa-trophy"></i></div><div class="student-info"><div class="student-name">September Challenge Results</div><div class="student-meta">Sep 17 &middot; Results</div></div></div>
+            <div class="student-list-item"><div class="student-avatar" style="background:rgba(168,85,247,0.1);color:#a855f7"><i class="fas fa-lightbulb"></i></div><div class="student-info"><div class="student-name">New Learning Path: Full Stack</div><div class="student-meta">Sep 15 &middot; Updates</div></div></div>
+          </div></div>
+        </div>
+      </div>
+
+      <!-- Student Profile -->
+      <div class="sub-page" id="student-profile">
+        <div class="dashboard-header"><h1>My Profile</h1></div>
+        <div class="dashboard-grid">
+          <div class="dashboard-section" style="grid-column:span 2;"><div class="dashboard-section-body">
+            <div style="display:flex;gap:24px;align-items:center;flex-wrap:wrap;">
+              <div class="user-avatar" style="width:80px;height:80px;font-size:32px;">AK</div>
+              <div><h2 style="margin:0;">Arjun Kumar</h2><p style="color:var(--text-secondary);margin:4px 0;">Computer Science &middot; 3rd Year</p><p style="color:var(--text-muted);font-size:13px;margin:0;">Enrollment: PEC2024001 &middot; arjun.kumar@pec.edu.in</p></div>
+            </div>
+          </div></div>
+          <div class="dashboard-section"><div class="dashboard-section-header"><h3>Stats</h3></div><div class="dashboard-section-body">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;text-align:center;">
+              <div><div style="font-size:24px;font-weight:700;color:var(--primary);">24</div><div style="font-size:12px;color:var(--text-secondary);">Challenges</div></div>
+              <div><div style="font-size:24px;font-weight:700;color:#22c55e;">18</div><div style="font-size:12px;color:var(--text-secondary);">Completed</div></div>
+              <div><div style="font-size:24px;font-weight:700;color:#f59e0b;">#5</div><div style="font-size:12px;color:var(--text-secondary);">Rank</div></div>
+              <div><div style="font-size:24px;font-weight:700;color:#a855f7;">850</div><div style="font-size:12px;color:var(--text-secondary);">Points</div></div>
+            </div>
+          </div></div>
+          <div class="dashboard-section" style="grid-column:span 3;"><div class="dashboard-section-header"><h3>About</h3></div><div class="dashboard-section-body">
+            <p>Passionate computer science student with a strong interest in data structures, algorithms, and web development. Actively participating in coding challenges and hackathons.</p>
+            <div style="margin-top:16px;"><h4 style="margin-bottom:8px;">Skills</h4><div style="display:flex;gap:8px;flex-wrap:wrap;"><span class="chip active">C++</span><span class="chip active">Python</span><span class="chip active">JavaScript</span><span class="chip">React</span><span class="chip">Node.js</span><span class="chip">DSA</span></div></div>
+          </div></div>
+        </div>
+      </div>
+
+      <!-- Student Mentor -->
+      <div class="sub-page" id="student-mentor">
+        <div class="dashboard-header"><h1>My Mentor</h1></div>
+        <div class="dashboard-grid">
+          <div class="dashboard-section" style="grid-column:span 2;"><div class="dashboard-section-header"><h3>Mentor Details</h3></div><div class="dashboard-section-body">
+            <div style="display:flex;gap:24px;align-items:center;flex-wrap:wrap;">
+              <div class="mentor-avatar" style="width:72px;height:72px;font-size:28px;">RV</div>
+              <div><h3 style="margin:0;">Rahul Verma</h3><p style="color:var(--text-secondary);margin:4px 0;">DSA & Problem Solving &middot; 8 mentees &middot; 4.8 rating</p><p style="color:#22c55e;font-size:13px;margin:0;"><i class="fas fa-circle" style="font-size:8px;"></i> Available</p></div>
+            </div>
+          </div></div>
+          <div class="dashboard-section"><div class="dashboard-section-header"><h3>Recent Feedback</h3></div><div class="dashboard-section-body">
+            <div class="feedback-item"><div class="feedback-header"><span class="feedback-from">Rahul Verma</span><span class="feedback-date">Sep 18</span></div><div class="feedback-text">Great work on the linked list assignment! Clean and well-structured code.</div></div>
+            <div class="feedback-item"><div class="feedback-header"><span class="feedback-from">Rahul Verma</span><span class="feedback-date">Sep 14</span></div><div class="feedback-text">Work on time complexity analysis. Try more DP problems.</div></div>
+          </div></div>
+          <div class="dashboard-section" style="grid-column:span 3;"><div class="dashboard-section-body" style="text-align:center;"><button class="btn btn-primary btn-lg"><i class="fas fa-calendar-alt"></i> Schedule Meeting</button></div></div>
+        </div>
+      </div>
+
+      <!-- Student Learning Hub -->
+      <div class="sub-page" id="student-learning">
+        <div class="dashboard-header"><h1>Learning Hub</h1><p>Explore resources to sharpen your skills.</p></div>
+        <div class="dashboard-grid" style="grid-template-columns:repeat(auto-fill,minmax(280px,1fr));">
+          <div class="dashboard-section"><div class="dashboard-section-body">
+            <div style="display:flex;gap:12px;align-items:center;margin-bottom:12px;"><div style="width:48px;height:48px;border-radius:12px;background:rgba(59,130,246,0.1);color:#3b82f6;display:flex;align-items:center;justify-content:center;font-size:20px;"><i class="fas fa-code"></i></div><div><h4 style="margin:0;">DSA Fundamentals</h4><p style="margin:0;font-size:12px;color:var(--text-secondary);">12 modules &middot; 8 hours</p></div></div>
+            <p style="font-size:13px;color:var(--text-secondary);">Master arrays, linked lists, trees, graphs, and dynamic programming.</p>
+            <div class="progress-bar-container"><div class="progress-header"><span class="progress-label">Progress</span><span class="progress-value">75%</span></div><div class="progress-bar"><div class="progress-fill blue" style="width:75%"></div></div></div>
+            <button class="btn btn-primary" style="width:100%;margin-top:12px;">Continue Learning</button>
+          </div></div>
+          <div class="dashboard-section"><div class="dashboard-section-body">
+            <div style="display:flex;gap:12px;align-items:center;margin-bottom:12px;"><div style="width:48px;height:48px;border-radius:12px;background:rgba(34,197,94,0.1);color:#22c55e;display:flex;align-items:center;justify-content:center;font-size:20px;"><i class="fas fa-globe"></i></div><div><h4 style="margin:0;">Web Dev Basics</h4><p style="margin:0;font-size:12px;color:var(--text-secondary);">10 modules &middot; 6 hours</p></div></div>
+            <p style="font-size:13px;color:var(--text-secondary);">HTML, CSS, JavaScript fundamentals and responsive design.</p>
+            <div class="progress-bar-container"><div class="progress-header"><span class="progress-label">Progress</span><span class="progress-value">60%</span></div><div class="progress-bar"><div class="progress-fill green" style="width:60%"></div></div></div>
+            <button class="btn btn-primary" style="width:100%;margin-top:12px;">Continue Learning</button>
+          </div></div>
+          <div class="dashboard-section"><div class="dashboard-section-body">
+            <div style="display:flex;gap:12px;align-items:center;margin-bottom:12px;"><div style="width:48px;height:48px;border-radius:12px;background:rgba(168,85,247,0.1);color:#a855f7;display:flex;align-items:center;justify-content:center;font-size:20px;"><i class="fas fa-bug"></i></div><div><h4 style="margin:0;">Debugging Guide</h4><p style="margin:0;font-size:12px;color:var(--text-secondary);">8 modules &middot; 4 hours</p></div></div>
+            <p style="font-size:13px;color:var(--text-secondary);">Systematic debugging, breakpoints, and profiling tools.</p>
+            <div class="progress-bar-container"><div class="progress-header"><span class="progress-label">Progress</span><span class="progress-value">85%</span></div><div class="progress-bar"><div class="progress-fill purple" style="width:85%"></div></div></div>
+            <button class="btn btn-primary" style="width:100%;margin-top:12px;">Continue Learning</button>
+          </div></div>
+          <div class="dashboard-section"><div class="dashboard-section-body">
+            <div style="display:flex;gap:12px;align-items:center;margin-bottom:12px;"><div style="width:48px;height:48px;border-radius:12px;background:rgba(245,158,11,0.1);color:#f59e0b;display:flex;align-items:center;justify-content:center;font-size:20px;"><i class="fas fa-project-diagram"></i></div><div><h4 style="margin:0;">System Design Intro</h4><p style="margin:0;font-size:12px;color:var(--text-secondary);">6 modules &middot; 5 hours</p></div></div>
+            <p style="font-size:13px;color:var(--text-secondary);">Scalable systems, load balancing, caching, and databases.</p>
+            <div class="progress-bar-container"><div class="progress-header"><span class="progress-label">Progress</span><span class="progress-value">20%</span></div><div class="progress-bar"><div class="progress-fill yellow" style="width:20%"></div></div></div>
+            <button class="btn btn-primary" style="width:100%;margin-top:12px;">Start Learning</button>
+          </div></div>
+        </div>
+      </div>
+
+      <!-- Student Challenges -->
+      <div class="sub-page" id="student-challenges">
+        <div class="dashboard-header"><h1>Weekly Challenges</h1><p>Test your skills with curated coding challenges.</p></div>
+        <div class="filter-chips"><span class="chip active">All</span><span class="chip">Easy</span><span class="chip">Medium</span><span class="chip">Hard</span><span class="chip">Pending</span><span class="chip">Completed</span></div>
+        <div class="dashboard-grid" style="grid-template-columns:repeat(auto-fill,minmax(300px,1fr));">
+          <div class="dashboard-section"><div class="dashboard-section-body">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;"><span class="chip" style="background:rgba(239,68,68,0.1);color:#ef4444;border:none;">Hard</span><span class="chip" style="background:rgba(245,158,11,0.1);color:#f59e0b;border:none;">50 pts</span></div>
+            <h4 style="margin:0 0 4px;">Implement LRU Cache</h4><p style="font-size:13px;color:var(--text-secondary);margin:0 0 12px;">O(1) get and put using HashMap and Doubly Linked List.</p>
+            <div class="task-meta"><span><i class="fas fa-calendar"></i> Due: Sep 26</span></div>
+            <button class="btn btn-primary" style="width:100%;margin-top:12px;">Start Challenge</button>
+          </div></div>
+          <div class="dashboard-section"><div class="dashboard-section-body">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;"><span class="chip" style="background:rgba(245,158,11,0.1);color:#f59e0b;border:none;">Medium</span><span class="chip" style="background:rgba(34,197,94,0.1);color:#22c55e;border:none;">30 pts</span></div>
+            <h4 style="margin:0 0 4px;">Binary Search Variants</h4><p style="font-size:13px;color:var(--text-secondary);margin:0 0 12px;">Implement 5 binary search variants for various use cases.</p>
+            <div class="task-meta"><span><i class="fas fa-calendar"></i> Due: Sep 28</span></div>
+            <button class="btn btn-primary" style="width:100%;margin-top:12px;">Start Challenge</button>
+          </div></div>
+          <div class="dashboard-section"><div class="dashboard-section-body">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;"><span class="chip" style="background:rgba(34,197,94,0.1);color:#22c55e;border:none;">Easy</span><span class="chip" style="background:rgba(34,197,94,0.1);color:#22c55e;border:none;">20 pts</span></div>
+            <h4 style="margin:0 0 4px;">Stack Parenthesis Validator</h4><p style="font-size:13px;color:var(--text-secondary);margin:0 0 12px;">Validate balanced parentheses using stack.</p>
+            <div class="task-meta"><span><i class="fas fa-calendar"></i> Due: Sep 30</span></div>
+            <button class="btn btn-secondary" style="width:100%;margin-top:12px;">Completed &#10003;</button>
+          </div></div>
+          <div class="dashboard-section"><div class="dashboard-section-body">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;"><span class="chip" style="background:rgba(245,158,11,0.1);color:#f59e0b;border:none;">Medium</span><span class="chip" style="background:rgba(34,197,94,0.1);color:#22c55e;border:none;">30 pts</span></div>
+            <h4 style="margin:0 0 4px;">Graph BFS Traversal</h4><p style="font-size:13px;color:var(--text-secondary);margin:0 0 12px;">Implement BFS for adjacency list representation.</p>
+            <div class="task-meta"><span><i class="fas fa-calendar"></i> Due: Oct 2</span></div>
+            <button class="btn btn-primary" style="width:100%;margin-top:12px;">Start Challenge</button>
+          </div></div>
+        </div>
+      </div>
+
+      <!-- Student Submissions -->
+      <div class="sub-page" id="student-submissions">
+        <div class="dashboard-header"><h1>My Submissions</h1><p>Track all your challenge submissions and their status.</p></div>
+        <div class="dashboard-section"><div class="dashboard-section-body no-padding">
+          <table class="dashboard-table">
+            <thead><tr><th>Challenge</th><th>Status</th><th>Date</th><th>Score</th></tr></thead>
+            <tbody>
+              <tr><td>Binary Search Implementation</td><td><span class="student-status status-active">Accepted</span></td><td>Sep 19, 2026</td><td>95/100</td></tr>
+              <tr><td>React Dashboard Project</td><td><span class="student-status status-pending">Pending</span></td><td>Sep 18, 2026</td><td>--</td></tr>
+              <tr><td>Linked List Operations</td><td><span class="student-status status-active">Accepted</span></td><td>Sep 16, 2026</td><td>92/100</td></tr>
+              <tr><td>Stack Parenthesis Validator</td><td><span class="student-status status-active">Accepted</span></td><td>Sep 14, 2026</td><td>88/100</td></tr>
+              <tr><td>Array Sorting Comparison</td><td><span class="student-status status-inactive">Rejected</span></td><td>Sep 12, 2026</td><td>45/100</td></tr>
+            </tbody>
+          </table>
+        </div></div>
+      </div>
+
+      <!-- Student Progress -->
+      <div class="sub-page" id="student-progress">
+        <div class="dashboard-header"><h1>My Progress</h1><p>Track your learning journey and achievements.</p></div>
+        <div class="dashboard-grid">
+          <div class="dashboard-section"><div class="dashboard-section-header"><h3>Progress Overview</h3></div><div class="dashboard-section-body">
+            <div class="progress-bar-container"><div class="progress-header"><span class="progress-label">Overall</span><span class="progress-value">75%</span></div><div class="progress-bar"><div class="progress-fill blue" style="width:75%"></div></div></div>
+            <div class="progress-bar-container"><div class="progress-header"><span class="progress-label">DSA</span><span class="progress-value">80%</span></div><div class="progress-bar"><div class="progress-fill green" style="width:80%"></div></div></div>
+            <div class="progress-bar-container"><div class="progress-header"><span class="progress-label">Web Dev</span><span class="progress-value">60%</span></div><div class="progress-bar"><div class="progress-fill purple" style="width:60%"></div></div></div>
+            <div class="progress-bar-container"><div class="progress-header"><span class="progress-label">Debugging</span><span class="progress-value">85%</span></div><div class="progress-bar"><div class="progress-fill cyan" style="width:85%"></div></div></div>
+          </div></div>
+          <div class="dashboard-section"><div class="dashboard-section-header"><h3>Weekly Activity</h3></div><div class="dashboard-section-body">
+            <div class="chart-bar">
+              <div class="chart-bar-item"><div class="bar" style="height:40%"></div><div class="label">Mon</div></div>
+              <div class="chart-bar-item"><div class="bar" style="height:70%"></div><div class="label">Tue</div></div>
+              <div class="chart-bar-item"><div class="bar" style="height:55%"></div><div class="label">Wed</div></div>
+              <div class="chart-bar-item"><div class="bar" style="height:85%"></div><div class="label">Thu</div></div>
+              <div class="chart-bar-item"><div class="bar" style="height:60%"></div><div class="label">Fri</div></div>
+              <div class="chart-bar-item"><div class="bar" style="height:90%"></div><div class="label">Sat</div></div>
+              <div class="chart-bar-item"><div class="bar" style="height:30%"></div><div class="label">Sun</div></div>
+            </div>
+          </div></div>
+          <div class="dashboard-section" style="grid-column:span 2;"><div class="dashboard-section-header"><h3>Stats Summary</h3></div><div class="dashboard-section-body">
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;text-align:center;">
+              <div><div style="font-size:28px;font-weight:700;color:var(--primary);">24</div><div style="font-size:12px;color:var(--text-secondary);">Attempted</div></div>
+              <div><div style="font-size:28px;font-weight:700;color:#22c55e;">18</div><div style="font-size:12px;color:var(--text-secondary);">Completed</div></div>
+              <div><div style="font-size:28px;font-weight:700;color:#f59e0b;">850</div><div style="font-size:12px;color:var(--text-secondary);">Points</div></div>
+              <div><div style="font-size:28px;font-weight:700;color:#a855f7;">7 days</div><div style="font-size:12px;color:var(--text-secondary);">Streak</div></div>
+            </div>
+          </div></div>
+        </div>
+      </div>
+
+      <!-- Student Leaderboard -->
+      <div class="sub-page" id="student-leaderboard">
+        <div class="dashboard-header"><h1>Leaderboard</h1><p>See how you rank among your peers.</p></div>
+        <div class="dashboard-section"><div class="dashboard-section-body">
+          <div class="podium">
+            <div class="podium-item podium-2"><div class="rank">2nd</div><div class="avatar">PS</div><div class="name">Priya Sharma</div><div class="score">920 pts</div><div class="bar"></div></div>
+            <div class="podium-item podium-1"><div class="rank">1st</div><div class="avatar">RK</div><div class="name">Rohan Khanna</div><div class="score">980 pts</div><div class="bar"></div></div>
+            <div class="podium-item podium-3"><div class="rank">3rd</div><div class="avatar">NM</div><div class="name">Neha Mehta</div><div class="score">870 pts</div><div class="bar"></div></div>
+          </div>
+        </div></div>
+        <div class="dashboard-section" style="margin-top:24px;"><div class="dashboard-section-body no-padding">
+          <table class="dashboard-table">
+            <thead><tr><th>Rank</th><th>Student</th><th>Challenges</th><th>Points</th></tr></thead>
+            <tbody>
+              <tr><td>1</td><td>Rohan Khanna</td><td>22</td><td>980</td></tr>
+              <tr><td>2</td><td>Priya Sharma</td><td>20</td><td>920</td></tr>
+              <tr><td>3</td><td>Neha Mehta</td><td>19</td><td>870</td></tr>
+              <tr><td>4</td><td>Vikram Tiwari</td><td>18</td><td>860</td></tr>
+              <tr style="background:rgba(59,130,246,0.05);font-weight:600;"><td>5</td><td>Arjun Kumar (You)</td><td>18</td><td>850</td></tr>
+              <tr><td>6</td><td>Sanjay Gupta</td><td>17</td><td>800</td></tr>
+              <tr><td>7</td><td>Meera Joshi</td><td>16</td><td>780</td></tr>
+              <tr><td>8</td><td>Aditya Rao</td><td>15</td><td>720</td></tr>
+              <tr><td>9</td><td>Kavya Singh</td><td>14</td><td>690</td></tr>
+              <tr><td>10</td><td>Deepak Nair</td><td>13</td><td>650</td></tr>
+            </tbody>
+          </table>
+        </div></div>
+      </div>
+
+      <!-- Student Events -->
+      <div class="sub-page" id="student-events">
+        <div class="dashboard-header"><h1>Events</h1><p>Stay updated with upcoming events.</p></div>
+        <div class="filter-chips"><span class="chip active">All</span><span class="chip">Workshop</span><span class="chip">Hackathon</span><span class="chip">Tech Talk</span></div>
+        <div class="dashboard-grid" style="grid-template-columns:repeat(auto-fill,minmax(320px,1fr));">
+          <div class="dashboard-section"><div class="dashboard-section-body"><div style="display:flex;gap:16px;"><div class="event-date-box"><span class="day">25</span><span class="month">Sep</span></div><div><h4 style="margin:0 0 4px;">Tech Talk: System Design</h4><p style="font-size:13px;color:var(--text-secondary);margin:0 0 4px;">Online &middot; 4:00 PM IST</p><span class="chip" style="background:rgba(59,130,246,0.1);color:#3b82f6;border:none;font-size:11px;">Tech Talk</span></div></div></div></div>
+          <div class="dashboard-section"><div class="dashboard-section-body"><div style="display:flex;gap:16px;"><div class="event-date-box" style="background:#22c55e;"><span class="day">30</span><span class="month">Sep</span></div><div><h4 style="margin:0 0 4px;">Hackathon Kickoff</h4><p style="font-size:13px;color:var(--text-secondary);margin:0 0 4px;">On-campus &middot; 10:00 AM IST</p><span class="chip" style="background:rgba(34,197,94,0.1);color:#22c55e;border:none;font-size:11px;">Hackathon</span></div></div></div></div>
+          <div class="dashboard-section"><div class="dashboard-section-body"><div style="display:flex;gap:16px;"><div class="event-date-box" style="background:#a855f7;"><span class="day">05</span><span class="month">Oct</span></div><div><h4 style="margin:0 0 4px;">Web Dev Workshop</h4><p style="font-size:13px;color:var(--text-secondary);margin:0 0 4px;">Online &middot; 2:00 PM IST</p><span class="chip" style="background:rgba(168,85,247,0.1);color:#a855f7;border:none;font-size:11px;">Workshop</span></div></div></div></div>
+        </div>
+      </div>
+
+      <!-- Student News -->
+      <div class="sub-page" id="student-news">
+        <div class="dashboard-header"><h1>News & Announcements</h1></div>
+        <div style="display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap;"><input type="text" class="form-input" placeholder="Search news..." style="flex:1;min-width:200px;"><button class="btn btn-primary"><i class="fas fa-search"></i></button></div>
+        <div class="filter-chips"><span class="chip active">All</span><span class="chip">Announcements</span><span class="chip">Results</span><span class="chip">Updates</span><span class="chip">Events</span></div>
+        <div class="dashboard-grid" style="grid-template-columns:repeat(auto-fill,minmax(300px,1fr));">
+          <div class="dashboard-section"><div class="dashboard-section-body">
+            <span class="chip" style="background:rgba(59,130,246,0.1);color:#3b82f6;border:none;margin-bottom:8px;display:inline-block;">Announcements</span>
+            <h4 style="margin:0 0 8px;">New DSA Batch Starting Oct 1</h4>
+            <p style="font-size:13px;color:var(--text-secondary);margin:0 0 12px;">Limited seats available. Register now!</p>
+            <div style="display:flex;justify-content:space-between;align-items:center;"><span style="font-size:12px;color:var(--text-muted);">Sep 18, 2026</span><button class="btn btn-sm btn-ghost">Read More</button></div>
+          </div></div>
+          <div class="dashboard-section"><div class="dashboard-section-body">
+            <span class="chip" style="background:rgba(34,197,94,0.1);color:#22c55e;border:none;margin-bottom:8px;display:inline-block;">Results</span>
+            <h4 style="margin:0 0 8px;">September Coding Challenge Results</h4>
+            <p style="font-size:13px;color:var(--text-secondary);margin:0 0 12px;">Results are out! Check your score on the leaderboard.</p>
+            <div style="display:flex;justify-content:space-between;align-items:center;"><span style="font-size:12px;color:var(--text-muted);">Sep 17, 2026</span><button class="btn btn-sm btn-ghost">Read More</button></div>
+          </div></div>
+          <div class="dashboard-section"><div class="dashboard-section-body">
+            <span class="chip" style="background:rgba(168,85,247,0.1);color:#a855f7;border:none;margin-bottom:8px;display:inline-block;">Updates</span>
+            <h4 style="margin:0 0 8px;">New Learning Path: Full Stack</h4>
+            <p style="font-size:13px;color:var(--text-secondary);margin:0 0 12px;">React, Node.js, and MongoDB modules added.</p>
+            <div style="display:flex;justify-content:space-between;align-items:center;"><span style="font-size:12px;color:var(--text-muted);">Sep 15, 2026</span><button class="btn btn-sm btn-ghost">Read More</button></div>
+          </div></div>
+          <div class="dashboard-section"><div class="dashboard-section-body">
+            <span class="chip" style="background:rgba(245,158,11,0.1);color:#f59e0b;border:none;margin-bottom:8px;display:inline-block;">Events</span>
+            <h4 style="margin:0 0 8px;">Annual Hackathon 2026 Announced</h4>
+            <p style="font-size:13px;color:var(--text-secondary);margin:0 0 12px;">Form teams of 3-4 and register before Oct 15.</p>
+            <div style="display:flex;justify-content:space-between;align-items:center;"><span style="font-size:12px;color:var(--text-muted);">Sep 12, 2026</span><button class="btn btn-sm btn-ghost">Read More</button></div>
+          </div></div>
+        </div>
+      </div>
+
+      <!-- Student Notifications -->
+      <div class="sub-page" id="student-notifications">
+        <div class="dashboard-header"><h1>Notifications</h1></div>
+        <div class="dashboard-section"><div class="dashboard-section-body">
+          <div class="notification-item"><div class="notification-icon" style="background:rgba(34,197,94,0.1);color:#22c55e;"><i class="fas fa-check"></i></div><div class="notification-content"><div class="notification-title">Challenge Completed!</div><div class="notification-desc">You scored 95/100 on Binary Search Implementation.</div><div class="notification-time">2 hours ago</div></div></div>
+          <div class="notification-item"><div class="notification-icon" style="background:rgba(59,130,246,0.1);color:#3b82f6;"><i class="fas fa-comment"></i></div><div class="notification-content"><div class="notification-title">New Feedback from Mentor</div><div class="notification-desc">Rahul Verma left feedback on your Linked List assignment.</div><div class="notification-time">5 hours ago</div></div></div>
+          <div class="notification-item"><div class="notification-icon" style="background:rgba(245,158,11,0.1);color:#f59e0b;"><i class="fas fa-fire"></i></div><div class="notification-content"><div class="notification-title">7-Day Streak!</div><div class="notification-desc">Amazing! You have maintained a 7-day coding streak.</div><div class="notification-time">1 day ago</div></div></div>
+          <div class="notification-item"><div class="notification-icon" style="background:rgba(168,85,247,0.1);color:#a855f7;"><i class="fas fa-calendar"></i></div><div class="notification-content"><div class="notification-title">Event Reminder</div><div class="notification-desc">Tech Talk: System Design is scheduled for Sep 25.</div><div class="notification-time">2 days ago</div></div></div>
+          <div class="notification-item"><div class="notification-icon" style="background:rgba(59,130,246,0.1);color:#3b82f6;"><i class="fas fa-newspaper"></i></div><div class="notification-content"><div class="notification-title">New Announcement</div><div class="notification-desc">New DSA batch starting Oct 1. Register now!</div><div class="notification-time">3 days ago</div></div></div>
+        </div></div>
+      </div>
+
+      <!-- Student Settings -->
+      <div class="sub-page" id="student-settings">
+        <div class="dashboard-header"><h1>Settings</h1></div>
+        <div class="dashboard-grid">
+          <div class="dashboard-section" style="grid-column:span 2;"><div class="dashboard-section-header"><h3>Account Settings</h3></div><div class="dashboard-section-body">
+            <div class="settings-group"><div style="display:grid;gap:16px;">
+              <div><label style="font-weight:500;font-size:13px;display:block;margin-bottom:4px;">Full Name</label><input type="text" class="form-input" value="Arjun Kumar"></div>
+              <div><label style="font-weight:500;font-size:13px;display:block;margin-bottom:4px;">Email</label><input type="email" class="form-input" value="arjun.kumar@pec.edu.in"></div>
+              <div><label style="font-weight:500;font-size:13px;display:block;margin-bottom:4px;">Phone</label><input type="tel" class="form-input" value="+91 98765 43210"></div>
+            </div></div>
+            <div class="settings-group"><h4>Change Password</h4><div style="display:grid;gap:16px;">
+              <div><label style="font-weight:500;font-size:13px;display:block;margin-bottom:4px;">Current Password</label><input type="password" class="form-input" placeholder="Enter current password"></div>
+              <div><label style="font-weight:500;font-size:13px;display:block;margin-bottom:4px;">New Password</label><input type="password" class="form-input" placeholder="Enter new password"></div>
+              <div><label style="font-weight:500;font-size:13px;display:block;margin-bottom:4px;">Confirm Password</label><input type="password" class="form-input" placeholder="Confirm new password"></div>
+            </div></div>
+            <div class="settings-group"><h4>Theme Preference</h4>
+              <div class="setting-row"><div><div class="setting-label">Dark Mode</div><div class="setting-desc">Switch between light and dark themes</div></div><label style="position:relative;display:inline-block;width:48px;height:26px;"><input type="checkbox" style="opacity:0;width:0;height:0;"><span style="position:absolute;cursor:pointer;inset:0;background:#ccc;border-radius:26px;transition:0.3s;"></span></label></div>
+            </div>
+            <button class="btn btn-primary">Save Changes</button>
+          </div></div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- ======================== C. MENTOR PORTAL ======================== -->
+  <div id="app-mentor" class="dashboard-layout" style="display:none;">
+    <aside class="sidebar">
+      <div class="sidebar-section">
+        <div class="sidebar-section-title">Menu</div>
+        <nav class="sidebar-nav">
+          <a href="#mentor-dashboard" class="active" data-page="mentor-dashboard"><span class="icon"><i class="fas fa-home"></i></span> Dashboard</a>
+          <a href="#mentor-mentees" data-page="mentor-mentees"><span class="icon"><i class="fas fa-users"></i></span> My Mentees</a>
+          <a href="#mentor-student-profile" data-page="mentor-student-profile"><span class="icon"><i class="fas fa-user"></i></span> Student Profiles</a>
+          <a href="#mentor-challenges" data-page="mentor-challenges"><span class="icon"><i class="fas fa-fire"></i></span> Challenges</a>
+          <a href="#mentor-reviews" data-page="mentor-reviews"><span class="icon"><i class="fas fa-clipboard-check"></i></span> Submission Reviews</a>
+          <a href="#mentor-progress" data-page="mentor-progress"><span class="icon"><i class="fas fa-chart-line"></i></span> Student Progress</a>
+          <a href="#mentor-meetings" data-page="mentor-meetings"><span class="icon"><i class="fas fa-calendar-alt"></i></span> Meetings</a>
+          <a href="#mentor-messages" data-page="mentor-messages"><span class="icon"><i class="fas fa-comments"></i></span> Messages</a>
+          <a href="#mentor-reports" data-page="mentor-reports"><span class="icon"><i class="fas fa-file-alt"></i></span> Reports</a>
+          <a href="#mentor-news" data-page="mentor-news"><span class="icon"><i class="fas fa-newspaper"></i></span> News</a>
+          <a href="#mentor-profile" data-page="mentor-profile"><span class="icon"><i class="fas fa-id-card"></i></span> Profile</a>
+          <a href="#mentor-settings" data-page="mentor-settings"><span class="icon"><i class="fas fa-cog"></i></span> Settings</a>
+          <a href="#" onclick="switchRole(null)"><span class="icon"><i class="fas fa-sign-out-alt"></i></span> Logout</a>
+        </nav>
+      </div>
+      <div class="sidebar-divider"></div>
+      <div class="sidebar-user">
+        <div class="user-avatar">RV</div>
+        <div class="user-info"><div class="user-name">Rahul Verma</div><div class="user-role">Mentor</div></div>
+      </div>
+    </aside>
+    <main class="dashboard-main">
+
+      <!-- Mentor Dashboard -->
+      <div class="sub-page active" id="mentor-dashboard">
+        <div class="dashboard-header"><h1>Welcome, Rahul Verma</h1><p>Here's an overview of your mentoring activity.</p></div>
+        <div class="dashboard-stats">
+          <div class="dashboard-stat-card"><div class="stat-header"><div class="stat-icon" style="background:rgba(59,130,246,0.1);color:#3b82f6"><i class="fas fa-users"></i></div></div><div class="stat-value">8</div><div class="stat-label">Total Mentees</div></div>
+          <div class="dashboard-stat-card"><div class="stat-header"><div class="stat-icon" style="background:rgba(34,197,94,0.1);color:#22c55e"><i class="fas fa-user-check"></i></div></div><div class="stat-value">7</div><div class="stat-label">Active</div></div>
+          <div class="dashboard-stat-card"><div class="stat-header"><div class="stat-icon" style="background:rgba(245,158,11,0.1);color:#f59e0b"><i class="fas fa-clipboard-check"></i></div></div><div class="stat-value">5</div><div class="stat-label">Pending Reviews</div></div>
+          <div class="dashboard-stat-card"><div class="stat-header"><div class="stat-icon" style="background:rgba(168,85,247,0.1);color:#a855f7"><i class="fas fa-calendar-check"></i></div></div><div class="stat-value">3</div><div class="stat-label">Meetings</div></div>
+        </div>
+        <div class="dashboard-grid">
+          <div class="dashboard-section"><div class="dashboard-section-header"><h3>Students Needing Attention</h3></div><div class="dashboard-section-body no-padding">
+            <div class="student-list-item"><div class="student-avatar">NM</div><div class="student-info"><div class="student-name">Neha Mehta</div><div class="student-meta">Progress: 45% &middot; No submissions in 7 days</div></div><span class="student-status status-inactive">At Risk</span></div>
+            <div class="student-list-item"><div class="student-avatar">VT</div><div class="student-info"><div class="student-name">Vikram Tiwari</div><div class="student-meta">Progress: 55% &middot; Missed last 2 meetings</div></div><span class="student-status status-pending">Warning</span></div>
+          </div></div>
+          <div class="dashboard-section"><div class="dashboard-section-header"><h3>Recent Submissions</h3></div><div class="dashboard-section-body no-padding">
+            <div class="student-list-item"><div class="student-avatar">AK</div><div class="student-info"><div class="student-name">Binary Search Implementation</div><div class="student-meta">Arjun Kumar &middot; Sep 20, 2026</div></div><span class="student-status status-pending">Review</span></div>
+            <div class="student-list-item"><div class="student-avatar">PS</div><div class="student-info"><div class="student-name">React Dashboard Project</div><div class="student-meta">Priya Sharma &middot; Sep 19, 2026</div></div><span class="student-status status-active">Approved</span></div>
+            <div class="student-list-item"><div class="student-avatar">RK</div><div class="student-info"><div class="student-name">System Design Document</div><div class="student-meta">Rohan Khanna &middot; Sep 18, 2026</div></div><span class="student-status status-pending">Review</span></div>
+          </div></div>
+          <div class="dashboard-section"><div class="dashboard-section-header"><h3>Latest News</h3></div><div class="dashboard-section-body no-padding">
+            <div class="student-list-item"><div class="student-avatar" style="background:rgba(59,130,246,0.1);color:#3b82f6"><i class="fas fa-newspaper"></i></div><div class="student-info"><div class="student-name">New DSA Batch Starting Oct 1</div><div class="student-meta">Sep 18, 2026</div></div></div>
+            <div class="student-list-item"><div class="student-avatar" style="background:rgba(34,197,94,0.1);color:#22c55e"><i class="fas fa-trophy"></i></div><div class="student-info"><div class="student-name">September Challenge Results</div><div class="student-meta">Sep 17, 2026</div></div></div>
+          </div></div>
+        </div>
+      </div>
+
+      <!-- Mentor Mentees -->
+      <div class="sub-page" id="mentor-mentees">
+        <div class="dashboard-header"><h1>My Mentees</h1><p>Manage and track your mentees' progress.</p></div>
+        <div class="dashboard-grid" style="grid-template-columns:repeat(auto-fill,minmax(300px,1fr));">
+          <div class="dashboard-section"><div class="dashboard-section-body">
+            <div style="display:flex;gap:12px;align-items:center;margin-bottom:12px;"><div class="student-avatar">AK</div><div><h4 style="margin:0;">Arjun Kumar</h4><p style="margin:0;font-size:12px;color:var(--text-secondary);">DSA &middot; 3rd Year CS</p></div></div>
+            <div class="progress-bar-container"><div class="progress-header"><span class="progress-label">Progress</span><span class="progress-value">75%</span></div><div class="progress-bar"><div class="progress-fill blue" style="width:75%"></div></div></div>
+            <div style="display:flex;gap:8px;font-size:12px;color:var(--text-secondary);margin:8px 0;"><span>18 challenges</span><span>&middot;</span><span>850 pts</span><span>&middot;</span><span>Rank #5</span></div>
+            <div style="display:flex;gap:8px;"><button class="btn btn-primary btn-sm" style="flex:1;">View Profile</button><button class="btn btn-ghost btn-sm" style="flex:1;">Message</button></div>
+          </div></div>
+          <div class="dashboard-section"><div class="dashboard-section-body">
+            <div style="display:flex;gap:12px;align-items:center;margin-bottom:12px;"><div class="student-avatar">PS</div><div><h4 style="margin:0;">Priya Sharma</h4><p style="margin:0;font-size:12px;color:var(--text-secondary);">Web Dev &middot; 2nd Year CS</p></div></div>
+            <div class="progress-bar-container"><div class="progress-header"><span class="progress-label">Progress</span><span class="progress-value">60%</span></div><div class="progress-bar"><div class="progress-fill green" style="width:60%"></div></div></div>
+            <div style="display:flex;gap:8px;font-size:12px;color:var(--text-secondary);margin:8px 0;"><span>14 challenges</span><span>&middot;</span><span>720 pts</span><span>&middot;</span><span>Rank #8</span></div>
+            <div style="display:flex;gap:8px;"><button class="btn btn-primary btn-sm" style="flex:1;">View Profile</button><button class="btn btn-ghost btn-sm" style="flex:1;">Message</button></div>
+          </div></div>
+          <div class="dashboard-section"><div class="dashboard-section-body">
+            <div style="display:flex;gap:12px;align-items:center;margin-bottom:12px;"><div class="student-avatar">RK</div><div><h4 style="margin:0;">Rohan Khanna</h4><p style="margin:0;font-size:12px;color:var(--text-secondary);">DSA &middot; 3rd Year IT</p></div></div>
+            <div class="progress-bar-container"><div class="progress-header"><span class="progress-label">Progress</span><span class="progress-value">92%</span></div><div class="progress-bar"><div class="progress-fill blue" style="width:92%"></div></div></div>
+            <div style="display:flex;gap:8px;font-size:12px;color:var(--text-secondary);margin:8px 0;"><span>22 challenges</span><span>&middot;</span><span>980 pts</span><span>&middot;</span><span>Rank #1</span></div>
+            <div style="display:flex;gap:8px;"><button class="btn btn-primary btn-sm" style="flex:1;">View Profile</button><button class="btn btn-ghost btn-sm" style="flex:1;">Message</button></div>
+          </div></div>
+          <div class="dashboard-section"><div class="dashboard-section-body">
+            <div style="display:flex;gap:12px;align-items:center;margin-bottom:12px;"><div class="student-avatar">NM</div><div><h4 style="margin:0;">Neha Mehta</h4><p style="margin:0;font-size:12px;color:var(--text-secondary);">DSA &middot; 2nd Year CS</p></div></div>
+            <div class="progress-bar-container"><div class="progress-header"><span class="progress-label">Progress</span><span class="progress-value">45%</span></div><div class="progress-bar"><div class="progress-fill yellow" style="width:45%"></div></div></div>
+            <div style="display:flex;gap:8px;font-size:12px;color:var(--text-secondary);margin:8px 0;"><span>10 challenges</span><span>&middot;</span><span>520 pts</span><span>&middot;</span><span>Rank #12</span></div>
+            <div style="display:flex;gap:8px;"><button class="btn btn-primary btn-sm" style="flex:1;">View Profile</button><button class="btn btn-ghost btn-sm" style="flex:1;">Message</button></div>
+          </div></div>
+          <div class="dashboard-section"><div class="dashboard-section-body">
+            <div style="display:flex;gap:12px;align-items:center;margin-bottom:12px;"><div class="student-avatar">VT</div><div><h4 style="margin:0;">Vikram Tiwari</h4><p style="margin:0;font-size:12px;color:var(--text-secondary);">Web Dev &middot; 3rd Year ECE</p></div></div>
+            <div class="progress-bar-container"><div class="progress-header"><span class="progress-label">Progress</span><span class="progress-value">55%</span></div><div class="progress-bar"><div class="progress-fill purple" style="width:55%"></div></div></div>
+            <div style="display:flex;gap:8px;font-size:12px;color:var(--text-secondary);margin:8px 0;"><span>12 challenges</span><span>&middot;</span><span>600 pts</span><span>&middot;</span><span>Rank #10</span></div>
+            <div style="display:flex;gap:8px;"><button class="btn btn-primary btn-sm" style="flex:1;">View Profile</button><button class="btn btn-ghost btn-sm" style="flex:1;">Message</button></div>
+          </div></div>
+          <div class="dashboard-section"><div class="dashboard-section-body">
+            <div style="display:flex;gap:12px;align-items:center;margin-bottom:12px;"><div class="student-avatar">SG</div><div><h4 style="margin:0;">Sanjay Gupta</h4><p style="margin:0;font-size:12px;color:var(--text-secondary);">DSA &middot; 2nd Year CS</p></div></div>
+            <div class="progress-bar-container"><div class="progress-header"><span class="progress-label">Progress</span><span class="progress-value">70%</span></div><div class="progress-bar"><div class="progress-fill blue" style="width:70%"></div></div></div>
+            <div style="display:flex;gap:8px;font-size:12px;color:var(--text-secondary);margin:8px 0;"><span>17 challenges</span><span>&middot;</span><span>800 pts</span><span>&middot;</span><span>Rank #6</span></div>
+            <div style="display:flex;gap:8px;"><button class="btn btn-primary btn-sm" style="flex:1;">View Profile</button><button class="btn btn-ghost btn-sm" style="flex:1;">Message</button></div>
+          </div></div>
+          <div class="dashboard-section"><div class="dashboard-section-body">
+            <div style="display:flex;gap:12px;align-items:center;margin-bottom:12px;"><div class="student-avatar">MJ</div><div><h4 style="margin:0;">Meera Joshi</h4><p style="margin:0;font-size:12px;color:var(--text-secondary);">Web Dev &middot; 3rd Year CS</p></div></div>
+            <div class="progress-bar-container"><div class="progress-header"><span class="progress-label">Progress</span><span class="progress-value">68%</span></div><div class="progress-bar"><div class="progress-fill green" style="width:68%"></div></div></div>
+            <div style="display:flex;gap:8px;font-size:12px;color:var(--text-secondary);margin:8px 0;"><span>16 challenges</span><span>&middot;</span><span>780 pts</span><span>&middot;</span><span>Rank #7</span></div>
+            <div style="display:flex;gap:8px;"><button class="btn btn-primary btn-sm" style="flex:1;">View Profile</button><button class="btn btn-ghost btn-sm" style="flex:1;">Message</button></div>
+          </div></div>
+          <div class="dashboard-section"><div class="dashboard-section-body">
+            <div style="display:flex;gap:12px;align-items:center;margin-bottom:12px;"><div class="student-avatar">AR</div><div><h4 style="margin:0;">Aditya Rao</h4><p style="margin:0;font-size:12px;color:var(--text-secondary);">DSA &middot; 2nd Year IT</p></div></div>
+            <div class="progress-bar-container"><div class="progress-header"><span class="progress-label">Progress</span><span class="progress-value">62%</span></div><div class="progress-bar"><div class="progress-fill blue" style="width:62%"></div></div></div>
+            <div style="display:flex;gap:8px;font-size:12px;color:var(--text-secondary);margin:8px 0;"><span>15 challenges</span><span>&middot;</span><span>720 pts</span><span>&middot;</span><span>Rank #8</span></div>
+            <div style="display:flex;gap:8px;"><button class="btn btn-primary btn-sm" style="flex:1;">View Profile</button><button class="btn btn-ghost btn-sm" style="flex:1;">Message</button></div>
+          </div></div>
+        </div>
+      </div>
+
+      <!-- Mentor Student Profile -->
+      <div class="sub-page" id="mentor-student-profile">
+        <div class="dashboard-header"><h1>Student Profile</h1></div>
+        <div class="dashboard-grid">
+          <div class="dashboard-section" style="grid-column:span 2;"><div class="dashboard-section-body">
+            <div style="display:flex;gap:24px;align-items:center;flex-wrap:wrap;">
+              <div class="user-avatar" style="width:72px;height:72px;font-size:28px;">AK</div>
+              <div><h3 style="margin:0;">Arjun Kumar</h3><p style="color:var(--text-secondary);margin:4px 0;">Computer Science &middot; 3rd Year &middot; PEC2024001</p><p style="color:#22c55e;font-size:13px;margin:0;"><i class="fas fa-circle" style="font-size:8px;"></i> Active</p></div>
+            </div>
+          </div></div>
+          <div class="dashboard-section"><div class="dashboard-section-header"><h3>Stats</h3></div><div class="dashboard-section-body">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;text-align:center;">
+              <div><div style="font-size:24px;font-weight:700;color:var(--primary);">24</div><div style="font-size:12px;color:var(--text-secondary);">Challenges</div></div>
+              <div><div style="font-size:24px;font-weight:700;color:#22c55e;">18</div><div style="font-size:12px;color:var(--text-secondary);">Completed</div></div>
+              <div><div style="font-size:24px;font-weight:700;color:#f59e0b;">#5</div><div style="font-size:12px;color:var(--text-secondary);">Rank</div></div>
+              <div><div style="font-size:24px;font-weight:700;color:#a855f7;">850</div><div style="font-size:12px;color:var(--text-secondary);">Points</div></div>
+            </div>
+          </div></div>
+          <div class="dashboard-section"><div class="dashboard-section-header"><h3>Progress</h3></div><div class="dashboard-section-body">
+            <div class="progress-bar-container"><div class="progress-header"><span class="progress-label">DSA</span><span class="progress-value">75%</span></div><div class="progress-bar"><div class="progress-fill blue" style="width:75%"></div></div></div>
+            <div class="progress-bar-container"><div class="progress-header"><span class="progress-label">Web Dev</span><span class="progress-value">60%</span></div><div class="progress-bar"><div class="progress-fill green" style="width:60%"></div></div></div>
+            <div class="progress-bar-container"><div class="progress-header"><span class="progress-label">Debugging</span><span class="progress-value">85%</span></div><div class="progress-bar"><div class="progress-fill purple" style="width:85%"></div></div></div>
+          </div></div>
+          <div class="dashboard-section" style="grid-column:span 3;"><div class="dashboard-section-header"><h3>Feedback Form</h3></div><div class="dashboard-section-body">
+            <div style="display:grid;gap:16px;">
+              <div><label style="font-weight:500;font-size:13px;display:block;margin-bottom:4px;">Feedback</label><textarea class="form-input" rows="3" placeholder="Write feedback for this student..."></textarea></div>
+              <div><label style="font-weight:500;font-size:13px;display:block;margin-bottom:4px;">Rating</label>
+                <div style="display:flex;gap:4px;font-size:24px;color:var(--text-muted);cursor:pointer;"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="far fa-star"></i></div>
+              </div>
+              <button class="btn btn-primary">Submit Feedback</button>
+            </div>
+          </div></div>
+          <div class="dashboard-section" style="grid-column:span 3;"><div class="dashboard-section-header"><h3>Mentor Notes</h3></div><div class="dashboard-section-body">
+            <p style="color:var(--text-secondary);font-size:14px;">Arjun is a dedicated student with strong problem-solving skills. Needs to focus more on system design concepts. Recommend additional reading on scalability patterns.</p>
+          </div></div>
+          <div class="dashboard-section" style="grid-column:span 3;"><div class="dashboard-section-body" style="text-align:center;"><button class="btn btn-primary btn-lg"><i class="fas fa-calendar-alt"></i> Schedule Meeting with Arjun</button></div></div>
+        </div>
+      </div>
+
+      <!-- Mentor Challenges -->
+      <div class="sub-page" id="mentor-challenges">
+        <div class="dashboard-header"><h1>Challenges</h1><p>Manage and publish coding challenges.</p></div>
+        <div class="dashboard-section"><div class="dashboard-section-body no-padding">
+          <table class="dashboard-table">
+            <thead><tr><th>Challenge</th><th>Difficulty</th><th>Points</th><th>Deadline</th><th>Submissions</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr><td>Implement LRU Cache</td><td><span class="chip" style="background:rgba(239,68,68,0.1);color:#ef4444;border:none;font-size:11px;">Hard</span></td><td>50</td><td>Sep 26</td><td>12</td><td><span class="student-status status-active">Active</span></td></tr>
+              <tr><td>Binary Search Variants</td><td><span class="chip" style="background:rgba(245,158,11,0.1);color:#f59e0b;border:none;font-size:11px;">Medium</span></td><td>30</td><td>Sep 28</td><td>8</td><td><span class="student-status status-active">Active</span></td></tr>
+              <tr><td>Stack Parenthesis Validator</td><td><span class="chip" style="background:rgba(34,197,94,0.1);color:#22c55e;border:none;font-size:11px;">Easy</span></td><td>20</td><td>Sep 30</td><td>15</td><td><span class="student-status status-active">Active</span></td></tr>
+              <tr><td>Graph BFS Traversal</td><td><span class="chip" style="background:rgba(245,158,11,0.1);color:#f59e0b;border:none;font-size:11px;">Medium</span></td><td>30</td><td>Oct 2</td><td>5</td><td><span class="student-status status-active">Active</span></td></tr>
+              <tr><td>Array Sorting Comparison</td><td><span class="chip" style="background:rgba(34,197,94,0.1);color:#22c55e;border:none;font-size:11px;">Easy</span></td><td>20</td><td>Sep 15</td><td>22</td><td><span class="student-status status-inactive">Closed</span></td></tr>
+            </tbody>
+          </table>
+        </div></div>
+      </div>
+
+      <!-- Mentor Reviews -->
+      <div class="sub-page" id="mentor-reviews">
+        <div class="dashboard-header"><h1>Submission Reviews</h1><p>Review pending student submissions.</p></div>
+        <div class="dashboard-section"><div class="dashboard-section-body no-padding">
+          <table class="dashboard-table">
+            <thead><tr><th>Student</th><th>Challenge</th><th>Submitted</th><th>Status</th><th>Action</th></tr></thead>
+            <tbody>
+              <tr><td><div style="display:flex;align-items:center;gap:8px;"><div class="student-avatar" style="width:28px;height:28px;font-size:11px;">AK</div>Arjun Kumar</div></td><td>Binary Search Implementation</td><td>Sep 20</td><td><span class="student-status status-pending">Pending</span></td><td><button class="btn btn-primary btn-sm">Review</button></td></tr>
+              <tr><td><div style="display:flex;align-items:center;gap:8px;"><div class="student-avatar" style="width:28px;height:28px;font-size:11px;">NM</div>Neha Mehta</div></td><td>API Integration Task</td><td>Sep 19</td><td><span class="student-status status-pending">Pending</span></td><td><button class="btn btn-primary btn-sm">Review</button></td></tr>
+              <tr><td><div style="display:flex;align-items:center;gap:8px;"><div class="student-avatar" style="width:28px;height:28px;font-size:11px;">VT</div>Vikram Tiwari</div></td><td>Database Schema Design</td><td>Sep 18</td><td><span class="student-status status-pending">Pending</span></td><td><button class="btn btn-primary btn-sm">Review</button></td></tr>
+              <tr><td><div style="display:flex;align-items:center;gap:8px;"><div class="student-avatar" style="width:28px;height:28px;font-size:11px;">SG</div>Sanjay Gupta</div></td><td>Stack Problem Set</td><td>Sep 17</td><td><span class="student-status status-pending">Pending</span></td><td><button class="btn btn-primary btn-sm">Review</button></td></tr>
+              <tr><td><div style="display:flex;align-items:center;gap:8px;"><div class="student-avatar" style="width:28px;height:28px;font-size:11px;">MJ</div>Meera Joshi</div></td><td>React Dashboard</td><td>Sep 16</td><td><span class="student-status status-pending">Pending</span></td><td><button class="btn btn-primary btn-sm">Review</button></td></tr>
+            </tbody>
+          </table>
+        </div></div>
+      </div>
+
+      <!-- Mentor Progress -->
+      <div class="sub-page" id="mentor-progress">
+        <div class="dashboard-header"><h1>Student Progress</h1><p>Track progress across all your mentees.</p></div>
+        <div class="dashboard-grid" style="grid-template-columns:repeat(auto-fill,minmax(300px,1fr));">
+          <div class="dashboard-section"><div class="dashboard-section-body">
+            <div style="display:flex;gap:12px;align-items:center;margin-bottom:12px;"><div class="student-avatar">AK</div><div><h4 style="margin:0;">Arjun Kumar</h4><p style="margin:0;font-size:12px;color:var(--text-secondary);">DSA</p></div></div>
+            <div class="progress-bar-container"><div class="progress-header"><span class="progress-label">Overall</span><span class="progress-value">75%</span></div><div class="progress-bar"><div class="progress-fill blue" style="width:75%"></div></div></div>
+            <div class="progress-bar-container"><div class="progress-header"><span class="progress-label">DSA</span><span class="progress-value">80%</span></div><div class="progress-bar"><div class="progress-fill green" style="width:80%"></div></div></div>
+            <div class="progress-bar-container"><div class="progress-header"><span class="progress-label">Web Dev</span><span class="progress-value">60%</span></div><div class="progress-bar"><div class="progress-fill purple" style="width:60%"></div></div></div>
+          </div></div>
+          <div class="dashboard-section"><div class="dashboard-section-body">
+            <div style="display:flex;gap:12px;align-items:center;margin-bottom:12px;"><div class="student-avatar">PS</div><div><h4 style="margin:0;">Priya Sharma</h4><p style="margin:0;font-size:12px;color:var(--text-secondary);">Web Dev</p></div></div>
+            <div class="progress-bar-container"><div class="progress-header"><span class="progress-label">Overall</span><span class="progress-value">60%</span></div><div class="progress-bar"><div class="progress-fill blue" style="width:60%"></div></div></div>
+            <div class="progress-bar-container"><div class="progress-header"><span class="progress-label">HTML/CSS</span><span class="progress-value">80%</span></div><div class="progress-bar"><div class="progress-fill green" style="width:80%"></div></div></div>
+            <div class="progress-bar-container"><div class="progress-header"><span class="progress-label">JavaScript</span><span class="progress-value">45%</span></div><div class="progress-bar"><div class="progress-fill purple" style="width:45%"></div></div></div>
+          </div></div>
+          <div class="dashboard-section"><div class="dashboard-section-body">
+            <div style="display:flex;gap:12px;align-items:center;margin-bottom:12px;"><div class="student-avatar">RK</div><div><h4 style="margin:0;">Rohan Khanna</h4><p style="margin:0;font-size:12px;color:var(--text-secondary);">DSA</p></div></div>
+            <div class="progress-bar-container"><div class="progress-header"><span class="progress-label">Overall</span><span class="progress-value">92%</span></div><div class="progress-bar"><div class="progress-fill blue" style="width:92%"></div></div></div>
+            <div class="progress-bar-container"><div class="progress-header"><span class="progress-label">DSA</span><span class="progress-value">95%</span></div><div class="progress-bar"><div class="progress-fill green" style="width:95%"></div></div></div>
+            <div class="progress-bar-container"><div class="progress-header"><span class="progress-label">System Design</span><span class="progress-value">85%</span></div><div class="progress-bar"><div class="progress-fill purple" style="width:85%"></div></div></div>
+          </div></div>
+          <div class="dashboard-section"><div class="dashboard-section-body">
+            <div style="display:flex;gap:12px;align-items:center;margin-bottom:12px;"><div class="student-avatar">NM</div><div><h4 style="margin:0;">Neha Mehta</h4><p style="margin:0;font-size:12px;color:var(--text-secondary);">DSA</p></div></div>
+            <div class="progress-bar-container"><div class="progress-header"><span class="progress-label">Overall</span><span class="progress-value">45%</span></div><div class="progress-bar"><div class="progress-fill yellow" style="width:45%"></div></div></div>
+            <div class="progress-bar-container"><div class="progress-header"><span class="progress-label">Arrays</span><span class="progress-value">60%</span></div><div class="progress-bar"><div class="progress-fill green" style="width:60%"></div></div></div>
+            <div class="progress-bar-container"><div class="progress-header"><span class="progress-label">Linked Lists</span><span class="progress-value">30%</span></div><div class="progress-bar"><div class="progress-fill red" style="width:30%"></div></div></div>
+          </div></div>
+          <div class="dashboard-section"><div class="dashboard-section-body">
+            <div style="display:flex;gap:12px;align-items:center;margin-bottom:12px;"><div class="student-avatar">VT</div><div><h4 style="margin:0;">Vikram Tiwari</h4><p style="margin:0;font-size:12px;color:var(--text-secondary);">Web Dev</p></div></div>
+            <div class="progress-bar-container"><div class="progress-header"><span class="progress-label">Overall</span><span class="progress-value">55%</span></div><div class="progress-bar"><div class="progress-fill blue" style="width:55%"></div></div></div>
+            <div class="progress-bar-container"><div class="progress-header"><span class="progress-label">React</span><span class="progress-value">50%</span></div><div class="progress-bar"><div class="progress-fill green" style="width:50%"></div></div></div>
+            <div class="progress-bar-container"><div class="progress-header"><span class="progress-label">Node.js</span><span class="progress-value">40%</span></div><div class="progress-bar"><div class="progress-fill purple" style="width:40%"></div></div></div>
+          </div></div>
+          <div class="dashboard-section"><div class="dashboard-section-body">
+            <div style="display:flex;gap:12px;align-items:center;margin-bottom:12px;"><div class="student-avatar">SG</div><div><h4 style="margin:0;">Sanjay Gupta</h4><p style="margin:0;font-size:12px;color:var(--text-secondary);">DSA</p></div></div>
+            <div class="progress-bar-container"><div class="progress-header"><span class="progress-label">Overall</span><span class="progress-value">70%</span></div><div class="progress-bar"><div class="progress-fill blue" style="width:70%"></div></div></div>
+            <div class="progress-bar-container"><div class="progress-header"><span class="progress-label">Trees</span><span class="progress-value">75%</span></div><div class="progress-bar"><div class="progress-fill green" style="width:75%"></div></div></div>
+            <div class="progress-bar-container"><div class="progress-header"><span class="progress-label">Graphs</span><span class="progress-value">65%</span></div><div class="progress-bar"><div class="progress-fill purple" style="width:65%"></div></div></div>
+          </div></div>
+        </div>
+      </div>
+
+      <!-- Mentor Meetings -->
+      <div class="sub-page" id="mentor-meetings">
+        <div class="dashboard-header"><h1>Meetings</h1><p>Manage your scheduled meetings with mentees.</p></div>
+        <div class="dashboard-grid" style="grid-template-columns:repeat(auto-fill,minmax(340px,1fr));">
+          <div class="dashboard-section"><div class="dashboard-section-body">
+            <div style="display:flex;gap:16px;"><div class="event-date-box"><span class="day">22</span><span class="month">Sep</span></div><div><h4 style="margin:0 0 4px;">DSA Review - Arjun Kumar</h4><p style="font-size:13px;color:var(--text-secondary);margin:0 0 4px;">10:00 AM - 11:00 AM &middot; Online</p><p style="font-size:13px;color:var(--text-secondary);margin:0 0 8px;">Topic: Binary Search &amp; Recursion</p><span class="student-status status-active">Confirmed</span></div></div>
+          </div></div>
+          <div class="dashboard-section"><div class="dashboard-section-body">
+            <div style="display:flex;gap:16px;"><div class="event-date-box" style="background:#f59e0b;"><span class="day">25</span><span class="month">Sep</span></div><div><h4 style="margin:0 0 4px;">Progress Check - Neha Mehta</h4><p style="font-size:13px;color:var(--text-secondary);margin:0 0 4px;">2:00 PM - 3:00 PM &middot; Online</p><p style="font-size:13px;color:var(--text-secondary);margin:0 0 8px;">Topic: Weekly Progress Review</p><span class="student-status status-pending">Pending</span></div></div>
+          </div></div>
+          <div class="dashboard-section"><div class="dashboard-section-body">
+            <div style="display:flex;gap:16px;"><div class="event-date-box" style="background:#a855f7;"><span class="day">28</span><span class="month">Sep</span></div><div><h4 style="margin:0 0 4px;">Group Session - All Mentees</h4><p style="font-size:13px;color:var(--text-secondary);margin:0 0 4px;">4:00 PM - 5:30 PM &middot; On-campus</p><p style="font-size:13px;color:var(--text-secondary);margin:0 0 8px;">Topic: Month-end Review &amp; Goals</p><span class="student-status status-active">Confirmed</span></div></div>
+          </div></div>
+        </div>
+      </div>
+
+      <!-- Mentor Messages -->
+      <div class="sub-page" id="mentor-messages">
+        <div class="dashboard-header"><h1>Messages</h1></div>
+        <div class="dashboard-section"><div class="dashboard-section-body">
+          <div class="notification-item"><div class="student-avatar" style="width:36px;height:36px;font-size:12px;">AK</div><div class="notification-content"><div class="notification-title">Arjun Kumar</div><div class="notification-desc">Sir, I have completed the binary search implementation. Could you review it?</div><div class="notification-time">Today, 3:45 PM</div></div></div>
+          <div class="notification-item"><div class="student-avatar" style="width:36px;height:36px;font-size:12px;">NM</div><div class="notification-content"><div class="notification-title">Neha Mehta</div><div class="notification-desc">I need help with linked list reversal. Can we schedule a meeting?</div><div class="notification-time">Today, 1:20 PM</div></div></div>
+          <div class="notification-item"><div class="student-avatar" style="width:36px;height:36px;font-size:12px;">RK</div><div class="notification-content"><div class="notification-title">Rohan Khanna</div><div class="notification-desc">Thank you for the feedback! I will work on the system design concepts.</div><div class="notification-time">Yesterday, 5:30 PM</div></div></div>
+          <div class="notification-item"><div class="student-avatar" style="width:36px;height:36px;font-size:12px;">VT</div><div class="notification-content"><div class="notification-title">Vikram Tiwari</div><div class="notification-desc">Sorry I missed the last meeting. Can we reschedule?</div><div class="notification-time">Yesterday, 10:15 AM</div></div></div>
+        </div></div>
+      </div>
+
+      <!-- Mentor Reports -->
+      <div class="sub-page" id="mentor-reports">
+        <div class="dashboard-header"><h1>Reports</h1><p>View mentoring activity reports.</p></div>
+        <div class="dashboard-grid" style="grid-template-columns:repeat(auto-fill,minmax(300px,1fr));">
+          <div class="dashboard-section"><div class="dashboard-section-body">
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;"><div style="width:48px;height:48px;border-radius:12px;background:rgba(59,130,246,0.1);color:#3b82f6;display:flex;align-items:center;justify-content:center;font-size:20px;"><i class="fas fa-chart-bar"></i></div><div><h4 style="margin:0;">Monthly Progress Report</h4><p style="margin:0;font-size:12px;color:var(--text-secondary);">Sep 2026</p></div></div>
+            <p style="font-size:13px;color:var(--text-secondary);">Overall mentee progress increased by 12% this month.</p>
+            <button class="btn btn-ghost btn-sm">Download PDF</button>
+          </div></div>
+          <div class="dashboard-section"><div class="dashboard-section-body">
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;"><div style="width:48px;height:48px;border-radius:12px;background:rgba(34,197,94,0.1);color:#22c55e;display:flex;align-items:center;justify-content:center;font-size:20px;"><i class="fas fa-tasks"></i></div><div><h4 style="margin:0;">Challenge Completion Report</h4><p style="margin:0;font-size:12px;color:var(--text-secondary);">Sep 2026</p></div></div>
+            <p style="font-size:13px;color:var(--text-secondary);">78% average completion rate across all mentees.</p>
+            <button class="btn btn-ghost btn-sm">Download PDF</button>
+          </div></div>
+          <div class="dashboard-section"><div class="dashboard-section-body">
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;"><div style="width:48px;height:48px;border-radius:12px;background:rgba(168,85,247,0.1);color:#a855f7;display:flex;align-items:center;justify-content:center;font-size:20px;"><i class="fas fa-users"></i></div><div><h4 style="margin:0;">Engagement Report</h4><p style="margin:0;font-size:12px;color:var(--text-secondary);">Sep 2026</p></div></div>
+            <p style="font-size:13px;color:var(--text-secondary);">Average 5.2 sessions per mentee this month.</p>
+            <button class="btn btn-ghost btn-sm">Download PDF</button>
+          </div></div>
+        </div>
+      </div>
+
+      <!-- Mentor News -->
+      <div class="sub-page" id="mentor-news">
+        <div class="dashboard-header"><h1>News</h1><p>Published announcements and updates.</p></div>
+        <div class="dashboard-grid" style="grid-template-columns:repeat(auto-fill,minmax(300px,1fr));">
+          <div class="dashboard-section"><div class="dashboard-section-body">
+            <span class="chip" style="background:rgba(59,130,246,0.1);color:#3b82f6;border:none;margin-bottom:8px;display:inline-block;">Announcements</span>
+            <h4 style="margin:0 0 8px;">New DSA Batch Starting Oct 1</h4>
+            <p style="font-size:13px;color:var(--text-secondary);margin:0 0 12px;">Limited seats available. Register now!</p>
+            <span style="font-size:12px;color:var(--text-muted);">Sep 18, 2026</span>
+          </div></div>
+          <div class="dashboard-section"><div class="dashboard-section-body">
+            <span class="chip" style="background:rgba(34,197,94,0.1);color:#22c55e;border:none;margin-bottom:8px;display:inline-block;">Results</span>
+            <h4 style="margin:0 0 8px;">September Challenge Results</h4>
+            <p style="font-size:13px;color:var(--text-secondary);margin:0 0 12px;">Results are out! Check the leaderboard.</p>
+            <span style="font-size:12px;color:var(--text-muted);">Sep 17, 2026</span>
+          </div></div>
+          <div class="dashboard-section"><div class="dashboard-section-body">
+            <span class="chip" style="background:rgba(168,85,247,0.1);color:#a855f7;border:none;margin-bottom:8px;display:inline-block;">Updates</span>
+            <h4 style="margin:0 0 8px;">New Learning Path: Full Stack</h4>
+            <p style="font-size:13px;color:var(--text-secondary);margin:0 0 12px;">React, Node.js, and MongoDB modules added.</p>
+            <span style="font-size:12px;color:var(--text-muted);">Sep 15, 2026</span>
+          </div></div>
+        </div>
+      </div>
+
+      <!-- Mentor Profile -->
+      <div class="sub-page" id="mentor-profile">
+        <div class="dashboard-header"><h1>My Profile</h1></div>
+        <div class="dashboard-grid">
+          <div class="dashboard-section" style="grid-column:span 2;"><div class="dashboard-section-body">
+            <div style="display:flex;gap:24px;align-items:center;flex-wrap:wrap;">
+              <div class="user-avatar" style="width:80px;height:80px;font-size:32px;">RV</div>
+              <div><h2 style="margin:0;">Rahul Verma</h2><p style="color:var(--text-secondary);margin:4px 0;">Mentor &middot; DSA & Problem Solving</p><p style="color:var(--text-muted);font-size:13px;margin:0;">rahul.verma@pec.edu.in &middot; +91 98765 12345</p></div>
+            </div>
+          </div></div>
+          <div class="dashboard-section"><div class="dashboard-section-header"><h3>Stats</h3></div><div class="dashboard-section-body">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;text-align:center;">
+              <div><div style="font-size:24px;font-weight:700;color:var(--primary);">8</div><div style="font-size:12px;color:var(--text-secondary);">Mentees</div></div>
+              <div><div style="font-size:24px;font-weight:700;color:#22c55e;">4.8</div><div style="font-size:12px;color:var(--text-secondary);">Rating</div></div>
+              <div><div style="font-size:24px;font-weight:700;color:#f59e0b;">24</div><div style="font-size:12px;color:var(--text-secondary);">Reviews</div></div>
+              <div><div style="font-size:24px;font-weight:700;color:#a855f7;">32</div><div style="font-size:12px;color:var(--text-secondary);">Meetings</div></div>
+            </div>
+          </div></div>
+          <div class="dashboard-section" style="grid-column:span 3;"><div class="dashboard-section-header"><h3>About</h3></div><div class="dashboard-section-body">
+            <p>Senior software engineer with 8+ years of experience in DSA, competitive programming, and system design. Passionate about mentoring the next generation of developers.</p>
+            <div style="margin-top:16px;"><h4 style="margin-bottom:8px;">Specializations</h4><div style="display:flex;gap:8px;flex-wrap:wrap;"><span class="chip active">Data Structures</span><span class="chip active">Algorithms</span><span class="chip active">Competitive Programming</span><span class="chip">System Design</span></div></div>
+          </div></div>
+        </div>
+      </div>
+
+      <!-- Mentor Settings -->
+      <div class="sub-page" id="mentor-settings">
+        <div class="dashboard-header"><h1>Settings</h1></div>
+        <div class="dashboard-grid">
+          <div class="dashboard-section" style="grid-column:span 2;"><div class="dashboard-section-header"><h3>Account Settings</h3></div><div class="dashboard-section-body">
+            <div class="settings-group"><div style="display:grid;gap:16px;">
+              <div><label style="font-weight:500;font-size:13px;display:block;margin-bottom:4px;">Full Name</label><input type="text" class="form-input" value="Rahul Verma"></div>
+              <div><label style="font-weight:500;font-size:13px;display:block;margin-bottom:4px;">Email</label><input type="email" class="form-input" value="rahul.verma@pec.edu.in"></div>
+              <div><label style="font-weight:500;font-size:13px;display:block;margin-bottom:4px;">Phone</label><input type="tel" class="form-input" value="+91 98765 12345"></div>
+              <div><label style="font-weight:500;font-size:13px;display:block;margin-bottom:4px;">Specialization</label><input type="text" class="form-input" value="DSA & Problem Solving"></div>
+            </div></div>
+            <div class="settings-group"><h4>Change Password</h4><div style="display:grid;gap:16px;">
+              <div><label style="font-weight:500;font-size:13px;display:block;margin-bottom:4px;">Current Password</label><input type="password" class="form-input" placeholder="Enter current password"></div>
+              <div><label style="font-weight:500;font-size:13px;display:block;margin-bottom:4px;">New Password</label><input type="password" class="form-input" placeholder="Enter new password"></div>
+              <div><label style="font-weight:500;font-size:13px;display:block;margin-bottom:4px;">Confirm Password</label><input type="password" class="form-input" placeholder="Confirm new password"></div>
+            </div></div>
+            <button class="btn btn-primary">Save Changes</button>
+          </div></div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- ======================== D. COORDINATOR PORTAL ======================== -->
+  <div id="app-coordinator" class="dashboard-layout" style="display:none;">
+    <aside class="sidebar">
+      <div class="sidebar-section">
+        <div class="sidebar-section-title">Menu</div>
+        <nav class="sidebar-nav">
+          <a href="#coord-dashboard" class="active" data-page="coord-dashboard"><span class="icon"><i class="fas fa-home"></i></span> Dashboard</a>
+          <a href="#coord-students" data-page="coord-students"><span class="icon"><i class="fas fa-user-graduate"></i></span> Students</a>
+          <a href="#coord-mentors" data-page="coord-mentors"><span class="icon"><i class="fas fa-chalkboard-teacher"></i></span> Mentors</a>
+          <a href="#coord-allocations" data-page="coord-allocations"><span class="icon"><i class="fas fa-link"></i></span> Mentor Allocation</a>
+          <a href="#coord-challenges" data-page="coord-challenges"><span class="icon"><i class="fas fa-fire"></i></span> Challenges</a>
+          <a href="#coord-submissions" data-page="coord-submissions"><span class="icon"><i class="fas fa-upload"></i></span> Submissions</a>
+          <a href="#coord-resources" data-page="coord-resources"><span class="icon"><i class="fas fa-book"></i></span> Learning Resources</a>
+          <a href="#coord-events" data-page="coord-events"><span class="icon"><i class="fas fa-calendar-alt"></i></span> Events</a>
+          <a href="#coord-news" data-page="coord-news"><span class="icon"><i class="fas fa-newspaper"></i></span> News &amp; Announcements</a>
+          <a href="#coord-analytics" data-page="coord-analytics"><span class="icon"><i class="fas fa-chart-bar"></i></span> Analytics</a>
+          <a href="#coord-leaderboard" data-page="coord-leaderboard"><span class="icon"><i class="fas fa-trophy"></i></span> Leaderboard</a>
+          <a href="#coord-settings" data-page="coord-settings"><span class="icon"><i class="fas fa-cog"></i></span> Settings</a>
+          <a href="#coord-profile" data-page="coord-profile"><span class="icon"><i class="fas fa-id-card"></i></span> Profile</a>
+          <a href="#" onclick="switchRole(null)"><span class="icon"><i class="fas fa-sign-out-alt"></i></span> Logout</a>
+        </nav>
+      </div>
+      <div class="sidebar-divider"></div>
+      <div class="sidebar-user"><div class="user-avatar">AD</div><div class="user-info"><div class="user-name">Admin User</div><div class="user-role">Coordinator</div></div></div>
+    </aside>
+    <main class="dashboard-main">
+      <div class="sub-page active" id="coord-dashboard">
+        <div class="dashboard-header"><h1>Coordinator Dashboard</h1><p>Complete overview of the PEC community.</p></div>
+        <div class="dashboard-stats">
+          <div class="dashboard-stat-card"><div class="stat-header"><div class="stat-icon" style="background:rgba(59,130,246,0.1);color:#3b82f6"><i class="fas fa-user-graduate"></i></div></div><div class="stat-value">250</div><div class="stat-label">Total Students</div></div>
+          <div class="dashboard-stat-card"><div class="stat-header"><div class="stat-icon" style="background:rgba(34,197,94,0.1);color:#22c55e"><i class="fas fa-chalkboard-teacher"></i></div></div><div class="stat-value">15</div><div class="stat-label">Total Mentors</div></div>
+          <div class="dashboard-stat-card"><div class="stat-header"><div class="stat-icon" style="background:rgba(59,130,246,0.1);color:#3b82f6"><i class="fas fa-user-check"></i></div></div><div class="stat-value">220</div><div class="stat-label">Active Students</div></div>
+          <div class="dashboard-stat-card"><div class="stat-header"><div class="stat-icon" style="background:rgba(34,197,94,0.1);color:#22c55e"><i class="fas fa-user-check"></i></div></div><div class="stat-value">14</div><div class="stat-label">Active Mentors</div></div>
+          <div class="dashboard-stat-card"><div class="stat-header"><div class="stat-icon" style="background:rgba(168,85,247,0.1);color:#a855f7"><i class="fas fa-fire"></i></div></div><div class="stat-value">48</div><div class="stat-label">Total Challenges</div></div>
+          <div class="dashboard-stat-card"><div class="stat-header"><div class="stat-icon" style="background:rgba(245,158,11,0.1);color:#f59e0b"><i class="fas fa-clock"></i></div></div><div class="stat-value">12</div><div class="stat-label">Pending Submissions</div></div>
+        </div>
+        <div class="dashboard-grid">
+          <div class="dashboard-section"><div class="dashboard-section-header"><h3>Recent Registrations</h3></div><div class="dashboard-section-body no-padding">
+            <div class="student-list-item"><div class="student-avatar">KP</div><div class="student-info"><div class="student-name">Kavya Patel</div><div class="student-meta">B.Tech CSE &middot; 1st Year &middot; Sep 20</div></div><span class="student-status status-active">New</span></div>
+            <div class="student-list-item"><div class="student-avatar">DM</div><div class="student-info"><div class="student-name">Deepak Mishra</div><div class="student-meta">B.Tech IT &middot; 2nd Year &middot; Sep 19</div></div><span class="student-status status-active">New</span></div>
+            <div class="student-list-item"><div class="student-avatar">AS</div><div class="student-info"><div class="student-name">Ananya Singh</div><div class="student-meta">B.Tech CSE &middot; 3rd Year &middot; Sep 18</div></div><span class="student-status status-active">New</span></div>
+          </div></div>
+          <div class="dashboard-section"><div class="dashboard-section-header"><h3>Recent Submissions</h3></div><div class="dashboard-section-body no-padding">
+            <div class="student-list-item"><div class="student-avatar">AK</div><div class="student-info"><div class="student-name">Binary Search Implementation</div><div class="student-meta">Arjun Kumar &middot; Sep 20</div></div><span class="student-status status-pending">Review</span></div>
+            <div class="student-list-item"><div class="student-avatar">PS</div><div class="student-info"><div class="student-name">React Dashboard Project</div><div class="student-meta">Priya Sharma &middot; Sep 19</div></div><span class="student-status status-active">Accepted</span></div>
+            <div class="student-list-item"><div class="student-avatar">RK</div><div class="student-info"><div class="student-name">System Design Document</div><div class="student-meta">Rohan Khanna &middot; Sep 18</div></div><span class="student-status status-pending">Review</span></div>
+          </div></div>
+          <div class="dashboard-section"><div class="dashboard-section-header"><h3>Upcoming Events</h3></div><div class="dashboard-section-body no-padding">
+            <div class="student-list-item"><div class="event-date-box"><span class="day">25</span><span class="month">Sep</span></div><div class="student-info"><div class="student-name">Tech Talk: System Design</div><div class="student-meta">Online &middot; 4:00 PM IST</div></div></div>
+            <div class="student-list-item"><div class="event-date-box" style="background:#22c55e;"><span class="day">30</span><span class="month">Sep</span></div><div class="student-info"><div class="student-name">Hackathon Kickoff</div><div class="student-meta">On-campus &middot; 10:00 AM IST</div></div></div>
+          </div></div>
+          <div class="dashboard-section"><div class="dashboard-section-header"><h3>Latest News</h3></div><div class="dashboard-section-body no-padding">
+            <div class="student-list-item"><div class="student-avatar" style="background:rgba(59,130,246,0.1);color:#3b82f6"><i class="fas fa-newspaper"></i></div><div class="student-info"><div class="student-name">New DSA Batch Starting Oct 1</div><div class="student-meta">Sep 18</div></div></div>
+            <div class="student-list-item"><div class="student-avatar" style="background:rgba(34,197,94,0.1);color:#22c55e"><i class="fas fa-trophy"></i></div><div class="student-info"><div class="student-name">September Challenge Results</div><div class="student-meta">Sep 17</div></div></div>
+          </div></div>
+          <div class="dashboard-section" style="grid-column:span 2;"><div class="dashboard-section-header"><h3>Quick Actions</h3></div><div class="dashboard-section-body">
+            <div class="quick-actions">
+              <div class="quick-action-btn"><i class="fas fa-user-plus"></i><span>Add Student</span></div>
+              <div class="quick-action-btn"><i class="fas fa-user-tie"></i><span>Add Mentor</span></div>
+              <div class="quick-action-btn"><i class="fas fa-fire"></i><span>Create Challenge</span></div>
+              <div class="quick-action-btn"><i class="fas fa-calendar-plus"></i><span>Create Event</span></div>
+              <div class="quick-action-btn"><i class="fas fa-bullhorn"></i><span>Post News</span></div>
+              <div class="quick-action-btn"><i class="fas fa-link"></i><span>Allocate Mentor</span></div>
+            </div>
+          </div></div>
+        </div>
+      </div>
+      <div class="sub-page" id="coord-students"><div class="dashboard-header"><h1>Students</h1></div><div style="display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap;"><input type="text" class="form-input" placeholder="Search students..." style="flex:1;min-width:200px;"><select class="form-input" style="width:auto;"><option>All Mentors</option></select><select class="form-input" style="width:auto;"><option>All Status</option></select></div><div class="dashboard-section"><div class="dashboard-section-body no-padding"><table class="dashboard-table"><thead><tr><th>Name</th><th>Email</th><th>Mentor</th><th>Progress</th><th>Status</th><th>Actions</th></tr></thead><tbody>
+        <tr><td><div style="display:flex;align-items:center;gap:8px;"><div class="student-avatar" style="width:28px;height:28px;font-size:11px;">AK</div>Arjun Kumar</div></td><td>arjun@pec.edu</td><td>Rahul Verma</td><td>75%</td><td><span class="student-status status-active">Active</span></td><td><button class="btn btn-sm btn-ghost">View</button></td></tr>
+        <tr><td><div style="display:flex;align-items:center;gap:8px;"><div class="student-avatar" style="width:28px;height:28px;font-size:11px;">PS</div>Priya Sharma</div></td><td>priya@pec.edu</td><td>Rahul Verma</td><td>60%</td><td><span class="student-status status-active">Active</span></td><td><button class="btn btn-sm btn-ghost">View</button></td></tr>
+        <tr><td><div style="display:flex;align-items:center;gap:8px;"><div class="student-avatar" style="width:28px;height:28px;font-size:11px;">RK</div>Rohan Khanna</div></td><td>rohan@pec.edu</td><td>Sneha Patel</td><td>92%</td><td><span class="student-status status-active">Active</span></td><td><button class="btn btn-sm btn-ghost">View</button></td></tr>
+        <tr><td><div style="display:flex;align-items:center;gap:8px;"><div class="student-avatar" style="width:28px;height:28px;font-size:11px;">NM</div>Neha Mehta</div></td><td>neha@pec.edu</td><td>Rahul Verma</td><td>45%</td><td><span class="student-status status-pending">Pending</span></td><td><button class="btn btn-sm btn-ghost">View</button></td></tr>
+        <tr><td><div style="display:flex;align-items:center;gap:8px;"><div class="student-avatar" style="width:28px;height:28px;font-size:11px;">VT</div>Vikram Tiwari</div></td><td>vikram@pec.edu</td><td>Amit Singh</td><td>55%</td><td><span class="student-status status-active">Active</span></td><td><button class="btn btn-sm btn-ghost">View</button></td></tr>
+        <tr><td><div style="display:flex;align-items:center;gap:8px;"><div class="student-avatar" style="width:28px;height:28px;font-size:11px;">SG</div>Sanjay Gupta</div></td><td>sanjay@pec.edu</td><td>Sneha Patel</td><td>70%</td><td><span class="student-status status-active">Active</span></td><td><button class="btn btn-sm btn-ghost">View</button></td></tr>
+        <tr><td><div style="display:flex;align-items:center;gap:8px;"><div class="student-avatar" style="width:28px;height:28px;font-size:11px;">MJ</div>Meera Joshi</div></td><td>meera@pec.edu</td><td>Amit Singh</td><td>68%</td><td><span class="student-status status-active">Active</span></td><td><button class="btn btn-sm btn-ghost">View</button></td></tr>
+        <tr><td><div style="display:flex;align-items:center;gap:8px;"><div class="student-avatar" style="width:28px;height:28px;font-size:11px;">AR</div>Aditya Rao</div></td><td>aditya@pec.edu</td><td>Deepa Nair</td><td>62%</td><td><span class="student-status status-active">Active</span></td><td><button class="btn btn-sm btn-ghost">View</button></td></tr>
+        <tr><td><div style="display:flex;align-items:center;gap:8px;"><div class="student-avatar" style="width:28px;height:28px;font-size:11px;">KS</div>Kavya Singh</div></td><td>kavya@pec.edu</td><td>Deepa Nair</td><td>50%</td><td><span class="student-status status-inactive">Inactive</span></td><td><button class="btn btn-sm btn-ghost">View</button></td></tr>
+        <tr><td><div style="display:flex;align-items:center;gap:8px;"><div class="student-avatar" style="width:28px;height:28px;font-size:11px;">DN</div>Deepak Nair</div></td><td>deepak@pec.edu</td><td>Karan Malhotra</td><td>40%</td><td><span class="student-status status-inactive">Inactive</span></td><td><button class="btn btn-sm btn-ghost">View</button></td></tr>
+      </tbody></table></div></div></div>
+      <div class="sub-page" id="coord-mentors"><div class="dashboard-header"><h1>Mentors</h1></div><div class="dashboard-section"><div class="dashboard-section-body no-padding"><table class="dashboard-table"><thead><tr><th>Name</th><th>Email</th><th>Mentees</th><th>Specialization</th><th>Status</th><th>Actions</th></tr></thead><tbody>
+        <tr><td><div style="display:flex;align-items:center;gap:8px;"><div class="student-avatar" style="width:28px;height:28px;font-size:11px;">RV</div>Rahul Verma</div></td><td>rahul@pec.edu</td><td>8</td><td>DSA</td><td><span class="student-status status-active">Active</span></td><td><button class="btn btn-sm btn-ghost">View</button></td></tr>
+        <tr><td><div style="display:flex;align-items:center;gap:8px;"><div class="student-avatar" style="width:28px;height:28px;font-size:11px;">SP</div>Sneha Patel</div></td><td>sneha@pec.edu</td><td>6</td><td>System Design</td><td><span class="student-status status-active">Active</span></td><td><button class="btn btn-sm btn-ghost">View</button></td></tr>
+        <tr><td><div style="display:flex;align-items:center;gap:8px;"><div class="student-avatar" style="width:28px;height:28px;font-size:11px;">AS</div>Amit Singh</div></td><td>amit@pec.edu</td><td>7</td><td>Web Dev</td><td><span class="student-status status-active">Active</span></td><td><button class="btn btn-sm btn-ghost">View</button></td></tr>
+        <tr><td><div style="display:flex;align-items:center;gap:8px;"><div class="student-avatar" style="width:28px;height:28px;font-size:11px;">DN</div>Deepa Nair</div></td><td>deepa@pec.edu</td><td>5</td><td>Data Science</td><td><span class="student-status status-active">Active</span></td><td><button class="btn btn-sm btn-ghost">View</button></td></tr>
+        <tr><td><div style="display:flex;align-items:center;gap:8px;"><div class="student-avatar" style="width:28px;height:28px;font-size:11px;">KM</div>Karan Malhotra</div></td><td>karan@pec.edu</td><td>4</td><td>DevOps</td><td><span class="student-status status-inactive">Inactive</span></td><td><button class="btn btn-sm btn-ghost">View</button></td></tr>
+      </tbody></table></div></div></div>
+      <div class="sub-page" id="coord-allocations"><div class="dashboard-header"><h1>Mentor Allocation</h1></div><div style="margin-bottom:16px;"><button class="btn btn-primary"><i class="fas fa-plus"></i> New Assignment</button></div><div class="dashboard-section"><div class="dashboard-section-body no-padding"><table class="dashboard-table"><thead><tr><th>Student</th><th>Mentor</th><th>Since</th><th>Status</th><th>Actions</th></tr></thead><tbody>
+        <tr><td>Arjun Kumar</td><td>Rahul Verma</td><td>Aug 1</td><td><span class="student-status status-active">Active</span></td><td><button class="btn btn-sm btn-ghost">Reassign</button></td></tr>
+        <tr><td>Priya Sharma</td><td>Rahul Verma</td><td>Aug 5</td><td><span class="student-status status-active">Active</span></td><td><button class="btn btn-sm btn-ghost">Reassign</button></td></tr>
+        <tr><td>Rohan Khanna</td><td>Sneha Patel</td><td>Jul 20</td><td><span class="student-status status-active">Active</span></td><td><button class="btn btn-sm btn-ghost">Reassign</button></td></tr>
+        <tr><td>Neha Mehta</td><td>Rahul Verma</td><td>Sep 1</td><td><span class="student-status status-pending">Pending</span></td><td><button class="btn btn-sm btn-ghost">Reassign</button></td></tr>
+        <tr><td>Vikram Tiwari</td><td>Amit Singh</td><td>Aug 10</td><td><span class="student-status status-active">Active</span></td><td><button class="btn btn-sm btn-ghost">Reassign</button></td></tr>
+      </tbody></table></div></div></div>
+      <div class="sub-page" id="coord-challenges"><div class="dashboard-header"><h1>Challenges</h1></div><div style="margin-bottom:16px;"><button class="btn btn-primary"><i class="fas fa-plus"></i> Create Challenge</button></div><div class="dashboard-section"><div class="dashboard-section-body no-padding"><table class="dashboard-table"><thead><tr><th>Challenge</th><th>Difficulty</th><th>Points</th><th>Deadline</th><th>Submissions</th><th>Status</th><th>Actions</th></tr></thead><tbody>
+        <tr><td>Implement LRU Cache</td><td><span class="chip" style="background:rgba(239,68,68,0.1);color:#ef4444;border:none;font-size:11px;">Hard</span></td><td>50</td><td>Sep 26</td><td>12</td><td><span class="student-status status-active">Active</span></td><td><button class="btn btn-sm btn-ghost">Edit</button></td></tr>
+        <tr><td>Binary Search Variants</td><td><span class="chip" style="background:rgba(245,158,11,0.1);color:#f59e0b;border:none;font-size:11px;">Medium</span></td><td>30</td><td>Sep 28</td><td>8</td><td><span class="student-status status-active">Active</span></td><td><button class="btn btn-sm btn-ghost">Edit</button></td></tr>
+        <tr><td>Stack Parenthesis Validator</td><td><span class="chip" style="background:rgba(34,197,94,0.1);color:#22c55e;border:none;font-size:11px;">Easy</span></td><td>20</td><td>Sep 30</td><td>15</td><td><span class="student-status status-active">Active</span></td><td><button class="btn btn-sm btn-ghost">Edit</button></td></tr>
+        <tr><td>Graph BFS Traversal</td><td><span class="chip" style="background:rgba(245,158,11,0.1);color:#f59e0b;border:none;font-size:11px;">Medium</span></td><td>30</td><td>Oct 2</td><td>5</td><td><span class="student-status status-active">Active</span></td><td><button class="btn btn-sm btn-ghost">Edit</button></td></tr>
+        <tr><td>Array Sorting Comparison</td><td><span class="chip" style="background:rgba(34,197,94,0.1);color:#22c55e;border:none;font-size:11px;">Easy</span></td><td>20</td><td>Sep 15</td><td>22</td><td><span class="student-status status-inactive">Closed</span></td><td><button class="btn btn-sm btn-ghost">Edit</button></td></tr>
+      </tbody></table></div></div></div>
+      <div class="sub-page" id="coord-submissions"><div class="dashboard-header"><h1>Submissions</h1></div><div class="dashboard-section"><div class="dashboard-section-body no-padding"><table class="dashboard-table"><thead><tr><th>Student</th><th>Challenge</th><th>Date</th><th>Status</th><th>Score</th><th>Actions</th></tr></thead><tbody>
+        <tr><td>Arjun Kumar</td><td>Binary Search Implementation</td><td>Sep 20</td><td><span class="student-status status-pending">Pending</span></td><td>--</td><td><button class="btn btn-sm btn-primary">Review</button></td></tr>
+        <tr><td>Priya Sharma</td><td>React Dashboard Project</td><td>Sep 19</td><td><span class="student-status status-active">Accepted</span></td><td>88/100</td><td><button class="btn btn-sm btn-ghost">View</button></td></tr>
+        <tr><td>Rohan Khanna</td><td>System Design Document</td><td>Sep 18</td><td><span class="student-status status-pending">Pending</span></td><td>--</td><td><button class="btn btn-sm btn-primary">Review</button></td></tr>
+        <tr><td>Neha Mehta</td><td>API Integration Task</td><td>Sep 17</td><td><span class="student-status status-active">Accepted</span></td><td>92/100</td><td><button class="btn btn-sm btn-ghost">View</button></td></tr>
+        <tr><td>Vikram Tiwari</td><td>Database Schema Design</td><td>Sep 16</td><td><span class="student-status status-inactive">Rejected</span></td><td>40/100</td><td><button class="btn btn-sm btn-ghost">View</button></td></tr>
+      </tbody></table></div></div></div>
+      <div class="sub-page" id="coord-resources"><div class="dashboard-header"><h1>Learning Resources</h1></div><div style="margin-bottom:16px;"><button class="btn btn-primary"><i class="fas fa-upload"></i> Upload Resource</button></div><div class="dashboard-grid" style="grid-template-columns:repeat(auto-fill,minmax(280px,1fr));">
+        <div class="dashboard-section"><div class="dashboard-section-body"><div style="display:flex;gap:12px;align-items:center;margin-bottom:8px;"><div style="width:40px;height:40px;border-radius:8px;background:rgba(59,130,246,0.1);color:#3b82f6;display:flex;align-items:center;justify-content:center;"><i class="fas fa-file-pdf"></i></div><div><h4 style="margin:0;font-size:14px;">DSA Handbook</h4><p style="margin:0;font-size:12px;color:var(--text-secondary);">PDF &middot; 2.4 MB</p></div></div><p style="font-size:13px;color:var(--text-secondary);">Comprehensive guide covering all DSA topics.</p><div style="display:flex;gap:8px;"><button class="btn btn-sm btn-ghost">Edit</button><button class="btn btn-sm btn-ghost" style="color:#ef4444;">Delete</button></div></div></div>
+        <div class="dashboard-section"><div class="dashboard-section-body"><div style="display:flex;gap:12px;align-items:center;margin-bottom:8px;"><div style="width:40px;height:40px;border-radius:8px;background:rgba(34,197,94,0.1);color:#22c55e;display:flex;align-items:center;justify-content:center;"><i class="fas fa-video"></i></div><div><h4 style="margin:0;font-size:14px;">Web Dev Tutorial Series</h4><p style="margin:0;font-size:12px;color:var(--text-secondary);">Video &middot; 12 episodes</p></div></div><p style="font-size:13px;color:var(--text-secondary);">Complete web development bootcamp series.</p><div style="display:flex;gap:8px;"><button class="btn btn-sm btn-ghost">Edit</button><button class="btn btn-sm btn-ghost" style="color:#ef4444;">Delete</button></div></div></div>
+        <div class="dashboard-section"><div class="dashboard-section-body"><div style="display:flex;gap:12px;align-items:center;margin-bottom:8px;"><div style="width:40px;height:40px;border-radius:8px;background:rgba(168,85,247,0.1);color:#a855f7;display:flex;align-items:center;justify-content:center;"><i class="fas fa-file-code"></i></div><div><h4 style="margin:0;font-size:14px;">Practice Problems Set</h4><p style="margin:0;font-size:12px;color:var(--text-secondary);">Code &middot; 50 problems</p></div></div><p style="font-size:13px;color:var(--text-secondary);">Curated problems for each difficulty level.</p><div style="display:flex;gap:8px;"><button class="btn btn-sm btn-ghost">Edit</button><button class="btn btn-sm btn-ghost" style="color:#ef4444;">Delete</button></div></div></div>
+        <div class="dashboard-section"><div class="dashboard-section-body"><div style="display:flex;gap:12px;align-items:center;margin-bottom:8px;"><div style="width:40px;height:40px;border-radius:8px;background:rgba(245,158,11,0.1);color:#f59e0b;display:flex;align-items:center;justify-content:center;"><i class="fas fa-file-alt"></i></div><div><h4 style="margin:0;font-size:14px;">System Design Primer</h4><p style="margin:0;font-size:12px;color:var(--text-secondary);">Document &middot; 1.8 MB</p></div></div><p style="font-size:13px;color:var(--text-secondary);">Introduction to system design concepts.</p><div style="display:flex;gap:8px;"><button class="btn btn-sm btn-ghost">Edit</button><button class="btn btn-sm btn-ghost" style="color:#ef4444;">Delete</button></div></div></div>
+      </div></div>
+      <div class="sub-page" id="coord-events"><div class="dashboard-header"><h1>Events</h1></div><div style="margin-bottom:16px;"><button class="btn btn-primary"><i class="fas fa-plus"></i> Create Event</button></div><div class="dashboard-section"><div class="dashboard-section-body no-padding"><table class="dashboard-table"><thead><tr><th>Event</th><th>Type</th><th>Date</th><th>Location</th><th>Status</th><th>Actions</th></tr></thead><tbody>
+        <tr><td>Tech Talk: System Design</td><td>Tech Talk</td><td>Sep 25</td><td>Online</td><td><span class="student-status status-active">Upcoming</span></td><td><button class="btn btn-sm btn-ghost">Edit</button></td></tr>
+        <tr><td>Hackathon Kickoff</td><td>Hackathon</td><td>Sep 30</td><td>On-campus</td><td><span class="student-status status-active">Upcoming</span></td><td><button class="btn btn-sm btn-ghost">Edit</button></td></tr>
+        <tr><td>Web Dev Workshop</td><td>Workshop</td><td>Oct 5</td><td>Online</td><td><span class="student-status status-pending">Draft</span></td><td><button class="btn btn-sm btn-ghost">Edit</button></td></tr>
+        <tr><td>Career Guidance Session</td><td>Seminar</td><td>Sep 10</td><td>On-campus</td><td><span class="student-status status-inactive">Completed</span></td><td><button class="btn btn-sm btn-ghost">View</button></td></tr>
+        <tr><td>DSA Contest</td><td>Contest</td><td>Sep 5</td><td>Online</td><td><span class="student-status status-inactive">Completed</span></td><td><button class="btn btn-sm btn-ghost">View</button></td></tr>
+      </tbody></table></div></div></div>
+      <div class="sub-page" id="coord-news"><div class="dashboard-header"><h1>News &amp; Announcements</h1></div><div class="stats-bar"><div class="stats-bar-item" style="background:rgba(34,197,94,0.1);color:#22c55e;">Published: 12</div><div class="stats-bar-item" style="background:rgba(245,158,11,0.1);color:#f59e0b;">Drafts: 3</div><div class="stats-bar-item" style="background:rgba(100,116,139,0.1);color:#64748b;">Archived: 5</div></div><div style="margin-bottom:16px;"><button class="btn btn-primary"><i class="fas fa-plus"></i> Create News</button></div><div class="dashboard-section"><div class="dashboard-section-body no-padding"><table class="dashboard-table"><thead><tr><th>Title</th><th>Category</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead><tbody>
+        <tr><td>New DSA Batch Starting Oct 1</td><td>Announcements</td><td><span class="student-status status-active">Published</span></td><td>Sep 18</td><td><div style="display:flex;gap:4px;"><button class="btn btn-sm btn-ghost">Edit</button><button class="btn btn-sm btn-ghost">Unpublish</button><button class="btn btn-sm btn-ghost">Archive</button><button class="btn btn-sm btn-ghost" style="color:#ef4444;">Delete</button></div></td></tr>
+        <tr><td>September Challenge Results</td><td>Results</td><td><span class="student-status status-active">Published</span></td><td>Sep 17</td><td><div style="display:flex;gap:4px;"><button class="btn btn-sm btn-ghost">Edit</button><button class="btn btn-sm btn-ghost">Unpublish</button><button class="btn btn-sm btn-ghost">Archive</button><button class="btn btn-sm btn-ghost" style="color:#ef4444;">Delete</button></div></td></tr>
+        <tr><td>Upcoming Workshop Series</td><td>Events</td><td><span class="student-status status-pending">Draft</span></td><td>Sep 10</td><td><div style="display:flex;gap:4px;"><button class="btn btn-sm btn-ghost">Edit</button><button class="btn btn-sm btn-primary">Publish</button><button class="btn btn-sm btn-ghost" style="color:#ef4444;">Delete</button></div></td></tr>
+        <tr><td>Internship Opportunity</td><td>Announcements</td><td><span class="student-status status-pending">Draft</span></td><td>Sep 8</td><td><div style="display:flex;gap:4px;"><button class="btn btn-sm btn-ghost">Edit</button><button class="btn btn-sm btn-primary">Publish</button><button class="btn btn-sm btn-ghost" style="color:#ef4444;">Delete</button></div></td></tr>
+      </tbody></table></div></div></div>
+      <div class="sub-page" id="coord-analytics"><div class="dashboard-header"><h1>Analytics</h1></div><div class="dashboard-grid">
+        <div class="dashboard-section"><div class="dashboard-section-header"><h3>Student Engagement (Monthly)</h3></div><div class="dashboard-section-body"><div class="chart-bar">
+          <div class="chart-bar-item"><div class="bar" style="height:50%"></div><div class="label">Apr</div></div><div class="chart-bar-item"><div class="bar" style="height:65%"></div><div class="label">May</div></div><div class="chart-bar-item"><div class="bar" style="height:45%"></div><div class="label">Jun</div></div><div class="chart-bar-item"><div class="bar" style="height:70%"></div><div class="label">Jul</div></div><div class="chart-bar-item"><div class="bar" style="height:80%"></div><div class="label">Aug</div></div><div class="chart-bar-item"><div class="bar" style="height:95%"></div><div class="label">Sep</div></div>
+        </div></div></div>
+        <div class="dashboard-section"><div class="dashboard-section-header"><h3>Challenge Completion Rate</h3></div><div class="dashboard-section-body"><div style="display:flex;align-items:center;gap:24px;">
+          <div style="position:relative;width:120px;height:120px;"><svg viewBox="0 0 36 36" style="transform:rotate(-90deg);"><circle cx="18" cy="18" r="15.915" fill="none" stroke="var(--bg-border)" stroke-width="3"/><circle cx="18" cy="18" r="15.915" fill="none" stroke="#22c55e" stroke-width="3" stroke-dasharray="75 25"/></svg><div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;">75%</div></div>
+          <div><div style="font-size:14px;margin-bottom:4px;"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#22c55e;margin-right:6px;"></span>Completed: 36</div><div style="font-size:14px;"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--bg-border);margin-right:6px;"></span>Remaining: 12</div></div>
+        </div></div></div>
+        <div class="dashboard-section" style="grid-column:span 2;"><div class="dashboard-section-header"><h3>Monthly Participation</h3></div><div class="dashboard-section-body"><div class="chart-bar" style="height:150px;">
+          <div class="chart-bar-item"><div class="bar" style="height:30%"></div><div class="label">Jan</div></div><div class="chart-bar-item"><div class="bar" style="height:40%"></div><div class="label">Feb</div></div><div class="chart-bar-item"><div class="bar" style="height:55%"></div><div class="label">Mar</div></div><div class="chart-bar-item"><div class="bar" style="height:50%"></div><div class="label">Apr</div></div><div class="chart-bar-item"><div class="bar" style="height:65%"></div><div class="label">May</div></div><div class="chart-bar-item"><div class="bar" style="height:45%"></div><div class="label">Jun</div></div><div class="chart-bar-item"><div class="bar" style="height:70%"></div><div class="label">Jul</div></div><div class="chart-bar-item"><div class="bar" style="height:80%"></div><div class="label">Aug</div></div><div class="chart-bar-item"><div class="bar" style="height:95%"></div><div class="label">Sep</div></div>
+        </div></div></div>
+      </div></div>
+      <div class="sub-page" id="coord-leaderboard"><div class="dashboard-header"><h1>Leaderboard</h1></div><div class="dashboard-section"><div class="dashboard-section-body no-padding"><table class="dashboard-table"><thead><tr><th>Rank</th><th>Student</th><th>Mentor</th><th>Challenges</th><th>Points</th><th>Streak</th></tr></thead><tbody>
+        <tr><td>1</td><td>Rohan Khanna</td><td>Sneha Patel</td><td>22</td><td>980</td><td>12 days</td></tr><tr><td>2</td><td>Priya Sharma</td><td>Rahul Verma</td><td>20</td><td>920</td><td>9 days</td></tr><tr><td>3</td><td>Neha Mehta</td><td>Rahul Verma</td><td>19</td><td>870</td><td>5 days</td></tr><tr><td>4</td><td>Vikram Tiwari</td><td>Amit Singh</td><td>18</td><td>860</td><td>7 days</td></tr><tr><td>5</td><td>Arjun Kumar</td><td>Rahul Verma</td><td>18</td><td>850</td><td>7 days</td></tr><tr><td>6</td><td>Sanjay Gupta</td><td>Sneha Patel</td><td>17</td><td>800</td><td>4 days</td></tr><tr><td>7</td><td>Meera Joshi</td><td>Amit Singh</td><td>16</td><td>780</td><td>3 days</td></tr><tr><td>8</td><td>Aditya Rao</td><td>Deepa Nair</td><td>15</td><td>720</td><td>6 days</td></tr><tr><td>9</td><td>Kavya Singh</td><td>Deepa Nair</td><td>14</td><td>690</td><td>2 days</td></tr><tr><td>10</td><td>Deepak Nair</td><td>Karan Malhotra</td><td>13</td><td>650</td><td>1 day</td></tr>
+      </tbody></table></div></div></div>
+      <div class="sub-page" id="coord-settings"><div class="dashboard-header"><h1>Platform Settings</h1></div><div class="dashboard-section"><div class="dashboard-section-header"><h3>General Settings</h3></div><div class="dashboard-section-body">
+        <div class="settings-group"><div style="display:grid;gap:16px;"><div><label style="font-weight:500;font-size:13px;display:block;margin-bottom:4px;">Platform Name</label><input type="text" class="form-input" value="PEC - Programming Excellence Community"></div><div><label style="font-weight:500;font-size:13px;display:block;margin-bottom:4px;">Contact Email</label><input type="email" class="form-input" value="admin@pec.edu.in"></div></div></div>
+        <div class="settings-group"><h4>Features</h4>
+          <div class="setting-row"><div><div class="setting-label">Auto-assign Mentors</div><div class="setting-desc">Automatically assign mentors to new students</div></div><label style="position:relative;display:inline-block;width:48px;height:26px;"><input type="checkbox" checked style="opacity:0;width:0;height:0;"><span style="position:absolute;cursor:pointer;inset:0;background:#22c55e;border-radius:26px;transition:0.3s;"></span></label></div>
+          <div class="setting-row"><div><div class="setting-label">Email Notifications</div></div><label style="position:relative;display:inline-block;width:48px;height:26px;"><input type="checkbox" checked style="opacity:0;width:0;height:0;"><span style="position:absolute;cursor:pointer;inset:0;background:#22c55e;border-radius:26px;transition:0.3s;"></span></label></div>
+          <div class="setting-row"><div><div class="setting-label">Public Leaderboard</div></div><label style="position:relative;display:inline-block;width:48px;height:26px;"><input type="checkbox" checked style="opacity:0;width:0;height:0;"><span style="position:absolute;cursor:pointer;inset:0;background:#22c55e;border-radius:26px;transition:0.3s;"></span></label></div>
+          <div class="setting-row"><div><div class="setting-label">Maintenance Mode</div></div><label style="position:relative;display:inline-block;width:48px;height:26px;"><input type="checkbox" style="opacity:0;width:0;height:0;"><span style="position:absolute;cursor:pointer;inset:0;background:#ccc;border-radius:26px;transition:0.3s;"></span></label></div>
+        </div>
+        <button class="btn btn-primary">Save Settings</button>
+      </div></div></div>
+      <div class="sub-page" id="coord-profile"><div class="dashboard-header"><h1>Admin Profile</h1></div><div class="dashboard-grid">
+        <div class="dashboard-section" style="grid-column:span 2;"><div class="dashboard-section-body"><div style="display:flex;gap:24px;align-items:center;flex-wrap:wrap;"><div class="user-avatar" style="width:80px;height:80px;font-size:32px;">AD</div><div><h2 style="margin:0;">Admin User</h2><p style="color:var(--text-secondary);margin:4px 0;">Platform Coordinator</p><p style="color:var(--text-muted);font-size:13px;margin:0;">admin@pec.edu.in &middot; +91 98765 00000</p></div></div></div></div>
+        <div class="dashboard-section"><div class="dashboard-section-header"><h3>Platform Stats</h3></div><div class="dashboard-section-body"><div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;text-align:center;"><div><div style="font-size:24px;font-weight:700;color:var(--primary);">250</div><div style="font-size:12px;color:var(--text-secondary);">Students</div></div><div><div style="font-size:24px;font-weight:700;color:#22c55e;">15</div><div style="font-size:12px;color:var(--text-secondary);">Mentors</div></div><div><div style="font-size:24px;font-weight:700;color:#f59e0b;">48</div><div style="font-size:12px;color:var(--text-secondary);">Challenges</div></div><div><div style="font-size:24px;font-weight:700;color:#a855f7;">12</div><div style="font-size:12px;color:var(--text-secondary);">Events</div></div></div></div></div>
+      </div></div>
+    </main>
+  </div>
+
+  <div id="toast-container" class="toast-container"></div>
+  <div id="modal-overlay" class="modal-overlay" style="display:none" onclick="closeModal()">
+    <div class="modal" onclick="event.stopPropagation()">
+      <div class="modal-header"><h3 id="modal-title"></h3><button class="btn-icon" onclick="closeModal()">&times;</button></div>
+      <div class="modal-body" id="modal-body"></div>
+      <div class="modal-footer" id="modal-footer"></div>
+    </div>
+  </div>
+  <script src="../js/main.js"></script>
+  <script src="../js/dashboard.js"></script>
+</body>
+</html>
+

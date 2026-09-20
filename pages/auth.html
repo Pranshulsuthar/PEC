@@ -1,0 +1,608 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - PEC</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="../css/style.css">
+  <style>.auth-view{display:none}.auth-view.active{display:block}</style>
+</head>
+<body>
+
+  <div class="auth-topbar">
+    <a href="../index.html" class="auth-back" aria-label="Back to PEC"><i class="fas fa-arrow-left"></i> Back</a>
+    <div class="auth-theme-toggle"><button class="theme-toggle" aria-label="Toggle theme">&#127769;</button></div>
+  </div>
+
+  <div class="auth-bg-particles"><div class="auth-bg-circle auth-bg-circle-1"></div><div class="auth-bg-circle auth-bg-circle-2"></div><div class="auth-bg-circle auth-bg-circle-3"></div></div>
+
+  <!-- ==================== VIEW 1: ROLE SELECTION ==================== -->
+  <div class="auth-view active" id="view-role-selection">
+    <div class="role-page">
+      <div class="auth-bg-blobs"><div class="auth-blob auth-blob-1"></div><div class="auth-blob auth-blob-2"></div><div class="auth-blob auth-blob-3"></div></div>
+      <div class="auth-orbital-hero">
+        <div class="auth-orbital">
+          <div class="auth-orbital-ring auth-orbital-ring-1"></div>
+          <div class="auth-orbital-ring auth-orbital-ring-2"></div>
+          <div class="auth-orbital-ring auth-orbital-ring-3"></div>
+          <div class="auth-orbital-arc auth-orbital-arc-1"></div>
+          <div class="auth-orbital-arc auth-orbital-arc-2"></div>
+          <div class="auth-orbital-dot auth-orbital-dot-pool"></div>
+          <div class="auth-orbital-dot auth-orbital-dot-tangerine"></div>
+          <div class="auth-orbital-node auth-orbital-node-1"></div>
+          <div class="auth-orbital-node auth-orbital-node-2"></div>
+          <div class="auth-orbital-node auth-orbital-node-3"></div>
+          <div class="auth-orbital-particle auth-orbital-particle-1"></div>
+          <div class="auth-orbital-particle auth-orbital-particle-2"></div>
+          <div class="auth-orbital-particle auth-orbital-particle-3"></div>
+          <div class="auth-orbital-center">
+            <span class="auth-orbital-center-text">PEC</span>
+          </div>
+        </div>
+        <div class="section-label">PROGRAMMING EXCELLENCE COMMUNITY</div>
+        <h1 style="margin-bottom:8px">Welcome to PEC</h1>
+        <p style="color:var(--text-secondary);max-width:440px;margin:0 auto 8px">Choose your role to sign in.</p>
+        <p style="color:var(--text-muted);font-size:0.9rem;max-width:400px;margin:0 auto">Learn, practice, collaborate and grow with the PEC community.</p>
+      </div>
+      <div class="role-grid">
+        <div class="role-card student-card role-card-animate" data-role="student" tabindex="0" role="button">
+          <div class="role-card-icon"><i class="fas fa-user-graduate"></i></div>
+          <h3>Student</h3>
+          <div class="role-subtitle">Learn. Practice. Grow.</div>
+          <p>Access coding activities, mentor guidance, challenges and your personal progress.</p>
+          <button class="btn btn-primary">Continue as Student <i class="fas fa-arrow-right" style="margin-left:6px"></i></button>
+        </div>
+        <div class="role-card mentor-card role-card-animate" data-role="mentor" tabindex="0" role="button">
+          <div class="role-card-icon"><i class="fas fa-chalkboard-teacher"></i></div>
+          <h3>Mentor</h3>
+          <div class="role-subtitle">Guide. Review. Inspire.</div>
+          <p>Support your assigned mentees, review their work and help them grow.</p>
+          <button class="btn btn-primary">Continue as Mentor <i class="fas fa-arrow-right" style="margin-left:6px"></i></button>
+        </div>
+        <div class="role-card coordinator-card role-card-animate" data-role="coordinator" tabindex="0" role="button">
+          <div class="role-card-icon"><i class="fas fa-cogs"></i></div>
+          <h3>Coordinator</h3>
+          <div class="role-subtitle">Manage. Organize. Lead.</div>
+          <p>Manage students, mentors, activities and the PEC community.</p>
+          <button class="btn btn-primary">Continue as Coordinator <i class="fas fa-arrow-right" style="margin-left:6px"></i></button>
+        </div>
+      </div>
+      <a href="../index.html" class="auth-back" style="justify-content:center;margin-top:32px"><i class="fas fa-arrow-left"></i> Back to PEC</a>
+    </div>
+  </div>
+
+  <!-- ==================== VIEW 2: STUDENT LOGIN ==================== -->
+  <div class="auth-view" id="view-student-login">
+    <div class="auth-page">
+      <div class="auth-split">
+        <div class="auth-brand-side">
+          <div class="auth-bg-blobs"><div class="auth-blob auth-blob-1"></div><div class="auth-blob auth-blob-2"></div><div class="auth-blob auth-blob-3"></div></div>
+          <div class="auth-brand-content">
+            <div class="auth-brand-logo">P</div>
+            <h1>Welcome to PEC</h1>
+            <div class="auth-brand-tagline">Programming Excellence Community</div>
+            <p class="auth-brand-desc">Where curiosity meets code. Join thousands of learners, mentors and coordinators building the future together.</p>
+            <div class="auth-visual">
+              <div class="auth-sphere auth-sphere-ring"></div>
+              <div class="auth-sphere auth-sphere-ring-2"></div>
+              <div class="auth-sphere auth-sphere-main"></div>
+              <div class="auth-sphere auth-sphere-accent"></div>
+              <div class="auth-sphere auth-sphere-small"></div>
+              <span class="auth-sphere-pec">PEC</span>
+            </div>
+          </div>
+        </div>
+        <div class="auth-form-side">
+          <div class="auth-bg-blobs"><div class="auth-blob auth-blob-1"></div><div class="auth-blob auth-blob-2"></div></div>
+          <div class="auth-decor auth-decor-1"></div>
+          <div class="auth-decor auth-decor-2"></div>
+          <div class="auth-decor auth-decor-3"></div>
+          <div class="auth-decor auth-decor-4"></div>
+          <div class="auth-card">
+            <div class="auth-card-header">
+              <div class="role-badge student"><i class="fas fa-user-graduate"></i> Student</div>
+              <h2>Welcome, Learner</h2>
+              <p>Your next challenge starts here.</p>
+            </div>
+            <form id="student-login-form">
+              <div class="form-group">
+                <label for="student-email">Email Address</label>
+                <input type="email" id="student-email" class="form-control" placeholder="you@example.com" required>
+              </div>
+              <div class="form-group">
+                <label for="student-password">Password</label>
+                <div class="password-wrapper">
+                  <input type="password" id="student-password" class="form-control" placeholder="Enter your password" required>
+                  <button type="button" class="password-toggle" aria-label="Toggle password"><i class="fas fa-eye"></i></button>
+                </div>
+              </div>
+              <div class="auth-links">
+                <label style="display:flex;align-items:center;gap:6px;font-size:0.85rem;cursor:pointer"><input type="checkbox" style="accent-color:var(--tangerine)"> Remember me</label>
+                <a href="javascript:void(0)">Forgot password?</a>
+              </div>
+              <button type="submit" class="btn btn-primary">Enter PEC</button>
+            </form>
+            <div class="auth-footer">
+              <p>New to PEC? <a href="javascript:void(0)" onclick="showAuth('view-student-signup')">Create Account</a></p>
+              <p style="margin-top:8px"><a href="javascript:void(0)" onclick="showAuth('view-role-selection')">Change role</a></p>
+              <p style="margin-top:8px"><a href="javascript:void(0)" onclick="showAuth('view-role-selection')"><i class="fas fa-arrow-left" style="margin-right:4px"></i> Back to PEC</a></p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== VIEW 3: STUDENT SIGNUP ==================== -->
+  <div class="auth-view" id="view-student-signup">
+    <div class="auth-page">
+      <div class="auth-split">
+        <div class="auth-brand-side">
+          <div class="auth-bg-blobs"><div class="auth-blob auth-blob-1"></div><div class="auth-blob auth-blob-2"></div><div class="auth-blob auth-blob-3"></div></div>
+          <div class="auth-brand-content">
+            <div class="auth-brand-logo">P</div>
+            <h1>Join PEC Today</h1>
+            <div class="auth-brand-tagline">Programming Excellence Community</div>
+            <p class="auth-brand-desc">Create your account and unlock a world of coding challenges, mentorship and community collaboration.</p>
+            <div class="auth-visual">
+              <div class="auth-sphere auth-sphere-ring"></div>
+              <div class="auth-sphere auth-sphere-ring-2"></div>
+              <div class="auth-sphere auth-sphere-main"></div>
+              <div class="auth-sphere auth-sphere-accent"></div>
+              <div class="auth-sphere auth-sphere-small"></div>
+              <span class="auth-sphere-pec">PEC</span>
+            </div>
+          </div>
+        </div>
+        <div class="auth-form-side">
+          <div class="auth-bg-blobs"><div class="auth-blob auth-blob-1"></div><div class="auth-blob auth-blob-2"></div></div>
+          <div class="auth-decor auth-decor-1"></div>
+          <div class="auth-decor auth-decor-2"></div>
+          <div class="auth-decor auth-decor-3"></div>
+          <div class="auth-decor auth-decor-4"></div>
+          <div class="auth-card">
+            <div class="auth-card-header">
+              <div class="role-badge student"><i class="fas fa-user-graduate"></i> Student</div>
+              <h2>Start Your PEC Journey</h2>
+              <p>Fill in your details to get started.</p>
+            </div>
+            <div class="signup-steps">
+              <div class="signup-step active"><span class="step-num">1</span> Details</div>
+              <div class="signup-step-divider"></div>
+              <div class="signup-step"><span class="step-num">2</span> Verify</div>
+              <div class="signup-step-divider"></div>
+              <div class="signup-step"><span class="step-num">3</span> Done</div>
+            </div>
+            <form id="student-signup-form">
+              <div class="form-group">
+                <label for="student-fullname">Full Name</label>
+                <input type="text" id="student-fullname" class="form-control" placeholder="Your full name" required>
+              </div>
+              <div class="form-group">
+                <label for="student-signup-email">Email Address</label>
+                <input type="email" id="student-signup-email" class="form-control" placeholder="you@example.com" required>
+              </div>
+              <div class="form-group">
+                <label for="student-enrollment">Enrollment Number</label>
+                <input type="text" id="student-enrollment" class="form-control" placeholder="e.g. 2024001" required>
+              </div>
+              <div class="form-group">
+                <label for="student-branch">Branch</label>
+                <select id="student-branch" class="form-control" required>
+                  <option value="" disabled selected>Select your branch</option>
+                  <option value="cse">Computer Science</option>
+                  <option value="it">Information Technology</option>
+                  <option value="ece">Electronics & Communication</option>
+                  <option value="ee">Electrical Engineering</option>
+                  <option value="me">Mechanical Engineering</option>
+                  <option value="ce">Civil Engineering</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="student-year">Year</label>
+                <select id="student-year" class="form-control" required>
+                  <option value="" disabled selected>Select your year</option>
+                  <option value="1">1st Year</option>
+                  <option value="2">2nd Year</option>
+                  <option value="3">3rd Year</option>
+                  <option value="4">4th Year</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="student-signup-password">Password</label>
+                <div class="password-wrapper">
+                  <input type="password" id="student-signup-password" class="form-control" placeholder="Create a password" required>
+                  <button type="button" class="password-toggle" aria-label="Toggle password"><i class="fas fa-eye"></i></button>
+                </div>
+                <div class="password-strength">
+                  <div class="strength-bars"><div class="strength-bar"></div><div class="strength-bar"></div><div class="strength-bar"></div><div class="strength-bar"></div></div>
+                  <span class="strength-text"></span>
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="student-confirm-password">Confirm Password</label>
+                <div class="password-wrapper">
+                  <input type="password" id="student-confirm-password" class="form-control" placeholder="Confirm your password" required>
+                  <button type="button" class="password-toggle" aria-label="Toggle password"><i class="fas fa-eye"></i></button>
+                </div>
+              </div>
+              <button type="submit" class="btn btn-primary">Create Student Account</button>
+            </form>
+            <div class="auth-footer">
+              <p>Already have an account? <a href="javascript:void(0)" onclick="showAuth('view-student-login')">Log in</a></p>
+              <p style="margin-top:8px"><a href="javascript:void(0)" onclick="showAuth('view-role-selection')">Change role</a></p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== VIEW 4: MENTOR LOGIN ==================== -->
+  <div class="auth-view" id="view-mentor-login">
+    <div class="auth-page">
+      <div class="auth-split">
+        <div class="auth-brand-side">
+          <div class="auth-bg-blobs"><div class="auth-blob auth-blob-1"></div><div class="auth-blob auth-blob-2"></div><div class="auth-blob auth-blob-3"></div></div>
+          <div class="auth-brand-content">
+            <div class="auth-brand-logo">P</div>
+            <h1>Mentor Hub</h1>
+            <div class="auth-brand-tagline">Programming Excellence Community</div>
+            <p class="auth-brand-desc">Share your expertise, review mentee work and inspire the next generation of developers at PEC.</p>
+            <div class="auth-visual-nodes">
+              <div class="auth-node-line auth-node-line-1"></div>
+              <div class="auth-node-line auth-node-line-2"></div>
+              <div class="auth-node-line auth-node-line-3"></div>
+              <div class="auth-node auth-node-center">PEC</div>
+              <div class="auth-node auth-node-orbit auth-node-1">M1</div>
+              <div class="auth-node auth-node-orbit auth-node-2">M2</div>
+              <div class="auth-node auth-node-orbit auth-node-3">M3</div>
+            </div>
+          </div>
+        </div>
+        <div class="auth-form-side">
+          <div class="auth-bg-blobs"><div class="auth-blob auth-blob-1"></div><div class="auth-blob auth-blob-2"></div></div>
+          <div class="auth-decor auth-decor-1"></div>
+          <div class="auth-decor auth-decor-2"></div>
+          <div class="auth-decor auth-decor-3"></div>
+          <div class="auth-decor auth-decor-4"></div>
+          <div class="auth-card">
+            <div class="auth-card-header">
+              <div class="role-badge mentor"><i class="fas fa-chalkboard-teacher"></i> Mentor</div>
+              <h2>Welcome, Mentor</h2>
+              <p>Guide the next generation of developers.</p>
+            </div>
+            <form id="mentor-login-form">
+              <div class="form-group">
+                <label for="mentor-email">Email Address</label>
+                <input type="email" id="mentor-email" class="form-control" placeholder="you@example.com" required>
+              </div>
+              <div class="form-group">
+                <label for="mentor-password">Password</label>
+                <div class="password-wrapper">
+                  <input type="password" id="mentor-password" class="form-control" placeholder="Enter your password" required>
+                  <button type="button" class="password-toggle" aria-label="Toggle password"><i class="fas fa-eye"></i></button>
+                </div>
+              </div>
+              <div class="auth-links">
+                <label style="display:flex;align-items:center;gap:6px;font-size:0.85rem;cursor:pointer"><input type="checkbox" style="accent-color:var(--tangerine)"> Remember me</label>
+                <a href="javascript:void(0)">Forgot password?</a>
+              </div>
+              <button type="submit" class="btn btn-primary">Enter Mentor Space</button>
+            </form>
+            <div class="auth-footer">
+              <p>New to PEC? <a href="javascript:void(0)" onclick="showAuth('view-mentor-signup')">Create Account</a></p>
+              <p style="margin-top:8px"><a href="javascript:void(0)" onclick="showAuth('view-role-selection')">Change role</a></p>
+              <p style="margin-top:8px"><a href="javascript:void(0)" onclick="showAuth('view-role-selection')"><i class="fas fa-arrow-left" style="margin-right:4px"></i> Back to PEC</a></p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== VIEW 5: MENTOR SIGNUP ==================== -->
+  <div class="auth-view" id="view-mentor-signup">
+    <div class="auth-page">
+      <div class="auth-split">
+        <div class="auth-brand-side">
+          <div class="auth-bg-blobs"><div class="auth-blob auth-blob-1"></div><div class="auth-blob auth-blob-2"></div><div class="auth-blob auth-blob-3"></div></div>
+          <div class="auth-brand-content">
+            <div class="auth-brand-logo">P</div>
+            <h1>Become a Mentor</h1>
+            <div class="auth-brand-tagline">Programming Excellence Community</div>
+            <p class="auth-brand-desc">Join PEC as a mentor and make a lasting impact on emerging developers.</p>
+            <div class="auth-visual-nodes">
+              <div class="auth-node-line auth-node-line-1"></div>
+              <div class="auth-node-line auth-node-line-2"></div>
+              <div class="auth-node-line auth-node-line-3"></div>
+              <div class="auth-node auth-node-center">PEC</div>
+              <div class="auth-node auth-node-orbit auth-node-1">M1</div>
+              <div class="auth-node auth-node-orbit auth-node-2">M2</div>
+              <div class="auth-node auth-node-orbit auth-node-3">M3</div>
+            </div>
+          </div>
+        </div>
+        <div class="auth-form-side">
+          <div class="auth-bg-blobs"><div class="auth-blob auth-blob-1"></div><div class="auth-blob auth-blob-2"></div></div>
+          <div class="auth-decor auth-decor-1"></div>
+          <div class="auth-decor auth-decor-2"></div>
+          <div class="auth-decor auth-decor-3"></div>
+          <div class="auth-decor auth-decor-4"></div>
+          <div class="auth-card">
+            <div class="auth-card-header">
+              <div class="role-badge mentor"><i class="fas fa-chalkboard-teacher"></i> Mentor</div>
+              <h2>Create Mentor Account</h2>
+              <p>Set up your mentor profile to get started.</p>
+            </div>
+            <div class="signup-steps">
+              <div class="signup-step active"><span class="step-num">1</span> Details</div>
+              <div class="signup-step-divider"></div>
+              <div class="signup-step"><span class="step-num">2</span> Verify</div>
+              <div class="signup-step-divider"></div>
+              <div class="signup-step"><span class="step-num">3</span> Done</div>
+            </div>
+            <form id="mentor-signup-form">
+              <div class="form-group">
+                <label for="mentor-fullname">Full Name</label>
+                <input type="text" id="mentor-fullname" class="form-control" placeholder="Your full name" required>
+              </div>
+              <div class="form-group">
+                <label for="mentor-signup-email">Email Address</label>
+                <input type="email" id="mentor-signup-email" class="form-control" placeholder="you@example.com" required>
+              </div>
+              <div class="form-group">
+                <label for="mentor-department">Department</label>
+                <select id="mentor-department" class="form-control" required>
+                  <option value="" disabled selected>Select your department</option>
+                  <option value="cse">Computer Science</option>
+                  <option value="it">Information Technology</option>
+                  <option value="ece">Electronics & Communication</option>
+                  <option value="ee">Electrical Engineering</option>
+                  <option value="me">Mechanical Engineering</option>
+                  <option value="ce">Civil Engineering</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="mentor-designation">Designation</label>
+                <select id="mentor-designation" class="form-control" required>
+                  <option value="" disabled selected>Select your designation</option>
+                  <option value="professor">Professor</option>
+                  <option value="assistant-professor">Assistant Professor</option>
+                  <option value="senior-mentor">Senior Mentor</option>
+                  <option value="industry-mentor">Industry Mentor</option>
+                  <option value="ta">Teaching Assistant</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="mentor-expertise">Area of Expertise</label>
+                <textarea id="mentor-expertise" class="form-control" placeholder="e.g. Web Development, DSA, Machine Learning" required></textarea>
+              </div>
+              <div class="form-group">
+                <label for="mentor-signup-password">Password</label>
+                <div class="password-wrapper">
+                  <input type="password" id="mentor-signup-password" class="form-control" placeholder="Create a password" required>
+                  <button type="button" class="password-toggle" aria-label="Toggle password"><i class="fas fa-eye"></i></button>
+                </div>
+                <div class="password-strength">
+                  <div class="strength-bars"><div class="strength-bar"></div><div class="strength-bar"></div><div class="strength-bar"></div><div class="strength-bar"></div></div>
+                  <span class="strength-text"></span>
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="mentor-confirm-password">Confirm Password</label>
+                <div class="password-wrapper">
+                  <input type="password" id="mentor-confirm-password" class="form-control" placeholder="Confirm your password" required>
+                  <button type="button" class="password-toggle" aria-label="Toggle password"><i class="fas fa-eye"></i></button>
+                </div>
+              </div>
+              <div class="auth-info-box">
+                <h4><i class="fas fa-info-circle"></i> What happens next?</h4>
+                <ul>
+                  <li>Your account will be reviewed by a coordinator</li>
+                  <li>You'll receive an email once approved</li>
+                  <li>You'll be assigned mentees based on your expertise</li>
+                </ul>
+              </div>
+              <button type="submit" class="btn btn-primary" style="margin-top:16px">Create Mentor Account</button>
+            </form>
+            <div class="auth-footer">
+              <p>Already have an account? <a href="javascript:void(0)" onclick="showAuth('view-mentor-login')">Log in</a></p>
+              <p style="margin-top:8px"><a href="javascript:void(0)" onclick="showAuth('view-role-selection')">Change role</a></p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== VIEW 6: COORDINATOR LOGIN ==================== -->
+  <div class="auth-view" id="view-coordinator-login">
+    <div class="auth-page">
+      <div class="auth-split">
+        <div class="auth-brand-side">
+          <div class="auth-bg-blobs"><div class="auth-blob auth-blob-1"></div><div class="auth-blob auth-blob-2"></div><div class="auth-blob auth-blob-3"></div></div>
+          <div class="auth-brand-content">
+            <div class="auth-brand-logo">P</div>
+            <h1>Control Center</h1>
+            <div class="auth-brand-tagline">Programming Excellence Community</div>
+            <p class="auth-brand-desc">Oversee students, mentors, activities and everything that keeps PEC running smoothly.</p>
+            <div class="auth-visual-panels">
+              <div class="auth-panel auth-panel-1">
+                <div class="auth-panel-bar orange"></div>
+                <div class="auth-panel-bar pool"></div>
+                <div class="auth-panel-bar gray"></div>
+              </div>
+              <div class="auth-panel auth-panel-2">
+                <div class="auth-panel-bar pool"></div>
+                <div class="auth-panel-bar orange"></div>
+              </div>
+              <div class="auth-panel auth-panel-3">
+                <div class="auth-panel-dots"><span class="auth-panel-dot filled"></span><span class="auth-panel-dot filled"></span><span class="auth-panel-dot"></span><span class="auth-panel-dot"></span></div>
+                <div class="auth-panel-bar gray" style="margin-top:10px"></div>
+              </div>
+              <div class="auth-panel auth-panel-4">
+                <div class="auth-panel-bar orange" style="width:50%"></div>
+                <div class="auth-panel-bar pool" style="width:70%"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="auth-form-side">
+          <div class="auth-bg-blobs"><div class="auth-blob auth-blob-1"></div><div class="auth-blob auth-blob-2"></div></div>
+          <div class="auth-decor auth-decor-1"></div>
+          <div class="auth-decor auth-decor-2"></div>
+          <div class="auth-decor auth-decor-3"></div>
+          <div class="auth-decor auth-decor-4"></div>
+          <div class="auth-card">
+            <div class="auth-card-header">
+              <div class="role-badge coordinator"><i class="fas fa-cogs"></i> Coordinator</div>
+              <h2>Coordinator Access</h2>
+              <p>Manage the PEC community from one place.</p>
+            </div>
+            <form id="coordinator-login-form">
+              <div class="form-group">
+                <label for="coordinator-email">Email Address</label>
+                <input type="email" id="coordinator-email" class="form-control" placeholder="you@example.com" required>
+              </div>
+              <div class="form-group">
+                <label for="coordinator-password">Password</label>
+                <div class="password-wrapper">
+                  <input type="password" id="coordinator-password" class="form-control" placeholder="Enter your password" required>
+                  <button type="button" class="password-toggle" aria-label="Toggle password"><i class="fas fa-eye"></i></button>
+                </div>
+              </div>
+              <div class="auth-links">
+                <label style="display:flex;align-items:center;gap:6px;font-size:0.85rem;cursor:pointer"><input type="checkbox" style="accent-color:var(--tangerine)"> Remember me</label>
+                <a href="javascript:void(0)">Forgot password?</a>
+              </div>
+              <button type="submit" class="btn btn-primary">Enter Control Center</button>
+            </form>
+            <div class="auth-footer">
+              <p>Need a coordinator account? <a href="javascript:void(0)" onclick="showAuth('view-coordinator-signup')">Request access</a></p>
+              <p style="margin-top:8px"><a href="javascript:void(0)" onclick="showAuth('view-role-selection')">Change role</a></p>
+              <p style="margin-top:8px"><a href="javascript:void(0)" onclick="showAuth('view-role-selection')"><i class="fas fa-arrow-left" style="margin-right:4px"></i> Back to PEC</a></p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== VIEW 7: COORDINATOR SIGNUP ==================== -->
+  <div class="auth-view" id="view-coordinator-signup">
+    <div class="auth-page">
+      <div class="auth-split">
+        <div class="auth-brand-side">
+          <div class="auth-bg-blobs"><div class="auth-blob auth-blob-1"></div><div class="auth-blob auth-blob-2"></div><div class="auth-blob auth-blob-3"></div></div>
+          <div class="auth-brand-content">
+            <div class="auth-brand-logo">P</div>
+            <h1>Become a Coordinator</h1>
+            <div class="auth-brand-tagline">Programming Excellence Community</div>
+            <p class="auth-brand-desc">Apply for coordinator access and help shape the PEC community.</p>
+            <div class="auth-visual-panels">
+              <div class="auth-panel auth-panel-1">
+                <div class="auth-panel-bar orange"></div>
+                <div class="auth-panel-bar pool"></div>
+                <div class="auth-panel-bar gray"></div>
+              </div>
+              <div class="auth-panel auth-panel-2">
+                <div class="auth-panel-bar pool"></div>
+                <div class="auth-panel-bar orange"></div>
+              </div>
+              <div class="auth-panel auth-panel-3">
+                <div class="auth-panel-dots"><span class="auth-panel-dot filled"></span><span class="auth-panel-dot filled"></span><span class="auth-panel-dot"></span><span class="auth-panel-dot"></span></div>
+                <div class="auth-panel-bar gray" style="margin-top:10px"></div>
+              </div>
+              <div class="auth-panel auth-panel-4">
+                <div class="auth-panel-bar orange" style="width:50%"></div>
+                <div class="auth-panel-bar pool" style="width:70%"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="auth-form-side">
+          <div class="auth-bg-blobs"><div class="auth-blob auth-blob-1"></div><div class="auth-blob auth-blob-2"></div></div>
+          <div class="auth-decor auth-decor-1"></div>
+          <div class="auth-decor auth-decor-2"></div>
+          <div class="auth-decor auth-decor-3"></div>
+          <div class="auth-decor auth-decor-4"></div>
+          <div class="auth-card">
+            <div class="auth-card-header">
+              <div class="role-badge coordinator"><i class="fas fa-cogs"></i> Coordinator</div>
+              <h2>Request Coordinator Access</h2>
+              <p>Fill in your details to apply.</p>
+            </div>
+            <div class="signup-steps">
+              <div class="signup-step active"><span class="step-num">1</span> Details</div>
+              <div class="signup-step-divider"></div>
+              <div class="signup-step"><span class="step-num">2</span> Verify</div>
+              <div class="signup-step-divider"></div>
+              <div class="signup-step"><span class="step-num">3</span> Done</div>
+            </div>
+            <form id="coordinator-signup-form">
+              <div class="form-group">
+                <label for="coordinator-fullname">Full Name</label>
+                <input type="text" id="coordinator-fullname" class="form-control" placeholder="Your full name" required>
+              </div>
+              <div class="form-group">
+                <label for="coordinator-signup-email">Email Address</label>
+                <input type="email" id="coordinator-signup-email" class="form-control" placeholder="you@example.com" required>
+              </div>
+              <div class="form-group">
+                <label for="coordinator-department">Department</label>
+                <select id="coordinator-department" class="form-control" required>
+                  <option value="" disabled selected>Select your department</option>
+                  <option value="cse">Computer Science</option>
+                  <option value="it">Information Technology</option>
+                  <option value="ece">Electronics & Communication</option>
+                  <option value="ee">Electrical Engineering</option>
+                  <option value="me">Mechanical Engineering</option>
+                  <option value="ce">Civil Engineering</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="coordinator-id">Coordinator ID</label>
+                <input type="text" id="coordinator-id" class="form-control" placeholder="Your official coordinator ID" required>
+              </div>
+              <div class="form-group">
+                <label for="coordinator-signup-password">Password</label>
+                <div class="password-wrapper">
+                  <input type="password" id="coordinator-signup-password" class="form-control" placeholder="Create a password" required>
+                  <button type="button" class="password-toggle" aria-label="Toggle password"><i class="fas fa-eye"></i></button>
+                </div>
+                <div class="password-strength">
+                  <div class="strength-bars"><div class="strength-bar"></div><div class="strength-bar"></div><div class="strength-bar"></div><div class="strength-bar"></div></div>
+                  <span class="strength-text"></span>
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="coordinator-confirm-password">Confirm Password</label>
+                <div class="password-wrapper">
+                  <input type="password" id="coordinator-confirm-password" class="form-control" placeholder="Confirm your password" required>
+                  <button type="button" class="password-toggle" aria-label="Toggle password"><i class="fas fa-eye"></i></button>
+                </div>
+              </div>
+              <div class="auth-warning-box">
+                <p><i class="fas fa-exclamation-triangle" style="margin-right:6px"></i> Coordinator accounts require admin approval. You'll receive access after your identity is verified.</p>
+              </div>
+              <button type="submit" class="btn btn-primary" style="margin-top:16px">Create Coordinator Account</button>
+            </form>
+            <div class="auth-footer">
+              <p>Already have an account? <a href="javascript:void(0)" onclick="showAuth('view-coordinator-login')">Log in</a></p>
+              <p style="margin-top:8px"><a href="javascript:void(0)" onclick="showAuth('view-role-selection')">Change role</a></p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../js/main.js"></script>
+  <script src="../js/auth.js"></script>
+</body>
+</html>
