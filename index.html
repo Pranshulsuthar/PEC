@@ -27,7 +27,7 @@
         <a href="pages/public.html#home" class="active">Home</a>
         <a href="pages/public.html#about">About</a>
         <a href="pages/public.html#activities">Activities</a>
-        <a href="pages/public.html#mentorship">Mentorship</a>
+        <a href="pages/public.html#coordinators">Coordinators</a>
         <a href="pages/public.html#events">Events</a>
         <a href="pages/public.html#leaderboard">Leaderboard</a>
         <a href="pages/public.html#contact">Contact</a>
@@ -47,7 +47,7 @@
     <a href="pages/public.html#home">Home</a>
     <a href="pages/public.html#about">About</a>
     <a href="pages/public.html#activities">Activities</a>
-    <a href="pages/public.html#mentorship">Mentorship</a>
+    <a href="pages/public.html#coordinators">Coordinators</a>
     <a href="pages/public.html#events">Events</a>
     <a href="pages/public.html#leaderboard">Leaderboard</a>
     <a href="pages/public.html#contact">Contact</a>
@@ -73,18 +73,13 @@
           <div class="hero-shape hero-shape-2"></div>
           <div class="hero-shape hero-shape-3"></div>
           <div class="hero-shape hero-shape-4"></div>
-          <div class="hero-code-block">
-            <div class="code-header">
-              <span class="code-dot red"></span>
-              <span class="code-dot yellow"></span>
-              <span class="code-dot green"></span>
-            </div>
-            <div class="code-line"><span class="keyword">function</span> <span class="function">solve</span><span class="bracket">(</span>problem<span class="bracket">)</span> {</div>
-            <div class="code-line">&nbsp;&nbsp;<span class="keyword">const</span> skills = <span class="function">learn</span><span class="bracket">()</span>;</div>
-            <div class="code-line">&nbsp;&nbsp;<span class="keyword">const</span> growth = <span class="function">practice</span><span class="bracket">(</span>skills<span class="bracket">)</span>;</div>
-            <div class="code-line">&nbsp;&nbsp;<span class="keyword">return</span> <span class="function">excellence</span><span class="bracket">(</span>growth<span class="bracket">)</span>;</div>
-            <div class="code-line"><span class="bracket">}</span></div>
-            <div class="code-line"><span class="comment">// Welcome to PEC</span></div>
+          <div class="hero-solar-system" aria-label="PEC community solar system">
+            <span class="solar-star star-one"></span><span class="solar-star star-two"></span><span class="solar-star star-three"></span><span class="solar-star star-four"></span>
+            <div class="solar-orbit solar-orbit-one"><div class="solar-planet student-planet"><span>Student</span></div></div>
+            <div class="solar-orbit solar-orbit-two"><div class="solar-planet mentor-planet"><span>Mentor</span></div></div>
+            <div class="solar-orbit solar-orbit-three"><div class="solar-planet coordinator-planet"><span>Coordinator</span><i></i></div></div>
+            <div class="solar-sun"><strong>PEC</strong><small>community</small></div>
+            <div class="solar-caption"><span></span>Learn · Build · Grow<span></span></div>
           </div>
         </div>
       </div>
@@ -154,29 +149,39 @@
     </div>
   </section>
 
-  <!-- Mentorship Flow Section -->
-  <section class="section section-light">
+  <!-- Coordinator Profiles Section -->
+  <section id="coordinators" class="section section-light">
     <div class="container">
       <div class="section-header fade-in">
-        <span class="section-label">Mentorship</span>
-        <h2>Guided Learning Journey</h2>
-        <p>Each student is connected with an assigned mentor who helps guide their programming journey.</p>
+        <span class="section-label">LEADERSHIP</span>
+        <h2>Meet Our Coordinators</h2>
+        <p>Supporting the PEC community through guidance, collaboration and continuous growth.</p>
       </div>
-      <div class="mentorship-flow fade-in">
-        <div class="flow-item"><div class="flow-item-icon"><i class="fas fa-user-graduate"></i></div><span>Student</span></div>
-        <div class="flow-arrow"><i class="fas fa-arrow-right"></i></div>
-        <div class="flow-item"><div class="flow-item-icon"><i class="fas fa-user-tie"></i></div><span>Assigned Mentor</span></div>
-        <div class="flow-arrow"><i class="fas fa-arrow-right"></i></div>
-        <div class="flow-item"><div class="flow-item-icon"><i class="fas fa-handshake"></i></div><span>Guidance</span></div>
-        <div class="flow-arrow"><i class="fas fa-arrow-right"></i></div>
-        <div class="flow-item"><div class="flow-item-icon"><i class="fas fa-comments"></i></div><span>Feedback</span></div>
-        <div class="flow-arrow"><i class="fas fa-arrow-right"></i></div>
-        <div class="flow-item"><div class="flow-item-icon"><i class="fas fa-chart-line"></i></div><span>Progress</span></div>
-      </div>
-      <div class="card fade-in" style="max-width:600px;margin:0 auto;text-align:center;">
-        <div class="card-icon purple" style="margin:0 auto 12px;"><i class="fas fa-lock"></i></div>
-        <h4>Mentor Access</h4>
-        <p>Mentors will later manage and monitor only their assigned mentees. This feature will be implemented in the backend phase.</p>
+      <div class="coordinator-team fade-in">
+        <div class="coordinator-profile reveal">
+          <div class="coordinator-photo-wrap"><img src="https://i.pravatar.cc/320?img=12" alt="Coordinator profile photo"></div>
+          <div class="coordinator-profile-body"><span class="coordinator-role-label">Coordinator</span><h3>Tanishq Mittal</h3><p>Coordinator &middot; 3rd Year</p></div>
+        </div>
+        <div class="coordinator-profile reveal">
+          <div class="coordinator-photo-wrap"><img src="https://i.pravatar.cc/320?img=32" alt="Coordinator profile photo"></div>
+          <div class="coordinator-profile-body"><span class="coordinator-role-label">Coordinator</span><h3>Sakshi Karamchandani</h3><p>Coordinator &middot; 3rd Year</p></div>
+        </div>
+        <div class="coordinator-profile reveal">
+          <div class="coordinator-photo-wrap"><img src="https://i.pravatar.cc/320?img=52" alt="Coordinator profile photo"></div>
+          <div class="coordinator-profile-body"><span class="coordinator-role-label">Coordinator</span><h3>Tanishk Kumar Badoni</h3><p>Coordinator &middot; 2nd Year</p></div>
+        </div>
+        <div class="coordinator-profile reveal">
+          <div class="coordinator-photo-wrap"><img src="https://i.pravatar.cc/320?img=68" alt="Coordinator profile photo"></div>
+          <div class="coordinator-profile-body"><span class="coordinator-role-label">Coordinator</span><h3>Rishabh Thakur</h3><p>Coordinator &middot; 2nd Year</p></div>
+        </div>
+        <div class="coordinator-profile reveal">
+          <div class="coordinator-photo-wrap"><img src="https://i.pravatar.cc/320?img=47" alt="Faculty Coordinator profile photo"></div>
+          <div class="coordinator-profile-body"><span class="coordinator-role-label">Faculty Coordinator</span><h3>Garima Garg</h3><p>Faculty Coordinator</p></div>
+        </div>
+        <div class="coordinator-profile reveal">
+          <div class="coordinator-photo-wrap"><img src="https://i.pravatar.cc/320?img=49" alt="Faculty Coordinator profile photo"></div>
+          <div class="coordinator-profile-body"><span class="coordinator-role-label">Faculty Coordinator</span><h3>Aakansha Mitawa</h3><p>Faculty Coordinator</p></div>
+        </div>
       </div>
     </div>
   </section>
@@ -200,7 +205,7 @@
         </div>
         <div class="footer-links">
           <h4>Quick Links</h4>
-          <a href="pages/public.html#home">Home</a><a href="pages/public.html#about">About</a><a href="pages/public.html#activities">Activities</a><a href="pages/public.html#mentorship">Mentorship</a>
+          <a href="pages/public.html#home">Home</a><a href="pages/public.html#about">About</a><a href="pages/public.html#activities">Activities</a><a href="pages/public.html#coordinators">Coordinators</a>
         </div>
         <div class="footer-links">
           <h4>Community</h4>

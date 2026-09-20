@@ -108,7 +108,7 @@
               <h2>Welcome, Learner</h2>
               <p>Your next challenge starts here.</p>
             </div>
-            <form id="student-login-form">
+            <form id="student-login-form" class="auth-form">
               <div class="form-group">
                 <label for="student-email">Email Address</label>
                 <input type="email" id="student-email" class="form-control" placeholder="you@example.com" required>
@@ -177,7 +177,7 @@
               <div class="signup-step-divider"></div>
               <div class="signup-step"><span class="step-num">3</span> Done</div>
             </div>
-            <form id="student-signup-form">
+            <form id="student-signup-form" class="auth-form">
               <div class="form-group">
                 <label for="student-fullname">Full Name</label>
                 <input type="text" id="student-fullname" class="form-control" placeholder="Your full name" required>
@@ -211,6 +211,10 @@
                   <option value="3">3rd Year</option>
                   <option value="4">4th Year</option>
                 </select>
+              </div>
+              <div class="form-group">
+                <label for="student-skills">Skills</label>
+                <input type="text" id="student-skills" class="form-control" placeholder="e.g. C++, Python, Web Development">
               </div>
               <div class="form-group">
                 <label for="student-signup-password">Password</label>
@@ -276,7 +280,7 @@
               <h2>Welcome, Mentor</h2>
               <p>Guide the next generation of developers.</p>
             </div>
-            <form id="mentor-login-form">
+            <form id="mentor-login-form" class="auth-form">
               <div class="form-group">
                 <label for="mentor-email">Email Address</label>
                 <input type="email" id="mentor-email" class="form-control" placeholder="you@example.com" required>
@@ -346,7 +350,7 @@
               <div class="signup-step-divider"></div>
               <div class="signup-step"><span class="step-num">3</span> Done</div>
             </div>
-            <form id="mentor-signup-form">
+            <form id="mentor-signup-form" class="auth-form">
               <div class="form-group">
                 <label for="mentor-fullname">Full Name</label>
                 <input type="text" id="mentor-fullname" class="form-control" placeholder="Your full name" required>
@@ -381,6 +385,14 @@
               <div class="form-group">
                 <label for="mentor-expertise">Area of Expertise</label>
                 <textarea id="mentor-expertise" class="form-control" placeholder="e.g. Web Development, DSA, Machine Learning" required></textarea>
+              </div>
+              <div class="form-group">
+                <label for="mentor-experience">Experience</label>
+                <textarea id="mentor-experience" class="form-control" placeholder="Describe your mentoring or industry experience"></textarea>
+              </div>
+              <div class="form-group">
+                <label for="mentor-skills">Skills</label>
+                <input type="text" id="mentor-skills" class="form-control" placeholder="e.g. JavaScript, React, DSA">
               </div>
               <div class="form-group">
                 <label for="mentor-signup-password">Password</label>
@@ -464,7 +476,7 @@
               <h2>Coordinator Access</h2>
               <p>Manage the PEC community from one place.</p>
             </div>
-            <form id="coordinator-login-form">
+            <form id="coordinator-login-form" class="auth-form">
               <div class="form-group">
                 <label for="coordinator-email">Email Address</label>
                 <input type="email" id="coordinator-email" class="form-control" placeholder="you@example.com" required>
@@ -544,7 +556,7 @@
               <div class="signup-step-divider"></div>
               <div class="signup-step"><span class="step-num">3</span> Done</div>
             </div>
-            <form id="coordinator-signup-form">
+            <form id="coordinator-signup-form" class="auth-form">
               <div class="form-group">
                 <label for="coordinator-fullname">Full Name</label>
                 <input type="text" id="coordinator-fullname" class="form-control" placeholder="Your full name" required>

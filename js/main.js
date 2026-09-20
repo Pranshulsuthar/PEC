@@ -281,7 +281,7 @@ function initScrollReveal() {
     observer.observe(el);
   });
 
-  var staggerSections = ['#about', '#activities', '#mentorship', '#events', '#leaderboard', '#contact'];
+  var staggerSections = ['#about', '#activities', '#coordinators', '#events', '#leaderboard', '#contact'];
   staggerSections.forEach(function (selector) {
     var section = document.querySelector(selector);
     if (!section) return;
@@ -543,6 +543,82 @@ function initHeroAnimation() {
   });
 }
 
+function initCoordinatorCardTilt() {
+  var cards = document.querySelectorAll('.coordinator-profile');
+  if (!cards.length || window.matchMedia('(max-width: 768px)').matches) return;
+
+  cards.forEach(function (card) {
+    card.addEventListener('mousemove', function (event) {
+      var rect = card.getBoundingClientRect();
+      var x = event.clientX - rect.left;
+      var y = event.clientY - rect.top;
+      var rotateY = ((x - rect.width / 2) / (rect.width / 2)) * 5;
+      var rotateX = -((y - rect.height / 2) / (rect.height / 2)) * 4;
+      card.style.transition = 'transform 0.1s ease-out, box-shadow 0.25s ease, border-color 0.25s ease';
+      card.style.transform = 'perspective(900px) rotateX(' + rotateX + 'deg) rotateY(' + rotateY + 'deg) translateY(-6px) scale(1.015)';
+    });
+
+    card.addEventListener('mouseleave', function () {
+      card.style.transition = 'transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease, border-color 0.3s ease';
+      card.style.transform = 'translateY(0) scale(1)';
+    });
+  });
+}
+
+function initHeroCodeEditor() {
+  var linesEl = document.getElementById('hero-code-lines');
+  var roleEl = document.getElementById('hero-code-role');
+  if (!linesEl || !roleEl) return;
+
+  var roles = [
+    { name: 'STUDENT', color: 'string', lines: ['const community = "PEC";', 'community.connect();', 'community.learn();', 'community.build();', 'community.grow();'] },
+    { name: 'MENTOR', color: 'function', lines: ['const community = "PEC";', 'community.guide();', 'community.review();', 'community.inspire();', 'community.grow();'] },
+    { name: 'COORDINATOR', color: 'keyword', lines: ['const community = "PEC";', 'community.organize();', 'community.connect();', 'community.enable();', 'community.grow();'] }
+  ];
+  var roleIndex = 0;
+  var lineIndex = 0;
+  var characterIndex = 0;
+  var deleting = false;
+
+  function highlight(line) {
+    return escapeCode(line)
+      .replace(/(".*?")/g, '<span class="string">$1</span>')
+      .replace(/\b(const|function|return)\b/g, '<span class="keyword">$1</span>')
+      .replace(/([a-z]+)(?=\()/g, '<span class="function">$1</span>');
+  }
+
+  function escapeCode(value) {
+    return value.replace(/[&<>]/g, function (char) { return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[char]; });
+  }
+
+  function tick() {
+    var role = roles[roleIndex];
+    var visibleLines = role.lines.slice(0, lineIndex);
+    if (!deleting) visibleLines.push(role.lines[lineIndex].slice(0, characterIndex));
+    linesEl.innerHTML = visibleLines.map(function (line) { return '<div class="code-line">' + highlight(line) + '</div>'; }).join('');
+    roleEl.textContent = role.name;
+
+    if (!deleting) {
+      characterIndex += 1;
+      if (characterIndex > role.lines[lineIndex].length) {
+        characterIndex = 0;
+        lineIndex += 1;
+        if (lineIndex >= role.lines.length) { lineIndex = role.lines.length - 1; deleting = true; }
+      }
+    } else {
+      characterIndex = Math.max(0, characterIndex - 1);
+      if (characterIndex === 0) {
+        lineIndex -= 1;
+        if (lineIndex < 0) { roleIndex = (roleIndex + 1) % roles.length; lineIndex = 0; deleting = false; }
+        else characterIndex = roles[roleIndex].lines[lineIndex].length;
+      }
+    }
+    setTimeout(tick, deleting ? 28 : 54);
+  }
+
+  tick();
+}
+
 /* ============================================
    SECTION 15 - MAIN INIT
    ============================================ */
@@ -558,6 +634,7 @@ document.addEventListener('DOMContentLoaded', function () {
   initNavbarAnimation();
   initSectionTransitions();
   initHeroAnimation();
+  initCoordinatorCardTilt();
   renderActivities();
   renderEvents();
   renderLeaderboard(currentTab);

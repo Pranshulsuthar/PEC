@@ -14,7 +14,8 @@ function showAuth(viewId) {
     card.style.filter = '';
   });
 
-  var targetId = viewId === 'role-selection' ? 'view-role-selection' : 'view-' + viewId;
+  var targetId = viewId === 'role-selection' ? 'view-role-selection' :
+                 (viewId.indexOf('view-') === 0 ? viewId : 'view-' + viewId);
   var target = document.getElementById(targetId) ||
                document.getElementById('view-role-selection');
   if (target) {
@@ -397,77 +398,135 @@ window.showFormSuccess = function (message) {
 
 document.addEventListener('submit', function (e) {
   var form = e.target;
-  if (!form.classList.contains('auth-form')) return;
+  if (!form.classList.contains('auth-form') && !form.matches('[id$="-login-form"], [id$="-signup-form"]')) return;
 
   e.preventDefault();
-
   clearAllErrors();
 
-  var emailInput    = form.querySelector('input[type="email"], input[name="email"]');
-  var passwordInput = form.querySelector('input[type="password"], input[name="password"]');
-  var confirmInput  = form.querySelector('input[name="confirmPassword"], input[name="confirm-password"]');
-  var submitBtn     = form.querySelector('button[type="submit"]');
-  var isValid       = true;
-
-  if (emailInput && emailInput.value.trim()) {
-    if (!validateEmail(emailInput.value.trim())) {
-      showError(emailInput, 'Please enter a valid email address');
-      isValid = false;
+  // Helper for POST JSON
+  function postJSON(url, data) {
+    return fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    }).then(function (response) {
+      return response.json().then(function (body) {
+        if (!response.ok && !body.message) body.message = 'Request failed';
+        return body;
+      });
+    });
+  }
+  function storeToken(tok) { sessionStorage.setItem('pec_jwt', tok); }
+  function completeAuth(response) {
+    if (!response.success) {
+      showFormSuccess(response.message || 'Unable to complete request');
+      return;
     }
-  } else if (emailInput) {
-    showError(emailInput, 'Email is required');
-    isValid = false;
+    storeToken(response.token);
+    window.location.href = '../pages/dashboard.html';
+  }
+  function submitLogin(role, emailId, passwordId) {
+    var email = document.getElementById(emailId).value.trim();
+    var password = document.getElementById(passwordId).value;
+    if (!validateEmail(email)) return showFieldError(emailId, 'Invalid email');
+    if (!validatePassword(password)) return showFieldError(passwordId, 'Password must be at least 8 characters');
+    setLoading(true);
+    postJSON('/api/auth/login', { email: email, password: password, role: role })
+      .then(completeAuth)
+      .catch(function () { showFormSuccess('Unable to connect to PEC server'); })
+      .finally(function () { setLoading(false); });
   }
 
-  if (passwordInput && passwordInput.value) {
-    if (!validatePassword(passwordInput.value)) {
-      showError(passwordInput, 'Password must be at least 8 characters');
-      isValid = false;
-    }
-  } else if (passwordInput) {
-    showError(passwordInput, 'Password is required');
-    isValid = false;
+  var formId = form.id;
+  function setLoading(active) {
+    var button = form.querySelector('button[type="submit"]');
+    if (!button) return;
+    button.disabled = active;
+    button.dataset.label = button.dataset.label || button.textContent;
+    button.textContent = active ? 'Please wait...' : button.dataset.label;
   }
 
-  if (confirmInput && passwordInput) {
-    if (!confirmPasswordMatch(passwordInput.value, confirmInput.value)) {
-      showError(confirmInput, 'Passwords do not match');
-      isValid = false;
-    }
-  } else if (confirmInput && !confirmInput.value) {
-    showError(confirmInput, 'Please confirm your password');
-    isValid = false;
+  // Login handlers
+  if (formId === 'student-login-form') {
+    submitLogin('student', 'student-email', 'student-password');
+    return;
   }
 
-  form.querySelectorAll('[required]').forEach(function (field) {
-    if (!field.value.trim()) {
-      showError(field, 'This field is required');
-      isValid = false;
-    }
-  });
-
-  if (!isValid) return;
-
-  if (submitBtn) {
-    submitBtn.disabled = true;
-    submitBtn.textContent = 'Submitted!';
-    submitBtn.style.background = '#27ae60';
-    submitBtn.style.borderColor = '#27ae60';
+  if (formId === 'mentor-login-form') {
+    submitLogin('mentor', 'mentor-email', 'mentor-password');
+    return;
   }
 
-  showSuccess('Form submitted successfully!');
+  if (formId === 'coordinator-login-form') {
+    submitLogin('coordinator', 'coordinator-email', 'coordinator-password');
+    return;
+  }
 
-  setTimeout(function () {
-    form.reset();
-    if (submitBtn) {
-      submitBtn.disabled = false;
-      submitBtn.textContent = submitBtn.getAttribute('data-original-text') || 'Submit';
-      submitBtn.style.background = '';
-      submitBtn.style.borderColor = '';
-    }
-    var successMsg = document.querySelector('.auth-success-message');
-    if (successMsg) successMsg.remove();
-  }, 3000);
+  // Signup handlers
+  if (formId === 'student-signup-form') {
+    var name = document.getElementById('student-fullname').value.trim();
+    var email = document.getElementById('student-signup-email').value.trim();
+    var password = document.getElementById('student-signup-password').value;
+    var confirm = document.getElementById('student-confirm-password').value;
+    var enrollment_no = document.getElementById('student-enrollment').value.trim();
+    var branch = document.getElementById('student-branch').value;
+    var skills = document.getElementById('student-skills').value.trim();
+    if (!name) return showFieldError('student-fullname', 'Name required');
+    if (!validateEmail(email)) return showFieldError('student-signup-email', 'Invalid email');
+    if (!validatePassword(password)) return showFieldError('student-signup-password', 'Password must be at least 8 characters');
+    if (!confirmPasswordMatch(password, confirm)) return showFieldError('student-confirm-password', 'Passwords do not match');
+    var year = document.getElementById('student-year').value;
+    setLoading(true);
+    postJSON('/api/auth/register', { name: name, email: email, password: password, role: 'student', roll_number: enrollment_no, branch: branch, year: year, skills: skills })
+      .then(completeAuth)
+      .catch(function () { showFormSuccess('Unable to connect to PEC server'); })
+      .finally(function () { setLoading(false); });
+    return;
+  }
+
+  if (formId === 'mentor-signup-form') {
+    var name = document.getElementById('mentor-fullname').value.trim();
+    var email = document.getElementById('mentor-signup-email').value.trim();
+    var password = document.getElementById('mentor-signup-password').value;
+    var confirm = document.getElementById('mentor-confirm-password').value;
+    var expertise = document.getElementById('mentor-expertise').value.trim();
+    var experience = document.getElementById('mentor-experience').value.trim();
+    var skills = document.getElementById('mentor-skills').value.trim();
+    if (!name) return showFieldError('mentor-fullname', 'Name required');
+    if (!validateEmail(email)) return showFieldError('mentor-signup-email', 'Invalid email');
+    if (!validatePassword(password)) return showFieldError('mentor-signup-password', 'Password too short');
+    if (!confirmPasswordMatch(password, confirm)) return showFieldError('mentor-confirm-password', 'Passwords do not match');
+    var department = document.getElementById('mentor-department').value;
+    var designation = document.getElementById('mentor-designation').value;
+    setLoading(true);
+    postJSON('/api/auth/register', { name: name, email: email, password: password, role: 'mentor', specialization: expertise, experience: experience, skills: skills, department: department, designation: designation })
+      .then(completeAuth)
+      .catch(function () { showFormSuccess('Unable to connect to PEC server'); })
+      .finally(function () { setLoading(false); });
+    return;
+  }
+
+  if (formId === 'coordinator-signup-form') {
+    var name = document.getElementById('coordinator-fullname').value.trim();
+    var email = document.getElementById('coordinator-signup-email').value.trim();
+    var password = document.getElementById('coordinator-signup-password').value;
+    var confirm = document.getElementById('coordinator-confirm-password').value;
+    var department = document.getElementById('coordinator-department').value;
+    var employee_id = document.getElementById('coordinator-id').value.trim();
+    if (!name) return showFieldError('coordinator-fullname', 'Name required');
+    if (!validateEmail(email)) return showFieldError('coordinator-signup-email', 'Invalid email');
+    if (!validatePassword(password)) return showFieldError('coordinator-signup-password', 'Password must be at least 8 characters');
+    if (!confirmPasswordMatch(password, confirm)) return showFieldError('coordinator-confirm-password', 'Passwords do not match');
+    setLoading(true);
+    postJSON('/api/auth/register', { name: name, email: email, password: password, role: 'coordinator', department: department, employee_id: employee_id })
+      .then(completeAuth)
+      .catch(function () { showFormSuccess('Unable to connect to PEC server'); })
+      .finally(function () { setLoading(false); });
+    return;
+  }
+
+  // Fallback: show generic success (should not reach here)
+  showFormSuccess('Form submitted');
 });
 
 /* ============================================================
@@ -479,4 +538,11 @@ document.addEventListener('DOMContentLoaded', function () {
   initRoleCardAnimations();
   initEntryAnimations();
   initMouseParallax();
+  document.querySelectorAll('.auth-links a').forEach(function (link) {
+    if (link.textContent.toLowerCase().indexOf('forgot') === -1) return;
+    link.addEventListener('click', function (event) {
+      event.preventDefault();
+      showFormSuccess('Password reset is not enabled yet. Please contact a PEC coordinator.');
+    });
+  });
 });

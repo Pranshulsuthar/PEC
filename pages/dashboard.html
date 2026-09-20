@@ -68,9 +68,12 @@
           <a href="#student-profile" data-page="student-profile"><span class="icon"><i class="fas fa-user"></i></span> My Profile</a>
           <a href="#student-mentor" data-page="student-mentor"><span class="icon"><i class="fas fa-chalkboard-teacher"></i></span> My Mentor</a>
           <a href="#student-learning" data-page="student-learning"><span class="icon"><i class="fas fa-book"></i></span> Learning Hub</a>
-          <a href="#student-challenges" data-page="student-challenges"><span class="icon"><i class="fas fa-fire"></i></span> Weekly Challenges</a>
+          <a href="#student-challenges" data-page="student-challenges"><span class="icon"><i class="fas fa-fire"></i></span> Tasks</a>
           <a href="#student-submissions" data-page="student-submissions"><span class="icon"><i class="fas fa-upload"></i></span> My Submissions</a>
           <a href="#student-progress" data-page="student-progress"><span class="icon"><i class="fas fa-chart-line"></i></span> My Progress</a>
+          <a href="#student-resources" data-page="student-resources"><span class="icon"><i class="fas fa-book-open"></i></span> Resources</a>
+          <a href="#student-achievements" data-page="student-achievements"><span class="icon"><i class="fas fa-medal"></i></span> Achievements</a>
+          <a href="#student-attendance" data-page="student-attendance"><span class="icon"><i class="fas fa-calendar-check"></i></span> Attendance</a>
           <a href="#student-leaderboard" data-page="student-leaderboard"><span class="icon"><i class="fas fa-trophy"></i></span> Leaderboard</a>
           <a href="#student-events" data-page="student-events"><span class="icon"><i class="fas fa-calendar-alt"></i></span> Events</a>
           <a href="#student-news" data-page="student-news"><span class="icon"><i class="fas fa-newspaper"></i></span> News & Announcements</a>
@@ -89,7 +92,7 @@
 
       <!-- Student Dashboard -->
       <div class="sub-page active" id="student-dashboard">
-        <div class="dashboard-header"><h1>Good Evening, Arjun Kumar</h1><p>Here's what's happening with your progress today.</p></div>
+        <div class="dashboard-header"><h1>Good Evening, <span class="user-name">Arjun Kumar</span></h1><p>Here's what's happening with your progress today.</p></div>
         <div class="dashboard-stats">
           <div class="dashboard-stat-card"><div class="stat-header"><div class="stat-icon" style="background:rgba(59,130,246,0.1);color:#3b82f6"><i class="fas fa-fire"></i></div></div><div class="stat-value">24</div><div class="stat-label">Total Challenges</div></div>
           <div class="dashboard-stat-card"><div class="stat-header"><div class="stat-icon" style="background:rgba(34,197,94,0.1);color:#22c55e"><i class="fas fa-check-circle"></i></div></div><div class="stat-value">18</div><div class="stat-label">Completed</div></div>
@@ -357,6 +360,10 @@
       </div>
 
       <!-- Student Notifications -->
+      <div class="sub-page" id="student-resources"><div class="dashboard-header"><h1>Resources</h1><p>Continue learning with PEC resources.</p></div><div class="dashboard-grid" id="student-resources-list"><div class="dashboard-section"><div class="dashboard-section-body"><p class="empty-state">Loading resources...</p></div></div></div></div>
+      <div class="sub-page" id="student-achievements"><div class="dashboard-header"><h1>Achievements</h1><p>Your milestones and certificates.</p></div><div class="dashboard-grid" id="student-achievements-list"><div class="dashboard-section"><div class="dashboard-section-body"><p class="empty-state">Loading achievements...</p></div></div></div></div>
+      <div class="sub-page" id="student-attendance"><div class="dashboard-header"><h1>Attendance</h1><p>Track your participation in PEC activities.</p></div><div class="dashboard-grid" id="student-attendance-list"><div class="dashboard-section"><div class="dashboard-section-body"><p class="empty-state">Loading attendance...</p></div></div></div></div>
+
       <div class="sub-page" id="student-notifications">
         <div class="dashboard-header"><h1>Notifications</h1></div>
         <div class="dashboard-section"><div class="dashboard-section-body">

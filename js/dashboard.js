@@ -3,6 +3,48 @@
 // ========================================
 
 function switchRole(role) {
+  // after switching UI, load role‑specific data from backend
+  var token = sessionStorage.getItem('pec_jwt');
+  var tokenUser = null;
+  if (token) {
+    try {
+      tokenUser = JSON.parse(atob(token.split('.')[1]));
+    } catch (e) {
+      sessionStorage.removeItem('pec_jwt');
+    }
+  }
+
+  if (!role) {
+    // logout – clear token and show role selector
+    sessionStorage.removeItem('pec_jwt');
+    document.querySelectorAll('[id^="app-"]').forEach(function(el) {
+      el.style.display = 'none';
+      el.classList.remove('active');
+    });
+    var roleSelect = document.getElementById('app-role-select');
+    if (roleSelect) {
+      roleSelect.style.display = 'flex';
+      roleSelect.classList.add('active');
+    }
+    return;
+  }
+
+  if (!tokenUser || !['student', 'mentor', 'coordinator'].includes(tokenUser.role)) {
+    role = null;
+    return switchRole(null);
+  }
+  if (role !== tokenUser.role) {
+    role = tokenUser.role;
+  }
+  window.currentUser = tokenUser;
+  if (role === 'student') {
+    loadStudentDashboard();
+  } else if (role === 'mentor') {
+    loadMentorDashboard();
+  } else if (role === 'coordinator') {
+    loadCoordinatorDashboard();
+  }
+
   document.querySelectorAll('[id^="app-"]').forEach(function(el) {
     el.style.display = 'none';
     el.classList.remove('active');
@@ -18,7 +60,7 @@ function switchRole(role) {
   if (app) {
     app.style.display = 'flex';
     app.classList.add('active');
-    var defaultPage = role.charAt(0) + role.slice(1) + '-dashboard';
+    var defaultPage = role === 'coordinator' ? 'coord-dashboard' : role + '-dashboard';
     navigateTo(defaultPage);
   }
 }
@@ -35,7 +77,7 @@ function navigateTo(pageId) {
     p.classList.remove('active');
   });
 
-  var target = document.getElementById(pageId);
+  var target = activeApp.querySelector('#' + pageId);
   if (target) {
     target.classList.add('active');
   }
@@ -342,6 +384,163 @@ function initToastTriggers() {
 // SECTION 13 - INIT
 // ========================================
 
+function apiRequest(path) {
+  var token = sessionStorage.getItem('pec_jwt');
+  return fetch(path, {
+    headers: { 'Authorization': 'Bearer ' + token }
+  }).then(function (response) {
+    if (response.status === 401 || response.status === 403) {
+      sessionStorage.removeItem('pec_jwt');
+      window.location.href = 'auth.html';
+      return null;
+    }
+    return response.json();
+  });
+}
+
+function apiMutation(path, method, body) {
+  return fetch(path, {
+    method: method,
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + sessionStorage.getItem('pec_jwt') },
+    body: JSON.stringify(body || {})
+  }).then(function (response) { return response.json(); });
+}
+
+function initials(name) {
+  return (name || 'PEC').split(' ').map(function (part) { return part[0]; }).join('').slice(0, 2).toUpperCase();
+}
+
+function setText(selector, value) {
+  var el = document.querySelector(selector);
+  if (el && value !== undefined && value !== null) el.textContent = value;
+}
+
+function renderNews(appSelector, news) {
+  var section = Array.from(document.querySelectorAll(appSelector + ' .dashboard-section h3')).find(function (heading) {
+    return heading.textContent.toLowerCase().indexOf('news') !== -1;
+  });
+  if (!section || !news) return;
+  var body = section.parentElement.nextElementSibling;
+  if (!body) return;
+  body.innerHTML = news.length ? news.map(function (item) {
+    return '<div class="student-list-item"><div class="student-avatar"><i class="fas fa-newspaper"></i></div><div class="student-info"><div class="student-name">' + escapeHtml(item.title) + '</div><div class="student-meta">' + new Date(item.created_at).toLocaleDateString() + (item.category ? ' · ' + escapeHtml(item.category) : '') + '</div></div></div>';
+  }).join('') : '<div class="empty-state">No published news yet.</div>';
+}
+
+function escapeHtml(value) {
+  return String(value || '').replace(/[&<>'"]/g, function (char) { return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[char]; });
+}
+
+function renderRoleIdentity(appSelector, profile, role) {
+  var name = profile && profile.name ? profile.name : role;
+  document.querySelectorAll(appSelector + ' .user-name').forEach(function (el) { el.textContent = name; });
+  document.querySelectorAll(appSelector + ' .user-avatar').forEach(function (el) { el.textContent = initials(name); });
+  var heading = document.querySelector(appSelector + ' .dashboard-header h1');
+  if (heading) heading.textContent = 'Welcome, ' + role.charAt(0).toUpperCase() + role.slice(1);
+}
+
+function renderStudentCollections(data) {
+  var resources = document.getElementById('student-resources-list');
+  if (resources) resources.innerHTML = (data.resources || []).map(function (item) {
+    return '<div class="dashboard-section"><div class="dashboard-section-body"><h4>' + escapeHtml(item.title) + '</h4><p>' + escapeHtml(item.description || item.category || item.resource_type) + '</p><a class="btn btn-primary btn-sm" href="' + escapeHtml(item.resource_url) + '" target="_blank" rel="noopener">Open Resource</a></div></div>';
+  }).join('') || '<div class="dashboard-section"><div class="dashboard-section-body"><p class="empty-state">No published resources yet.</p></div></div>';
+  var achievements = document.getElementById('student-achievements-list');
+  if (achievements) achievements.innerHTML = (data.achievements || []).map(function (item) {
+    return '<div class="dashboard-section"><div class="dashboard-section-body"><div class="stat-icon" style="color:#f59e0b"><i class="fas fa-medal"></i></div><h4>' + escapeHtml(item.title) + '</h4><p>' + escapeHtml(item.description || item.achievement_type || 'Achievement') + '</p></div></div>';
+  }).join('') || '<div class="dashboard-section"><div class="dashboard-section-body"><p class="empty-state">No achievements recorded yet.</p></div></div>';
+  var attendance = document.getElementById('student-attendance-list');
+  if (attendance) attendance.innerHTML = (data.attendance || []).map(function (item) {
+    return '<div class="dashboard-section"><div class="dashboard-section-body"><h4>' + escapeHtml(item.status) + '</h4><div class="stat-value">' + item.count + '</div><p>Recorded sessions</p></div></div>';
+  }).join('') || '<div class="dashboard-section"><div class="dashboard-section-body"><p class="empty-state">No attendance records yet.</p></div></div>';
+}
+
+function loadStudentDashboard() {
+  apiRequest('/api/dashboard/student').then(function (data) {
+    if (!data || !data.success) return;
+    renderRoleIdentity('#app-student', data.profile, 'Student');
+    var stats = data.progress || {};
+    var values = document.querySelectorAll('#app-student .dashboard-stat-card .stat-value');
+    if (values[0]) values[0].textContent = stats.total_tasks || data.tasks.length;
+    if (values[1]) values[1].textContent = stats.completed_tasks || 0;
+    if (values[2]) values[2].textContent = (stats.progress_percentage || 0) + '%';
+    if (values[3]) values[3].textContent = 'PEC';
+    renderNews('#app-student', data.news);
+    renderStudentCollections(data);
+  }).catch(function (error) { console.error('Student dashboard failed', error); });
+}
+
+function loadMentorDashboard() {
+  apiRequest('/api/dashboard/mentor').then(function (data) {
+    if (!data || !data.success) return;
+    renderRoleIdentity('#app-mentor', data.profile, 'Mentor');
+    var values = document.querySelectorAll('#app-mentor .dashboard-stat-card .stat-value');
+    if (values[0]) values[0].textContent = data.students.length;
+    if (values[1]) values[1].textContent = data.students.length;
+    if (values[2]) values[2].textContent = data.submissions.filter(function (item) { return item.status === 'submitted'; }).length;
+    if (values[3]) values[3].textContent = data.tasks.length;
+    renderNews('#app-mentor', data.news);
+  }).catch(function (error) { console.error('Mentor dashboard failed', error); });
+}
+
+function loadCoordinatorDashboard() {
+  apiRequest('/api/dashboard/coordinator').then(function (data) {
+    if (!data || !data.success) return;
+    renderRoleIdentity('#app-coordinator', { name: window.currentUser.name }, 'Coordinator');
+    var values = document.querySelectorAll('#app-coordinator .dashboard-stat-card .stat-value');
+    if (values[0]) values[0].textContent = data.stats.students;
+    if (values[1]) values[1].textContent = data.stats.mentors;
+    if (values[4]) values[4].textContent = data.stats.tasks;
+    if (values[5]) values[5].textContent = data.stats.events;
+    renderNews('#app-coordinator', data.news);
+    renderCoordinatorNews(data.news);
+  }).catch(function (error) { console.error('Coordinator dashboard failed', error); });
+}
+
+function renderCoordinatorNews(news) {
+  var body = document.querySelector('#coord-news .dashboard-table tbody');
+  if (!body) return;
+  body.innerHTML = (news || []).map(function (item) {
+    var nextStatus = item.status === 'published' ? 'draft' : 'published';
+    var actionLabel = item.status === 'published' ? 'Unpublish' : 'Publish';
+    return '<tr data-news-id="' + item.id + '"><td>' + escapeHtml(item.title) + '</td><td>' + escapeHtml(item.category || 'General') + '</td><td><span class="student-status ' + (item.status === 'published' ? 'status-active' : 'status-pending') + '">' + escapeHtml(item.status) + '</span></td><td>' + new Date(item.created_at).toLocaleDateString() + '</td><td><div style="display:flex;gap:4px"><button class="btn btn-sm btn-ghost" data-news-action="edit">Edit</button><button class="btn btn-sm btn-ghost" data-news-action="toggle" data-next-status="' + nextStatus + '">' + actionLabel + '</button><button class="btn btn-sm btn-ghost" data-news-action="delete">Delete</button></div></td></tr>';
+  }).join('') || '<tr><td colspan="5">No news items yet.</td></tr>';
+}
+
+function initCoordinatorNewsActions() {
+  var container = document.getElementById('coord-news');
+  if (!container) return;
+  container.addEventListener('click', function (event) {
+    var button = event.target.closest('[data-news-action], .btn-primary');
+    if (!button) return;
+    if (button.textContent.toLowerCase().indexOf('create news') !== -1) {
+      var title = window.prompt('News title');
+      var content = title && window.prompt('News content');
+      if (!title || !content) return;
+      apiMutation('/api/news', 'POST', { title: title, content: content, status: 'published' }).then(function (result) {
+        if (!result.success) return showToast(result.message, 'error');
+        showToast('News published', 'success');
+        loadCoordinatorDashboard();
+      });
+      return;
+    }
+    var row = button.closest('tr');
+    if (!row) return;
+    var id = row.getAttribute('data-news-id');
+    var action = button.getAttribute('data-news-action');
+    if (action === 'delete') {
+      if (!window.confirm('Delete this news item?')) return;
+      apiMutation('/api/news/' + id, 'DELETE').then(function (result) { if (result.success) { showToast('News deleted', 'success'); loadCoordinatorDashboard(); } });
+    } else if (action === 'toggle') {
+      apiMutation('/api/news/' + id, 'PUT', { title: row.cells[0].textContent, content: row.cells[0].textContent, category: row.cells[1].textContent, status: button.getAttribute('data-next-status') }).then(function (result) { if (result.success) { showToast('News status updated', 'success'); loadCoordinatorDashboard(); } });
+    } else if (action === 'edit') {
+      var title = window.prompt('News title', row.cells[0].textContent);
+      var content = title && window.prompt('News content', row.cells[0].textContent);
+      if (!title || !content) return;
+      apiMutation('/api/news/' + id, 'PUT', { title: title, content: content, category: row.cells[1].textContent, status: row.cells[2].textContent.trim() }).then(function (result) { if (result.success) { showToast('News updated', 'success'); loadCoordinatorDashboard(); } });
+    }
+  });
+}
+
 document.addEventListener('DOMContentLoaded', function() {
   initSidebarNav();
   initSidebarToggle();
@@ -350,6 +549,7 @@ document.addEventListener('DOMContentLoaded', function() {
   animateProgressBars();
   renderBarCharts();
   initToastTriggers();
+  initCoordinatorNewsActions();
 
   var greetingEls = document.querySelectorAll('[data-greeting]');
   var greeting = getGreeting();
@@ -357,11 +557,19 @@ document.addEventListener('DOMContentLoaded', function() {
     el.textContent = greeting + ', ' + el.getAttribute('data-greeting');
   });
 
+  var token = sessionStorage.getItem('pec_jwt');
   var hash = window.location.hash.slice(1);
-  if (hash) {
-    if (hash.startsWith('student-')) switchRole('student');
-    else if (hash.startsWith('mentor-')) switchRole('mentor');
-    else if (hash.startsWith('coord-')) switchRole('coordinator');
-    navigateTo(hash);
+  var role = null;
+  if (token) {
+    try {
+      role = JSON.parse(atob(token.split('.')[1])).role;
+    } catch (e) {
+      sessionStorage.removeItem('pec_jwt');
+    }
+  }
+
+  if (role) {
+    switchRole(role);
+    if (hash) navigateTo(hash);
   }
 });
