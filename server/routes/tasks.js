@@ -8,8 +8,8 @@ router.get('/', taskController.getAll);
 router.get('/:id', taskController.getById);
 
 // Only coordinators can create/update/delete
-router.post('/', allowRoles('coordinator'), taskController.create);
-router.put('/:id', allowRoles('coordinator'), taskController.update);
-router.delete('/:id', allowRoles('coordinator'), taskController.delete);
+router.post('/', allowRoles('coordinator', 'mentor'), taskController.create);
+router.put('/:id', allowRoles('coordinator', 'mentor'), taskController.update);
+router.delete('/:id', allowRoles('coordinator', 'mentor'), taskController.delete);
 
 module.exports = router;

@@ -12,6 +12,15 @@
   display: flex;
   min-height: 100vh;
   padding-top: var(--nav-height);
+  overflow-x: hidden;
+}
+
+.dashboard-layout > .dashboard-main {
+  padding-top: 40px;
+}
+
+@media (max-height: 760px) {
+  .dashboard-layout > .dashboard-main { padding-top: 24px; }
 }
 
 .sidebar {

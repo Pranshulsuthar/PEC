@@ -3,6 +3,11 @@
 // ========================================
 
 function switchRole(role) {
+  if (!role) {
+    sessionStorage.removeItem('pec_jwt');
+    window.location.replace('auth.html');
+    return;
+  }
   // after switching UI, load role‑specific data from backend
   var token = sessionStorage.getItem('pec_jwt');
   var tokenUser = null;
@@ -14,24 +19,10 @@ function switchRole(role) {
     }
   }
 
-  if (!role) {
-    // logout – clear token and show role selector
-    sessionStorage.removeItem('pec_jwt');
-    document.querySelectorAll('[id^="app-"]').forEach(function(el) {
-      el.style.display = 'none';
-      el.classList.remove('active');
-    });
-    var roleSelect = document.getElementById('app-role-select');
-    if (roleSelect) {
-      roleSelect.style.display = 'flex';
-      roleSelect.classList.add('active');
-    }
-    return;
-  }
-
   if (!tokenUser || !['student', 'mentor', 'coordinator'].includes(tokenUser.role)) {
-    role = null;
-    return switchRole(null);
+    sessionStorage.removeItem('pec_jwt');
+    window.location.replace('auth.html');
+    return;
   }
   if (role !== tokenUser.role) {
     role = tokenUser.role;
@@ -417,7 +408,7 @@ function apiRequest(path) {
   }).then(function (response) {
     if (response.status === 401 || response.status === 403) {
       sessionStorage.removeItem('pec_jwt');
-      window.location.href = 'auth.html';
+      window.location.replace('auth.html');
       return null;
     }
     return response.json();
@@ -493,12 +484,16 @@ function loadStudentDashboard() {
     renderRoleIdentity('#app-student', data.profile, 'Student');
     var stats = data.progress || {};
     var values = document.querySelectorAll('#app-student .dashboard-stat-card .stat-value');
-    if (values[0]) values[0].textContent = stats.total_tasks || data.tasks.length;
+    if (values[0]) values[0].textContent = data.tasks.length;
     if (values[1]) values[1].textContent = stats.completed_tasks || 0;
-    if (values[2]) values[2].textContent = (stats.progress_percentage || 0) + '%';
-    if (values[3]) values[3].textContent = 'PEC';
+    if (values[2]) values[2].textContent = stats.current_streak || 0;
+    if (values[3]) values[3].textContent = stats.rank || 0;
     renderNews('#app-student', data.news);
     renderStudentCollections(data);
+    var mentorCard = document.querySelector('#app-student .mentor-info-card');
+    if (mentorCard) mentorCard.innerHTML = data.mentor ? '<div class="mentor-avatar">' + escapeHtml(initials(data.mentor.name)) + '</div><div><div class="mentor-name">' + escapeHtml(data.mentor.name) + '</div><div class="mentor-spec">' + escapeHtml(data.mentor.specialization || 'Mentor') + '</div><div class="mentor-status">Mentor ID: ' + escapeHtml(data.mentor.mentor_code || 'Assigned') + '</div></div>' : '<div class="mentor-avatar"><i class="fas fa-user-clock"></i></div><div><div class="mentor-name">No mentor assigned</div><div class="mentor-spec">A coordinator will assign your mentor.</div><div class="mentor-status">Waiting for assignment</div></div>';
+    var currentChallenge = Array.from(document.querySelectorAll('#app-student .dashboard-section h3')).find(function (heading) { return heading.textContent.trim() === 'Current Challenge'; });
+    if (currentChallenge) { var body = currentChallenge.parentElement.nextElementSibling; body.innerHTML = data.tasks.length ? data.tasks.map(function (task) { return '<div class="task-item"><div class="task-title">' + escapeHtml(task.title) + '</div><div class="task-desc">' + escapeHtml(task.description || 'No description') + '</div></div>'; }).join('') : '<p class="empty-state">No tasks assigned yet. Your mentor will add tasks here.</p>'; }
   }).catch(function (error) { console.error('Student dashboard failed', error); });
 }
 

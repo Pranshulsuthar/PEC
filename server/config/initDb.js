@@ -22,6 +22,12 @@ async function init() {
     await pool.query('ALTER TABLE student_profiles ADD COLUMN IF NOT EXISTS phone VARCHAR(20) NULL');
     await pool.query('ALTER TABLE student_profiles ADD COLUMN IF NOT EXISTS year INT NULL');
     await pool.query('ALTER TABLE mentor_profiles ADD COLUMN IF NOT EXISTS specialization VARCHAR(200) NULL');
+    await pool.query('ALTER TABLE student_profiles ADD COLUMN IF NOT EXISTS student_code VARCHAR(50) NULL');
+    await pool.query('ALTER TABLE mentor_profiles ADD COLUMN IF NOT EXISTS mentor_code VARCHAR(50) NULL');
+    await pool.query('ALTER TABLE coordinator_profiles ADD COLUMN IF NOT EXISTS coordinator_code VARCHAR(50) NULL');
+    await pool.query('CREATE UNIQUE INDEX IF NOT EXISTS uq_student_profiles_student_code ON student_profiles (student_code)');
+    await pool.query('CREATE UNIQUE INDEX IF NOT EXISTS uq_mentor_profiles_mentor_code ON mentor_profiles (mentor_code)');
+    await pool.query('CREATE UNIQUE INDEX IF NOT EXISTS uq_coordinator_profiles_coordinator_code ON coordinator_profiles (coordinator_code)');
 
     console.log('Database connection and schema ready');
   } catch (err) {

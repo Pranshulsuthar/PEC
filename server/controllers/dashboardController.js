@@ -15,15 +15,10 @@ exports.student = async (req, res) => {
     const userId = req.user.user_id;
     const [[profile]] = await pool.query(`SELECT u.name, u.email, sp.* FROM users u LEFT JOIN student_profiles sp ON sp.user_id = u.id WHERE u.id = ? AND u.role = 'student'`, [userId]);
     if (!profile) return res.status(404).json({ success: false, message: 'Student profile not found' });
-    const [mentor] = await pool.query(`SELECT u.id, u.name, u.email, mp.specialization, mp.department FROM mentor_student ms JOIN users u ON u.id = ms.mentor_id LEFT JOIN mentor_profiles mp ON mp.user_id = u.id WHERE ms.student_id = ? AND ms.status = 'active' LIMIT 1`, [userId]);
+    const [mentor] = await pool.query(`SELECT u.id, u.name, u.email, mp.mentor_code, mp.specialization, mp.department FROM mentor_student ms JOIN users u ON u.id = ms.mentor_id LEFT JOIN mentor_profiles mp ON mp.user_id = u.id WHERE ms.student_id = ? AND ms.status = 'active' LIMIT 1`, [userId]);
     const [tasks] = await pool.query(`SELECT t.id, t.title, t.description, t.difficulty, t.deadline, ta.status AS assignment_status FROM task_assignments ta JOIN tasks t ON t.id = ta.task_id WHERE ta.student_id = ? ORDER BY ta.deadline ASC LIMIT 8`, [userId]);
-    const [progress] = await pool.query('SELECT * FROM student_progress WHERE student_id = ?', [userId]);
-    const [skills] = await pool.query('SELECT s.name, ss.proficiency_level FROM student_skills ss JOIN skills s ON s.id = ss.skill_id WHERE ss.student_id = ?', [userId]);
-    const [achievements] = await pool.query('SELECT * FROM achievements WHERE student_id = ? ORDER BY created_at DESC LIMIT 6', [userId]);
-    const [resources] = await pool.query("SELECT id, title, description, resource_type, resource_url, category FROM resources WHERE status = 'published' ORDER BY created_at DESC LIMIT 8");
-    const [attendance] = await pool.query('SELECT status, COUNT(*) AS count FROM attendance WHERE student_id = ? GROUP BY status', [userId]);
     const [notifications] = await pool.query('SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC LIMIT 6', [userId]);
-    res.json({ success: true, profile, mentor: mentor[0] || null, tasks, progress: progress[0] || null, skills, achievements, resources, attendance, notifications, news: await getNews(), events: await getEvents() });
+    res.json({ success: true, profile, mentor: mentor[0] || null, tasks, progress: { total_tasks: tasks.length, completed_tasks: 0, current_streak: 0, rank: 0, progress_percentage: 0 }, skills: [], achievements: [], resources: [], attendance: [], notifications, news: [], events: [] });
   } catch (err) { console.error(err); res.status(500).json({ success: false, message: 'Server error' }); }
 };
 
@@ -32,7 +27,7 @@ exports.mentor = async (req, res) => {
     const userId = req.user.user_id;
     const [[profile]] = await pool.query(`SELECT u.name, u.email, mp.* FROM users u LEFT JOIN mentor_profiles mp ON mp.user_id = u.id WHERE u.id = ? AND u.role = 'mentor'`, [userId]);
     if (!profile) return res.status(404).json({ success: false, message: 'Mentor profile not found' });
-    const [students] = await pool.query(`SELECT u.id, u.name, u.email, sp.branch, sp.year, sp.roll_number, COALESCE(spp.progress_percentage, 0) AS progress_percentage FROM mentor_student ms JOIN users u ON u.id = ms.student_id LEFT JOIN student_profiles sp ON sp.user_id = u.id LEFT JOIN student_progress spp ON spp.student_id = u.id WHERE ms.mentor_id = ? AND ms.status = 'active' ORDER BY u.name`, [userId]);
+    const [students] = await pool.query(`SELECT u.id, u.name, u.email, sp.student_code, sp.branch, sp.year, sp.roll_number, 0 AS progress_percentage FROM mentor_student ms JOIN users u ON u.id = ms.student_id LEFT JOIN student_profiles sp ON sp.user_id = u.id WHERE ms.mentor_id = ? AND ms.status = 'active' ORDER BY u.name`, [userId]);
     const [submissions] = await pool.query(`SELECT ts.id, ts.status, ts.score, ts.submitted_at, t.title, u.name AS student_name FROM task_submissions ts JOIN tasks t ON t.id = ts.task_id JOIN mentor_student ms ON ms.student_id = ts.student_id AND ms.mentor_id = ? AND ms.status = 'active' JOIN users u ON u.id = ts.student_id ORDER BY ts.submitted_at DESC LIMIT 8`, [userId]);
     const [tasks] = await pool.query("SELECT * FROM tasks WHERE created_by = ? AND status <> 'archived' ORDER BY created_at DESC LIMIT 8", [userId]);
     const [notifications] = await pool.query('SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC LIMIT 6', [userId]);

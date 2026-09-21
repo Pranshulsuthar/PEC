@@ -57,22 +57,31 @@ exports.register = async (req, res) => {
     const user_id = result.insertId;
     // Insert into role‑specific table
     if (role === 'student') {
-      const { roll_number, branch, semester, year, skills } = req.body;
+      const { student_id, roll_number, branch, semester, year, skills } = req.body;
+      if (!student_id) {
+        throw Object.assign(new Error('Student ID is required'), { statusCode: 400 });
+      }
       await connection.query(
-        `INSERT INTO student_profiles (user_id, roll_number, branch, semester, year, skills) VALUES (?,?,?,?,?,?)`,
-        [user_id, roll_number || null, branch || null, semester || null, year || null, skills || null]
+        `INSERT INTO student_profiles (user_id, student_code, roll_number, branch, semester, year, skills) VALUES (?,?,?,?,?,?,?)`,
+        [user_id, student_id, roll_number || null, branch || null, semester || null, year || null, skills || null]
       );
     } else if (role === 'mentor') {
-      const { designation, department, specialization, experience, skills } = req.body;
+      const { mentor_id, designation, department, experience, skills } = req.body;
+      if (!mentor_id) {
+        throw Object.assign(new Error('Mentor ID is required'), { statusCode: 400 });
+      }
       await connection.query(
-        'INSERT INTO mentor_profiles (user_id, designation, department, specialization, experience, bio) VALUES (?,?,?,?,?,?)',
-        [user_id, designation || null, department || null, specialization || null, experience || null, skills || null]
+        'INSERT INTO mentor_profiles (user_id, mentor_code, designation, department, specialization, experience, bio) VALUES (?,?,?,?,?,?,?)',
+        [user_id, mentor_id, designation || null, department || null, null, experience || null, skills || null]
       );
     } else if (role === 'coordinator') {
-      const { designation, department, employee_id } = req.body;
+      const { coordinator_id, designation, department, employee_id } = req.body;
+      if (!coordinator_id) {
+        throw Object.assign(new Error('Coordinator ID is required'), { statusCode: 400 });
+      }
       await connection.query(
-        'INSERT INTO coordinator_profiles (user_id, designation, department, employee_id) VALUES (?,?,?,?)',
-        [user_id, designation || 'Coordinator', department || null, employee_id || null]
+        'INSERT INTO coordinator_profiles (user_id, coordinator_code, designation, department, employee_id) VALUES (?,?,?,?,?)',
+        [user_id, coordinator_id, designation || 'Coordinator', department || null, employee_id || null]
       );
     }
     await connection.commit();
@@ -81,7 +90,7 @@ exports.register = async (req, res) => {
   } catch (err) {
     await connection.rollback();
     console.error('Register error:', err);
-    return res.status(500).json({ success: false, message: 'Server error' });
+    return res.status(err.statusCode || (err.code === 'ER_DUP_ENTRY' ? 409 : 500)).json({ success: false, message: err.statusCode ? err.message : (err.code === 'ER_DUP_ENTRY' ? 'ID or email already exists' : 'Server error') });
   } finally {
     connection.release();
   }

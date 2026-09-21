@@ -423,8 +423,14 @@ document.addEventListener('submit', function (e) {
       return;
     }
     storeToken(response.token);
-    window.location.href = '../pages/dashboard.html';
+    window.location.replace('../pages/dashboard.html');
   }
+
+  window.addEventListener('pageshow', function () {
+    if (sessionStorage.getItem('pec_jwt')) return;
+    if (window.location.pathname.endsWith('/auth.html')) return;
+    window.location.replace('../pages/auth.html');
+  });
   function submitLogin(role, emailId, passwordId) {
     var email = document.getElementById(emailId).value.trim();
     var password = document.getElementById(passwordId).value;
@@ -468,6 +474,7 @@ document.addEventListener('submit', function (e) {
     var email = document.getElementById('student-signup-email').value.trim();
     var password = document.getElementById('student-signup-password').value;
     var confirm = document.getElementById('student-confirm-password').value;
+    var student_id = document.getElementById('student-id').value.trim();
     var enrollment_no = document.getElementById('student-enrollment').value.trim();
     var branch = document.getElementById('student-branch').value;
     var skills = document.getElementById('student-skills').value.trim();
@@ -477,7 +484,7 @@ document.addEventListener('submit', function (e) {
     if (!confirmPasswordMatch(password, confirm)) return showFieldError('student-confirm-password', 'Passwords do not match');
     var year = document.getElementById('student-year').value;
     setLoading(true);
-    postJSON('/api/auth/register', { name: name, email: email, password: password, role: 'student', roll_number: enrollment_no, branch: branch, year: year, skills: skills })
+    postJSON('/api/auth/register', { name: name, email: email, password: password, role: 'student', student_id: student_id, roll_number: enrollment_no, branch: branch, year: year, skills: skills })
       .then(completeAuth)
       .catch(function () { showFormSuccess('Unable to connect to PEC server'); })
       .finally(function () { setLoading(false); });
@@ -489,17 +496,18 @@ document.addEventListener('submit', function (e) {
     var email = document.getElementById('mentor-signup-email').value.trim();
     var password = document.getElementById('mentor-signup-password').value;
     var confirm = document.getElementById('mentor-confirm-password').value;
-    var expertise = document.getElementById('mentor-expertise').value.trim();
+    var mentor_id = document.getElementById('mentor-id').value.trim();
     var experience = document.getElementById('mentor-experience').value.trim();
     var skills = document.getElementById('mentor-skills').value.trim();
     if (!name) return showFieldError('mentor-fullname', 'Name required');
+    if (!mentor_id) return showFieldError('mentor-id', 'Mentor ID required');
     if (!validateEmail(email)) return showFieldError('mentor-signup-email', 'Invalid email');
     if (!validatePassword(password)) return showFieldError('mentor-signup-password', 'Password too short');
     if (!confirmPasswordMatch(password, confirm)) return showFieldError('mentor-confirm-password', 'Passwords do not match');
     var department = document.getElementById('mentor-department').value;
     var designation = document.getElementById('mentor-designation').value;
     setLoading(true);
-    postJSON('/api/auth/register', { name: name, email: email, password: password, role: 'mentor', specialization: expertise, experience: experience, skills: skills, department: department, designation: designation })
+    postJSON('/api/auth/register', { name: name, email: email, password: password, role: 'mentor', mentor_id: mentor_id, experience: experience, skills: skills, department: department, designation: designation })
       .then(completeAuth)
       .catch(function () { showFormSuccess('Unable to connect to PEC server'); })
       .finally(function () { setLoading(false); });
@@ -518,7 +526,7 @@ document.addEventListener('submit', function (e) {
     if (!validatePassword(password)) return showFieldError('coordinator-signup-password', 'Password must be at least 8 characters');
     if (!confirmPasswordMatch(password, confirm)) return showFieldError('coordinator-confirm-password', 'Passwords do not match');
     setLoading(true);
-    postJSON('/api/auth/register', { name: name, email: email, password: password, role: 'coordinator', department: department, employee_id: employee_id })
+    postJSON('/api/auth/register', { name: name, email: email, password: password, role: 'coordinator', coordinator_id: employee_id, department: department, employee_id: employee_id })
       .then(completeAuth)
       .catch(function () { showFormSuccess('Unable to connect to PEC server'); })
       .finally(function () { setLoading(false); });

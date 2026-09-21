@@ -3,12 +3,13 @@ const pool = require('../config/db');
 exports.getAllStudents = async (req, res) => {
   try {
     const [rows] = await pool.query(`
-      SELECT u.id AS student_id, u.name, u.email, sp.roll_number, sp.branch, sp.year,
-             ms.mentor_id, mentor.name AS mentor_name
+       SELECT u.id AS student_id, sp.student_code, u.name, u.email, sp.roll_number, sp.branch, sp.year,
+              ms.mentor_id, mp.mentor_code, mentor.name AS mentor_name
       FROM users u JOIN student_profiles sp ON sp.user_id = u.id
       LEFT JOIN mentor_student ms ON ms.student_id = u.id AND ms.status = 'active'
-      LEFT JOIN users mentor ON mentor.id = ms.mentor_id
-      WHERE u.role = 'student' ORDER BY u.name
+       LEFT JOIN users mentor ON mentor.id = ms.mentor_id
+       LEFT JOIN mentor_profiles mp ON mp.user_id = ms.mentor_id
+       WHERE u.role = 'student' ORDER BY u.name
     `);
     res.json({ success: true, students: rows });
   } catch (err) { console.error(err); res.status(500).json({ success: false, message: 'Server error' }); }
@@ -17,8 +18,8 @@ exports.getAllStudents = async (req, res) => {
 exports.getAllMentors = async (req, res) => {
   try {
     const [rows] = await pool.query(`
-      SELECT u.id AS mentor_id, u.name, u.email, mp.specialization, mp.department,
-             COUNT(ms.student_id) AS assigned_students
+       SELECT u.id AS mentor_id, mp.mentor_code, u.name, u.email, mp.specialization, mp.department,
+              COUNT(ms.student_id) AS assigned_students
       FROM users u JOIN mentor_profiles mp ON mp.user_id = u.id
       LEFT JOIN mentor_student ms ON ms.mentor_id = u.id AND ms.status = 'active'
       WHERE u.role = 'mentor' GROUP BY u.id, u.name, u.email, mp.specialization, mp.department
@@ -37,7 +38,11 @@ exports.assignMentorToStudent = async (req, res) => {
       ON DUPLICATE KEY UPDATE assigned_by = VALUES(assigned_by), status = 'active'
     `, [mentor_id, student_id, req.user.user_id]);
     res.json({ success: true, message: 'Mentor assigned to student' });
-  } catch (err) { console.error(err); res.status(500).json({ success: false, message: 'Server error' }); }
+  } catch (err) {
+    console.error(err);
+    const status = err.code === 'ER_SIGNAL_EXCEPTION' ? 409 : 500;
+    res.status(status).json({ success: false, message: err.code === 'ER_SIGNAL_EXCEPTION' ? err.sqlMessage : 'Server error' });
+  }
 };
 
 exports.unassignMentor = async (req, res) => {
