@@ -169,6 +169,60 @@ p {
    3. Utility Classes
    ================================================== */
 
+/* --------------------------------------------------
+   Coordinator Slider Styles
+   -------------------------------------------------- */
+.coordinator-slider {
+  position: relative;
+  overflow: hidden;
+  max-width: 400px;
+  margin: 2rem auto;
+}
+.coordinator-profiles {
+  display: flex;
+  transition: transform 0.5s ease;
+}
+.coordinator-profile {
+  min-width: 100%;
+  flex-shrink: 0;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+.coordinator-profile.active {
+  opacity: 1;
+}
+.slider-prev,
+.slider-next {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: var(--surface-2);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0.7;
+  transition: var(--transition);
+  border: none;
+}
+.slider-prev:hover,
+.slider-next:hover {
+  opacity: 1;
+  background: var(--surface);
+}
+.slider-prev { left: 10px; }
+.slider-next { right: 10px; }
+.slider-indicator {
+  text-align: center;
+  margin-top: 8px;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+
 .container {
   max-width: var(--max-width);
   margin: 0 auto;

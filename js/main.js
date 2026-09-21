@@ -294,7 +294,41 @@ function initScrollReveal() {
             setTimeout(function () {
               child.classList.add('visible');
             }, i * 100);
-          });
+});
+
+// --------------------------------------------------
+// Coordinator & Faculty Slider Initialization
+// --------------------------------------------------
+
+document.addEventListener('DOMContentLoaded', function () {
+  initSlider('coordinator-slider', 'coordinator-indicator');
+  initSlider('faculty-slider', 'faculty-indicator');
+});
+
+function initSlider(containerId, indicatorId) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  const wrapper = container.querySelector('.coordinator-profiles');
+  const profiles = container.querySelectorAll('.coordinator-profile');
+  const prevBtn = container.querySelector('.slider-prev');
+  const nextBtn = container.querySelector('.slider-next');
+  const indicator = document.getElementById(indicatorId);
+  let index = 0;
+  const total = profiles.length;
+
+  function update() {
+    if (wrapper) wrapper.style.transform = `translateX(-${index * 100}%)`;
+    profiles.forEach((p, i) => p.classList.toggle('active', i === index));
+    if (indicator) indicator.textContent = `${String(index + 1).padStart(2, '0')} / ${String(total).padStart(2, '0')}`;
+    if (prevBtn) prevBtn.disabled = index === 0;
+    if (nextBtn) nextBtn.disabled = index === total - 1;
+  }
+
+  if (prevBtn) prevBtn.addEventListener('click', () => { if (index > 0) { index--; update(); } });
+  if (nextBtn) nextBtn.addEventListener('click', () => { if (index < total - 1) { index++; update(); } });
+  update();
+}
+
           sectionObserver.unobserve(entry.target);
         }
       });
