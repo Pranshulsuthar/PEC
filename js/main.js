@@ -297,36 +297,114 @@ function initScrollReveal() {
 });
 
 // --------------------------------------------------
-// Coordinator & Faculty Slider Initialization
+// Coordinator & Faculty Carousel Initialization
 // --------------------------------------------------
 
 document.addEventListener('DOMContentLoaded', function () {
-  initSlider('coordinator-slider', 'coordinator-indicator');
-  initSlider('faculty-slider', 'faculty-indicator');
+  initCarousel('coordinator-carousel', 'coordinator-indicator');
+  initCarousel('faculty-carousel', 'faculty-indicator');
 });
 
-function initSlider(containerId, indicatorId) {
-  const container = document.getElementById(containerId);
+function initCarousel(carouselId, indicatorId) {
+  var container = document.getElementById(carouselId);
   if (!container) return;
-  const wrapper = container.querySelector('.coordinator-profiles');
-  const profiles = container.querySelectorAll('.coordinator-profile');
-  const prevBtn = container.querySelector('.slider-prev');
-  const nextBtn = container.querySelector('.slider-next');
-  const indicator = document.getElementById(indicatorId);
-  let index = 0;
-  const total = profiles.length;
+  var track = container.querySelector('.carousel-track');
+  var cards = container.querySelectorAll('.coordinator-profile');
+  var prevBtn = container.querySelector('.carousel-prev');
+  var nextBtn = container.querySelector('.carousel-next');
+  var indicator = document.getElementById(indicatorId);
+  if (!track || cards.length === 0) return;
 
-  function update() {
-    if (wrapper) wrapper.style.transform = `translateX(-${index * 100}%)`;
-    profiles.forEach((p, i) => p.classList.toggle('active', i === index));
-    if (indicator) indicator.textContent = `${String(index + 1).padStart(2, '0')} / ${String(total).padStart(2, '0')}`;
-    if (prevBtn) prevBtn.disabled = index === 0;
-    if (nextBtn) nextBtn.disabled = index === total - 1;
+  var currentIndex = 0;
+  var totalCards = cards.length;
+  var visibleCount = getVisibleCount();
+  var slideCount = Math.max(1, totalCards - visibleCount + 1);
+
+  function getVisibleCount() {
+    var w = window.innerWidth;
+    if (w <= 768) return 1;
+    if (w <= 1180) return 2;
+    return 4;
   }
 
-  if (prevBtn) prevBtn.addEventListener('click', () => { if (index > 0) { index--; update(); } });
-  if (nextBtn) nextBtn.addEventListener('click', () => { if (index < total - 1) { index++; update(); } });
+  function buildIndicator() {
+    if (!indicator) return;
+    indicator.innerHTML = '';
+    for (var i = 0; i < slideCount; i++) {
+      var dot = document.createElement('button');
+      dot.className = 'carousel-dot' + (i === 0 ? ' active' : '');
+      dot.setAttribute('aria-label', 'Go to slide ' + (i + 1));
+      dot.dataset.index = i;
+      dot.addEventListener('click', function () {
+        currentIndex = parseInt(this.dataset.index);
+        update();
+      });
+      indicator.appendChild(dot);
+    }
+  }
+
+  function update() {
+    visibleCount = getVisibleCount();
+    slideCount = Math.max(1, totalCards - visibleCount + 1);
+    if (currentIndex >= slideCount) currentIndex = slideCount - 1;
+    if (currentIndex < 0) currentIndex = 0;
+
+    var cardWidth = 100 / visibleCount;
+    track.style.transform = 'translateX(-' + (currentIndex * cardWidth) + '%)';
+
+    if (prevBtn) prevBtn.disabled = currentIndex === 0;
+    if (nextBtn) nextBtn.disabled = currentIndex >= slideCount - 1;
+
+    var dots = indicator ? indicator.querySelectorAll('.carousel-dot') : [];
+    dots.forEach(function (dot, i) {
+      dot.classList.toggle('active', i === currentIndex);
+    });
+  }
+
+  if (prevBtn) prevBtn.addEventListener('click', function () {
+    if (currentIndex > 0) { currentIndex--; update(); }
+  });
+  if (nextBtn) nextBtn.addEventListener('click', function () {
+    if (currentIndex < slideCount - 1) { currentIndex++; update(); }
+  });
+
+  var touchStartX = 0;
+  var touchEndX = 0;
+  var viewport = container.querySelector('.carousel-viewport');
+  if (viewport) {
+    viewport.addEventListener('touchstart', function (e) {
+      touchStartX = e.changedTouches[0].screenX;
+    }, { passive: true });
+    viewport.addEventListener('touchend', function (e) {
+      touchEndX = e.changedTouches[0].screenX;
+      var diff = touchStartX - touchEndX;
+      if (Math.abs(diff) > 50) {
+        if (diff > 0 && currentIndex < slideCount - 1) {
+          currentIndex++;
+        } else if (diff < 0 && currentIndex > 0) {
+          currentIndex--;
+        }
+        update();
+      }
+    }, { passive: true });
+  }
+
+  buildIndicator();
   update();
+
+  var resizeTimer;
+  window.addEventListener('resize', function () {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(function () {
+      var newVisible = getVisibleCount();
+      if (newVisible !== visibleCount) {
+        visibleCount = newVisible;
+        slideCount = Math.max(1, totalCards - visibleCount + 1);
+        buildIndicator();
+        update();
+      }
+    }, 150);
+  });
 }
 
           sectionObserver.unobserve(entry.target);

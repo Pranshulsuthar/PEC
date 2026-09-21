@@ -170,56 +170,90 @@ p {
    ================================================== */
 
 /* --------------------------------------------------
-   Coordinator Slider Styles
+   Coordinator Carousel
    -------------------------------------------------- */
-.coordinator-slider {
+.coordinator-carousel {
   position: relative;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 56px;
+}
+.carousel-viewport {
   overflow: hidden;
-  max-width: 400px;
-  margin: 2rem auto;
+  border-radius: var(--radius-lg);
 }
-.coordinator-profiles {
+.carousel-track {
   display: flex;
-  transition: transform 0.5s ease;
+  transition: transform 0.5s cubic-bezier(0.25, 0.1, 0.25, 1), opacity 0.4s ease;
 }
-.coordinator-profile {
-  min-width: 100%;
-  flex-shrink: 0;
-  opacity: 0;
-  transition: opacity 0.5s ease;
+.carousel-track .coordinator-profile {
+  min-width: calc(25% - 0px);
+  flex: 0 0 calc(25%);
+  opacity: 1;
+  transition: none;
 }
-.coordinator-profile.active {
+.carousel-track .coordinator-profile.active {
   opacity: 1;
 }
-.slider-prev,
-.slider-next {
+.carousel-arrow {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  background: var(--surface-2);
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
-  width: 40px;
-  height: 40px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--text);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  opacity: 0.7;
-  transition: var(--transition);
-  border: none;
+  z-index: 10;
+  font-size: 0.95rem;
+  transition: all 0.3s ease;
 }
-.slider-prev:hover,
-.slider-next:hover {
-  opacity: 1;
-  background: var(--surface);
+.carousel-arrow:hover {
+  background: var(--tangerine);
+  color: #fff;
+  border-color: var(--tangerine);
+  box-shadow: 0 0 20px rgba(244, 160, 0, 0.3);
+  transform: translateY(-50%) scale(1.08);
 }
-.slider-prev { left: 10px; }
-.slider-next { right: 10px; }
-.slider-indicator {
-  text-align: center;
-  margin-top: 8px;
-  font-size: 0.9rem;
+.carousel-arrow:active {
+  transform: translateY(-50%) scale(0.95);
+}
+.carousel-arrow:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+.carousel-prev { left: 0; }
+.carousel-next { right: 0; }
+.carousel-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 20px;
+  font-size: 0.82rem;
   color: var(--text-muted);
+  letter-spacing: 0.04em;
+}
+.carousel-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--border);
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+.carousel-dot.active {
+  background: var(--tangerine);
+  box-shadow: 0 0 8px rgba(244, 160, 0, 0.4);
+  transform: scale(1.2);
 }
 
 
@@ -1064,13 +1098,15 @@ textarea.form-control {
   grid-template-columns: repeat(4, 1fr);
   gap: 24px;
   position: relative;
+  padding-top: 0;
 }
 
 .process-steps::before {
   content: '';
   position: absolute;
-  top: 40px;
-  left: 15%; right: 15%;
+  top: 36px;
+  left: calc(12.5% + 12px);
+  right: calc(12.5% + 12px);
   height: 2px;
   background: var(--pool);
 }
@@ -1093,10 +1129,12 @@ textarea.form-control {
   font-size: 1.5rem;
   font-weight: 800;
   color: var(--tangerine);
+  position: relative;
+  z-index: 2;
 }
 
-.process-step h4 { margin-bottom: 8px; }
-.process-step p { font-size: 0.9rem; color: var(--text-muted); }
+.process-step h4 { margin-bottom: 8px; font-size: 1.1rem; font-weight: 700; }
+.process-step p { font-size: 0.9rem; color: var(--text-muted); max-width: 220px; margin: 0 auto; }
 
 /* ==================================================
    16. Mentorship Flow
@@ -1269,9 +1307,8 @@ textarea.form-control {
 }
 
 @media (max-width: 1180px) {
-  .coordinator-team { grid-template-columns: repeat(2, minmax(0, 280px)); }
-  .coordinator-profile:nth-child(5),
-  .coordinator-profile:nth-child(6) { grid-column: auto; }
+  .coordinator-carousel { padding: 0 48px; }
+  .carousel-track .coordinator-profile { min-width: calc(50% - 0px); flex: 0 0 calc(50%); }
 }
 
 /* ==================================================
@@ -3271,7 +3308,9 @@ textarea.form-control {
   .services-grid { grid-template-columns: 1fr; }
   .process-steps { grid-template-columns: 1fr; }
   .mentorship-flow { flex-direction: column; }
-  .coordinator-team { grid-template-columns: minmax(0, 320px); }
+  .coordinator-carousel { padding: 0 40px; }
+  .carousel-track .coordinator-profile { min-width: 100%; flex: 0 0 100%; }
+  .carousel-arrow { width: 36px; height: 36px; font-size: 0.8rem; }
   .flow-arrow { transform: rotate(90deg); }
   .activities-grid { grid-template-columns: 1fr; }
   .events-grid { grid-template-columns: 1fr; }
