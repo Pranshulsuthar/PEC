@@ -98,12 +98,31 @@ function navigateTo(pageId) {
   if (sidebar) sidebar.classList.remove('active');
   if (overlay) overlay.classList.remove('active');
 
+  var mobileTitle = activeApp.querySelector('.mobile-title');
+  if (mobileTitle && target) {
+    var h = target.querySelector('.dashboard-header h1');
+    mobileTitle.textContent = h ? h.textContent.split(',')[0].replace('Good Morning', 'Morning').replace('Good Afternoon', 'Afternoon').replace('Good Evening', 'Evening').trim() : 'Dashboard';
+  }
+
   window.scrollTo(0, 0);
 
   setTimeout(function() {
     animateProgressBars();
     renderBarCharts();
+    animateDashSections(target);
   }, 100);
+}
+
+function animateDashSections(container) {
+  if (!container) return;
+  var sections = container.querySelectorAll('.dashboard-stats, .dashboard-grid, .dashboard-section, .table-responsive, .filter-chips, .dashboard-header');
+  sections.forEach(function(el, i) {
+    el.classList.remove('dash-animate-in', 'dash-visible');
+    el.classList.add('dash-animate-in');
+    setTimeout(function() {
+      el.classList.add('dash-visible');
+    }, 60 * i);
+  });
 }
 
 window.addEventListener('hashchange', function() {
@@ -122,6 +141,13 @@ function initSidebarNav() {
       var href = this.getAttribute('href');
       if (href && href.startsWith('#') && href.length > 1) {
         navigateTo(href.slice(1));
+      }
+      var app = this.closest('[id^="app-"]');
+      if (app) {
+        var sidebar = app.querySelector('.sidebar');
+        var overlay = app.querySelector('.sidebar-overlay');
+        if (sidebar) sidebar.classList.remove('active');
+        if (overlay) overlay.classList.remove('active');
       }
     });
   });
@@ -435,8 +461,15 @@ function renderRoleIdentity(appSelector, profile, role) {
   var name = profile && profile.name ? profile.name : role;
   document.querySelectorAll(appSelector + ' .user-name').forEach(function (el) { el.textContent = name; });
   document.querySelectorAll(appSelector + ' .user-avatar').forEach(function (el) { el.textContent = initials(name); });
-  var heading = document.querySelector(appSelector + ' .dashboard-header h1');
-  if (heading) heading.textContent = 'Welcome, ' + role.charAt(0).toUpperCase() + role.slice(1);
+  var heading = document.querySelector(appSelector + ' .sub-page.active .dashboard-header h1');
+  if (heading) {
+    var greeting = getGreeting();
+    if (role === 'student') {
+      heading.innerHTML = greeting + ', <span class="user-name">' + escapeHtml(name) + '</span>';
+    } else {
+      heading.textContent = 'Welcome, ' + escapeHtml(name);
+    }
+  }
 }
 
 function renderStudentCollections(data) {
@@ -571,5 +604,12 @@ document.addEventListener('DOMContentLoaded', function() {
   if (role) {
     switchRole(role);
     if (hash) navigateTo(hash);
+    setTimeout(function() {
+      var activeApp = document.querySelector('[id^="app-"][style*="flex"], [id^="app-"].active');
+      if (activeApp) {
+        var activePage = activeApp.querySelector('.sub-page.active');
+        if (activePage) animateDashSections(activePage);
+      }
+    }, 200);
   }
 });

@@ -13,10 +13,20 @@ const eventRoutes = require('./routes/events');
 const notificationRoutes = require('./routes/notifications');
 const dashboardRoutes = require('./routes/dashboard');
 const { verifyToken } = require('./middleware/authMiddleware');
+const pool = require('./config/db');
+const { init } = require('./config/initDb');
 
 const app = express();
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ strict: true }));
+
+// Global error handler for JSON parsing errors
+app.use((err, req, res, next) => {
+  if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
+    return res.status(400).json({ success: false, message: 'Invalid JSON payload' });
+  }
+  next(err);
+});
 app.use(express.static(path.join(__dirname, '..')));
 
 // Public routes
@@ -35,9 +45,23 @@ app.use('/api/news', newsRoutes);
 app.use('/api/events', eventRoutes);
 app.use('/api/notifications', notificationRoutes);
 
-const PORT = process.env.PORT || 5000;
-// Initialize DB schema before starting server
-const { init } = require('./config/initDb');
-init().then(() => {
-  app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-});
+const PORT = Number.parseInt(process.env.PORT || '5000', 10);
+
+async function start() {
+  try {
+    await init();
+    const server = app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+    const shutdown = async () => {
+      server.close(async () => {
+        await pool.end();
+        process.exit(0);
+      });
+    };
+    process.once('SIGINT', shutdown);
+    process.once('SIGTERM', shutdown);
+  } catch (error) {
+    process.exitCode = 1;
+  }
+}
+
+start();

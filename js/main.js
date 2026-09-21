@@ -322,9 +322,15 @@ function initCarousel(carouselId, indicatorId) {
 
   function getVisibleCount() {
     var w = window.innerWidth;
-    if (w <= 768) return 1;
-    if (w <= 1180) return 2;
-    return 4;
+    if (w <= 768) return 1; // mobile
+    if (w <= 1180) return 2; // tablet
+    return 4; // desktop
+  }
+
+  // Adjust card flex-basis according to visible count
+  function adjustCardWidth() {
+    var width = (100 / visibleCount) + '%';
+    cards.forEach(function (card) { card.style.flex = '0 0 ' + width; });
   }
 
   function buildIndicator() {
@@ -359,6 +365,8 @@ function initCarousel(carouselId, indicatorId) {
     dots.forEach(function (dot, i) {
       dot.classList.toggle('active', i === currentIndex);
     });
+
+    adjustCardWidth();
   }
 
   if (prevBtn) prevBtn.addEventListener('click', function () {
@@ -390,6 +398,7 @@ function initCarousel(carouselId, indicatorId) {
   }
 
   buildIndicator();
+  adjustCardWidth();
   update();
 
   var resizeTimer;

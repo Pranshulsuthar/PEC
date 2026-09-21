@@ -1,0 +1,1 @@
+{ "name": "Test User", "email": "test@example.com", "password": "Password123!", "role": "student", "roll_number": "12345", "branch": "CS", "semester": 1, "year": 2024, "skills": "JS,Node" }

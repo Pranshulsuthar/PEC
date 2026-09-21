@@ -88,7 +88,15 @@
         <div class="user-info"><div class="user-name">Arjun Kumar</div><div class="user-role">Student</div></div>
       </div>
     </aside>
+    <div class="sidebar-overlay" onclick="this.classList.remove('active');this.previousElementSibling.classList.remove('active')"></div>
     <main class="dashboard-main">
+      <div class="mobile-topbar">
+        <button class="mobile-hamburger" onclick="var s=this.closest('[id^=app-]').querySelector('.sidebar');var o=this.closest('[id^=app-]').querySelector('.sidebar-overlay');s.classList.toggle('active');o.classList.toggle('active')"><i class="fas fa-bars"></i></button>
+        <span class="mobile-title">Dashboard</span>
+        <div class="mobile-actions">
+          <button class="btn-icon" onclick="switchRole(null)" title="Logout"><i class="fas fa-sign-out-alt"></i></button>
+        </div>
+      </div>
 
       <!-- Student Dashboard -->
       <div class="sub-page active" id="student-dashboard">
@@ -428,7 +436,15 @@
         <div class="user-info"><div class="user-name">Rahul Verma</div><div class="user-role">Mentor</div></div>
       </div>
     </aside>
+    <div class="sidebar-overlay" onclick="this.classList.remove('active');this.previousElementSibling.classList.remove('active')"></div>
     <main class="dashboard-main">
+      <div class="mobile-topbar">
+        <button class="mobile-hamburger" onclick="var s=this.closest('[id^=app-]').querySelector('.sidebar');var o=this.closest('[id^=app-]').querySelector('.sidebar-overlay');s.classList.toggle('active');o.classList.toggle('active')"><i class="fas fa-bars"></i></button>
+        <span class="mobile-title">Dashboard</span>
+        <div class="mobile-actions">
+          <button class="btn-icon" onclick="switchRole(null)" title="Logout"><i class="fas fa-sign-out-alt"></i></button>
+        </div>
+      </div>
 
       <!-- Mentor Dashboard -->
       <div class="sub-page active" id="mentor-dashboard">
@@ -775,7 +791,16 @@
       <div class="sidebar-divider"></div>
       <div class="sidebar-user"><div class="user-avatar">AD</div><div class="user-info"><div class="user-name">Admin User</div><div class="user-role">Coordinator</div></div></div>
     </aside>
+    <div class="sidebar-overlay" onclick="this.classList.remove('active');this.previousElementSibling.classList.remove('active')"></div>
     <main class="dashboard-main">
+      <div class="mobile-topbar">
+        <button class="mobile-hamburger" onclick="var s=this.closest('[id^=app-]').querySelector('.sidebar');var o=this.closest('[id^=app-]').querySelector('.sidebar-overlay');s.classList.toggle('active');o.classList.toggle('active')"><i class="fas fa-bars"></i></button>
+        <span class="mobile-title">Dashboard</span>
+        <div class="mobile-actions">
+          <button class="btn-icon" onclick="switchRole(null)" title="Logout"><i class="fas fa-sign-out-alt"></i></button>
+        </div>
+      </div>
+
       <div class="sub-page active" id="coord-dashboard">
         <div class="dashboard-header"><h1>Coordinator Dashboard</h1><p>Complete overview of the PEC community.</p></div>
         <div class="dashboard-stats">
