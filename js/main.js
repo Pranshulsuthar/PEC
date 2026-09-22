@@ -74,14 +74,15 @@ function initPublicAuthState() {
   if (token) {
     try { user = JSON.parse(atob(token.split('.')[1])); } catch (error) { sessionStorage.removeItem('pec_jwt'); }
   }
+  var inPages = window.location.pathname.indexOf('/pages/') !== -1;
   links.forEach(function (link) {
     if (!user) {
       link.textContent = 'Login';
-      link.href = 'pages/auth.html';
+      link.href = inPages ? 'auth.html' : 'pages/auth.html';
       return;
     }
     link.textContent = (user.name || 'Account') + ' · ' + (user.role || 'User');
-    link.href = 'pages/dashboard.html';
+    link.href = inPages ? 'dashboard.html' : 'pages/dashboard.html';
     link.classList.add('authenticated-user-link');
   });
 }
@@ -116,10 +117,15 @@ function initMobileMenu() {
 
 function setActiveNavLink() {
   var currentPage = window.location.pathname.split('/').pop() || 'index.html';
+  var currentHash = window.location.hash;
   document.querySelectorAll('.navbar-nav a, .mobile-menu a').forEach(function (link) {
-    var href = link.getAttribute('href');
-    if (href === currentPage || (currentPage === '' && href === 'index.html')) {
+    var href = link.getAttribute('href') || '';
+    var linkHash = href.indexOf('#') >= 0 ? href.slice(href.indexOf('#')) : '';
+    var linkPage = href.split('#')[0].split('/').pop();
+    if ((linkHash && linkHash === currentHash) || (!linkHash && linkPage === currentPage) || (currentPage === 'index.html' && linkHash === '#home' && !currentHash)) {
       link.classList.add('active');
+    } else {
+      link.classList.remove('active');
     }
   });
 }
@@ -810,8 +816,9 @@ function initHeroCodeEditor() {
  document.addEventListener('DOMContentLoaded', function () {
    initPublicAuthState();
    initMobileMenu();
-  setActiveNavLink();
-  initScrollReveal();
+   setActiveNavLink();
+   window.addEventListener('hashchange', setActiveNavLink);
+   initScrollReveal();
   initScrollEffects();
   initSmoothScroll();
   initContactForm();
