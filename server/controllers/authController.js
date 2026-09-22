@@ -25,21 +25,6 @@ exports.register = async (req, res) => {
   if (!['student', 'mentor', 'coordinator'].includes(role)) {
     return res.status(400).json({ success: false, message: 'Invalid role' });
   }
-  if (role === 'coordinator') {
-    const [coordinators] = await pool.query("SELECT id FROM users WHERE role = 'coordinator' LIMIT 1");
-    const authHeader = req.headers.authorization || '';
-    const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
-    let requesterIsCoordinator = false;
-    if (token) {
-      try {
-        const requester = jwt.verify(token, process.env.JWT_SECRET || 'change_this_to_a_secure_secret');
-        requesterIsCoordinator = requester.role === 'coordinator';
-      } catch (error) { requesterIsCoordinator = false; }
-    }
-    if (coordinators.length && !requesterIsCoordinator) {
-      return res.status(403).json({ success: false, message: 'Coordinator accounts require approval from an existing coordinator' });
-    }
-  }
   const connection = await pool.getConnection();
   let mentorLock = false;
   try {
@@ -57,10 +42,9 @@ exports.register = async (req, res) => {
     // Check email exists
     const [users] = await connection.query('SELECT id FROM users WHERE email = ?', [email]);
     if (users.length) {
-      return res.status(409).json({ success: false, message: 'Email already exists' });
+      throw Object.assign(new Error('Email already exists'), { statusCode: 409 });
     }
     const hashed = await bcrypt.hash(password, 10);
-    await connection.beginTransaction();
     // Insert into users table
     const [result] = await connection.query(
       'INSERT INTO users (name, email, password, role) VALUES (?,?,?,?)',
@@ -101,13 +85,11 @@ exports.register = async (req, res) => {
         [user_id, mentor_id, mentorNumberRow.mentor_number, group_id, group_name, designation || null, department || null, null, experience || null, skills || null]
       );
     } else if (role === 'coordinator') {
-      const { coordinator_id, designation, department, employee_id } = req.body;
-      if (!coordinator_id) {
-        throw Object.assign(new Error('Coordinator ID is required'), { statusCode: 400 });
-      }
+      const { designation, department } = req.body;
+      const coordinatorCode = `COORD_${user_id}`;
       await connection.query(
         'INSERT INTO coordinator_profiles (user_id, coordinator_code, designation, department, employee_id) VALUES (?,?,?,?,?)',
-        [user_id, coordinator_id, designation || 'Coordinator', department || null, employee_id || null]
+        [user_id, coordinatorCode, designation || 'Coordinator', department || null, coordinatorCode]
       );
     }
     await connection.commit();

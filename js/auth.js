@@ -524,13 +524,12 @@ document.addEventListener('submit', function (e) {
     var password = document.getElementById('coordinator-signup-password').value;
     var confirm = document.getElementById('coordinator-confirm-password').value;
     var department = document.getElementById('coordinator-department').value;
-    var employee_id = document.getElementById('coordinator-id').value.trim();
     if (!name) return showFieldError('coordinator-fullname', 'Name required');
     if (!validateEmail(email)) return showFieldError('coordinator-signup-email', 'Invalid email');
     if (!validatePassword(password)) return showFieldError('coordinator-signup-password', 'Password must be at least 8 characters');
     if (!confirmPasswordMatch(password, confirm)) return showFieldError('coordinator-confirm-password', 'Passwords do not match');
     setLoading(true);
-    postJSON('/api/auth/register', { name: name, email: email, password: password, role: 'coordinator', coordinator_id: employee_id, department: department, employee_id: employee_id })
+    postJSON('/api/auth/register', { name: name, email: email, password: password, role: 'coordinator', department: department })
       .then(completeAuth)
       .catch(function () { showFormSuccess('Unable to connect to PEC server'); })
       .finally(function () { setLoading(false); });

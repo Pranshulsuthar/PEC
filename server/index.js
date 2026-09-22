@@ -19,6 +19,10 @@ const { init } = require('./config/initDb');
 const app = express();
 app.use(cors());
 app.use(express.json({ strict: true }));
+app.use((req, res, next) => {
+  if (req.method === 'GET') res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  next();
+});
 
 // Global error handler for JSON parsing errors
 app.use((err, req, res, next) => {

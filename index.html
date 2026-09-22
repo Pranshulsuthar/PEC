@@ -12,6 +12,7 @@
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/hero-code.css">
   <link rel="stylesheet" href="css/activity-showcase.css">
+  <link rel="stylesheet" href="css/responsive-overrides.css">
 </head>
 <body>
 
@@ -19,20 +20,17 @@
   <nav class="navbar">
     <div class="container">
       <a href="index.html" class="navbar-brand">
-        <div class="navbar-logo" style="border-radius: 50%;"><img src="ChatGPT Image Sep 21, 2026, 10_47_22 AM.png" alt="PEC Logo"></div>
+        <div class="navbar-logo" style="border-radius: 50%;"><img src="All Photoes/ChatGPT Image Sep 21, 2026, 10_47_22 AM.png" alt="PEC Logo"></div>
         <div class="navbar-brand-text">
           <span class="navbar-brand-name">PEC</span>
           <span class="navbar-brand-tagline">Programming Excellence Community</span>
         </div>
       </a>
       <div class="navbar-nav">
-        <a href="index.html#home" class="active">Home</a>
-        <a href="index.html#about">About</a>
-        <a href="index.html#activities">Activities</a>
-        <a href="index.html#coordinators">Coordinators</a>
-        <a href="pages/public.html#events">Events</a>
-        <a href="pages/public.html#leaderboard">Leaderboard</a>
-        <a href="pages/public.html#contact">Contact</a>
+        <a href="#home" class="active">Home</a>
+        <a href="#about">About</a>
+        <a href="#activities">Activities</a>
+        <a href="#coordinators">Coordinators</a>
       </div>
       <div class="navbar-actions">
         <button class="theme-toggle" aria-label="Toggle theme">&#127769;</button>
@@ -46,18 +44,16 @@
 
   <!-- Mobile Menu -->
   <div class="mobile-menu">
-    <a href="index.html#home">Home</a>
+    <a href="#home">Home</a>
     <a href="index.html#about">About</a>
     <a href="index.html#activities">Activities</a>
     <a href="index.html#coordinators">Coordinators</a>
-    <a href="pages/public.html#events">Events</a>
-    <a href="pages/public.html#leaderboard">Leaderboard</a>
-    <a href="pages/public.html#contact">Contact</a>
+
     <a href="pages/auth.html" class="btn btn-primary" data-auth-link>Login</a>
   </div>
 
   <!-- Hero Section -->
-  <section class="hero">
+  <section id="home" class="hero">
     <div class="container">
       <div class="hero-content">
         <span class="hero-label"><i class="fas fa-code"></i> Welcome to PEC</span>
@@ -65,7 +61,7 @@
         <p class="subtitle">Learn. Practice. Collaborate. Grow.</p>
         <p>PEC is a programming community focused on strengthening problem-solving skills, encouraging practical development, connecting students with mentors, and creating a culture of continuous learning.</p>
         <div class="hero-buttons">
-          <a href="pages/auth.html" class="btn btn-primary btn-lg">Join PEC</a>
+          <a href="pages/auth.html" class="btn btn-primary btn-lg" data-pec-entry>Join PEC</a>
           <a href="index.html#activities" class="btn btn-secondary btn-lg">Explore Activities</a>
         </div>
       </div>
@@ -102,7 +98,7 @@
   </section>
 
   <!-- About PEC Section -->
-  <section class="section">
+  <section id="about" class="section">
     <div class="container">
       <div class="section-header fade-in">
         <span class="section-label">About PEC</span>
@@ -120,7 +116,7 @@ Code,complete, Conquer</p>
   </section>
 
   <!-- What We Do Section -->
-  <section class="section section-light">
+  <section id="activities" class="section section-light">
     <div class="container">
       <div class="section-header fade-in">
         <span class="section-label">Our Activities</span>
@@ -129,15 +125,15 @@ Code,complete, Conquer</p>
       </div>
       <div class="activity-showcase fade-in" data-activity-slider>
         <div class="activity-showcase-media">
-          <div class="activity-slide active"><img src="PEC_1st.jpeg" alt="PEC community activity"></div>
-          <div class="activity-slide"><img src="PEC_2nd.jpeg" alt="PEC collaborative coding activity"></div>
-          <div class="activity-slide"><img src="PEC_3rd.jpeg" alt="PEC coding workshop"></div>
-          <div class="activity-slide"><img src="PEC_4th.jpeg" alt="PEC programming community activity"></div>
-          <div class="activity-slide"><img src="PEC_5th.jpeg" alt="Programming Excellence Community activity"></div>
+          <div class="activity-slide active"><img src="All Photoes/PEC_1st.jpeg" alt="PEC community activity"></div>
+          <div class="activity-slide"><img src="All Photoes/PEC_2nd.jpeg" alt="PEC collaborative coding activity"></div>
+          <div class="activity-slide"><img src="All Photoes/PEC_3rd.jpeg" alt="PEC coding workshop"></div>
+          <div class="activity-slide"><img src="All Photoes/PEC_4th.jpeg" alt="PEC programming community activity"></div>
+          <div class="activity-slide"><img src="All Photoes/PEC_5th.jpeg" alt="Programming Excellence Community activity"></div>
         </div>
         <div class="activity-showcase-content">
           <span class="section-label">PEC INAUGURATION</span>
-          <h3>A New Beginning – Programming Excellence Community</h3>
+          <h3>A New Beginning - Programming Excellence Community</h3>
           <p>The inauguration of the Programming Excellence Community (PEC) marked a new beginning for the Department of Information Technology, SKIT Jaipur. The session featured an inspiring address by HOD Dr. Vipin Jain, who guided and encouraged students to develop their skills and make the most of the opportunities ahead. Faculty coordinators, student coordinators, and PEC mentors were also introduced, followed by an overview of upcoming coding activities, mentorship initiatives, and collaborative learning opportunities.</p>
         </div>
         <div class="activity-slider-dots" role="tablist" aria-label="Activity photos">
@@ -177,28 +173,28 @@ Code,complete, Conquer</p>
         <p>Supporting the PEC community through guidance, collaboration and continuous growth.</p>
       </div>
       <div class="coordinator-team fade-in">
-        <a class="coordinator-profile reveal" href="https://www.linkedin.com/in/mittal-tanishq/" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: none;">
-          <div class="coordinator-photo-wrap"><img src="WhatsApp Image 2026-09-21 at 3.17.49 PM.jpeg" alt="Coordinator profile photo"></div>
+        <a class="coordinator-profile reveal" href="https://www.linkedin.com/in/mittal-tanishq/" target="_blank" rel="noopener noreferrer">
+          <div class="coordinator-photo-wrap"><img src="All Photoes/WhatsApp Image 2026-09-21 at 3.17.49 PM.jpeg" alt="Coordinator profile photo"></div>
           <div class="coordinator-profile-body"><span class="coordinator-role-label">Coordinator</span><h3>Tanishq Mittal</h3><p>Coordinator &middot; 3rd Year</p></div>
         </a>
-        <a class="coordinator-profile reveal" href="https://www.linkedin.com/in/sakshi-karamchandani-42954737b/?skipRedirect=true" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: none;">
-          <div class="coordinator-photo-wrap"><img src="1781619055043.png" alt="Coordinator profile photo"></div>
+        <a class="coordinator-profile reveal" href="https://www.linkedin.com/in/sakshi-karamchandani-42954737/?skipRedirect=true" target="_blank" rel="noopener noreferrer">
+          <div class="coordinator-photo-wrap"><img src="All Photoes/1781619055043.png" alt="Coordinator profile photo"></div>
           <div class="coordinator-profile-body"><span class="coordinator-role-label">Coordinator</span><h3>Sakshi Karamchandani</h3><p>Coordinator &middot; 3rd Year</p></div>
         </a>
-        <a class="coordinator-profile reveal" href="https://www.linkedin.com/in/tanishk-kumar-bodani-a0039723b/" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: none;">
-          <div class="coordinator-photo-wrap"><img src="1766168196222 (1).png" alt="Coordinator profile photo"></div>
+        <a class="coordinator-profile reveal" href="https://www.linkedin.com/in/tanishk-kumar-bodani-a0039723b/" target="_blank" rel="noopener noreferrer">
+          <div class="coordinator-photo-wrap"><img src="All Photoes/1766168196222 (1).png" alt="Coordinator profile photo"></div>
           <div class="coordinator-profile-body"><span class="coordinator-role-label">Coordinator</span><h3>Tanishk Kumar Badoni</h3><p>Coordinator &middot; 2nd Year</p></div>
         </a>
-        <a class="coordinator-profile reveal" href="" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: none;">
-          <div class="coordinator-photo-wrap"><img src="WhatsApp Image 2026-09-21 at 12.32.00 PM.jpeg" alt="Coordinator profile photo"></div>
+        <a class="coordinator-profile reveal" href="https://www.linkedin.com/" target="_blank" rel="noopener noreferrer">
+          <div class="coordinator-photo-wrap"><img src="All Photoes/WhatsApp Image 2026-09-21 at 12.32.00 PM.jpeg" alt="Coordinator profile photo"></div>
           <div class="coordinator-profile-body"><span class="coordinator-role-label">Coordinator</span><h3>Rishabh Thakur</h3><p>Coordinator &middot; 2nd Year</p></div>
         </a>
-        <a class="coordinator-profile reveal" href="https://www.linkedin.com/in/garima-garg-60b69717/" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: none;">
-          <div class="coordinator-photo-wrap"><img src="1622012227975.jpg" alt="Faculty Coordinator profile photo"></div>
+        <a class="coordinator-profile reveal" href="https://www.linkedin.com/in/garima-garg-60b69717/" target="_blank" rel="noopener noreferrer">
+          <div class="coordinator-photo-wrap"><img src="All Photoes/1622012227975.jpg" alt="Faculty Coordinator profile photo"></div>
           <div class="coordinator-profile-body"><span class="coordinator-role-label">Faculty Coordinator</span><h3>Garima Garg</h3><p>Faculty Coordinator</p></div>
         </a>
-        <a class="coordinator-profile reveal" href="https://www.linkedin.com/in/aakansha-mitawa-86b31ab5/" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: none;">
-          <div class="coordinator-photo-wrap"><img src="1740206785920.jpg" alt="Faculty Coordinator profile photo"></div>
+        <a class="coordinator-profile reveal" href="https://www.linkedin.com/in/aakansha-mitawa-86b31ab5/" target="_blank" rel="noopener noreferrer">
+          <div class="coordinator-photo-wrap"><img src="All Photoes/1740206785920.jpg" alt="Faculty Coordinator profile photo"></div>
           <div class="coordinator-profile-body"><span class="coordinator-role-label">Faculty Coordinator</span><h3>Aakansha Mitawa</h3><p>Faculty Coordinator</p></div>
         </a>
       </div>
@@ -210,7 +206,7 @@ Code,complete, Conquer</p>
     <div class="container">
       <h2>Ready to Start Your Journey?</h2>
       <p>Join PEC today and become part of a growing community of passionate programmers.</p>
-      <a href="pages/auth.html" class="btn btn-lg">Join PEC</a>
+      <a href="pages/auth.html" class="btn btn-lg" data-pec-entry>Join PEC</a>
     </div>
   </section>
 
@@ -224,15 +220,15 @@ Code,complete, Conquer</p>
         </div>
         <div class="footer-links">
           <h4>Quick Links</h4>
-          <a href="index.html#home">Home</a><a href="index.html#about">About</a><a href="index.html#activities">Activities</a><a href="index.html#coordinators">Coordinators</a>
+          <a href="#home">Home</a><a href="index.html#about">About</a><a href="index.html#activities">Activities</a><a href="index.html#coordinators">Coordinators</a>
         </div>
         <div class="footer-links">
-          <h4>Community</h4>
-          <a href="pages/public.html#events">Events</a><a href="pages/public.html#leaderboard">Leaderboard</a><a href="pages/public.html#contact">Contact</a><a href="pages/auth.html">Login</a>
+          <h4>Account</h4>
+          <a href="pages/auth.html">Login</a>
         </div>
-        <div class="footer-links">
+          <div class="footer-links">
           <h4>Connect</h4>
-          <a href="#"><i class="fab fa-discord"></i> Discord</a><a href="#"><i class="fab fa-github"></i> GitHub</a><a href="#"><i class="fab fa-linkedin"></i> LinkedIn</a><a href="#"><i class="fab fa-twitter"></i> Twitter</a>
+          <a href="https://discord.com/" target="_blank" rel="noopener noreferrer"><i class="fab fa-discord"></i> Discord</a><a href="https://github.com/" target="_blank" rel="noopener noreferrer"><i class="fab fa-github"></i> GitHub</a><a href="https://www.linkedin.com/" target="_blank" rel="noopener noreferrer"><i class="fab fa-linkedin"></i> LinkedIn</a><a href="https://twitter.com/" target="_blank" rel="noopener noreferrer"><i class="fab fa-twitter"></i> Twitter</a>
         </div>
       </div>
       <div class="footer-bottom">&copy; 2026 Programming Excellence Community. All rights reserved.</div>

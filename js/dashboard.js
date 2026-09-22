@@ -14,6 +14,7 @@ function switchRole(role) {
   if (token) {
     try {
       tokenUser = JSON.parse(atob(token.split('.')[1]));
+      if (tokenUser.exp && tokenUser.exp * 1000 <= Date.now()) throw new Error('expired');
     } catch (e) {
       sessionStorage.removeItem('pec_jwt');
     }
@@ -21,13 +22,15 @@ function switchRole(role) {
 
   if (!tokenUser || !['student', 'mentor', 'coordinator'].includes(tokenUser.role)) {
     sessionStorage.removeItem('pec_jwt');
-    window.location.replace('auth.html');
+    window.location.replace('../pages/auth.html');
     return;
   }
   if (role !== tokenUser.role) {
     role = tokenUser.role;
   }
   window.currentUser = tokenUser;
+  var roleLabel = role.charAt(0).toUpperCase() + role.slice(1) + ' Portal';
+  document.querySelectorAll('[data-role-context]').forEach(function (el) { el.textContent = roleLabel; });
   if (role === 'student') {
     loadStudentDashboard();
   } else if (role === 'mentor') {

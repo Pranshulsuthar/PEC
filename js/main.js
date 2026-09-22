@@ -66,14 +66,40 @@
 /* ============================================
    SECTION 2 - MOBILE MENU
    ============================================ */
-function initPublicAuthState() {
+function getSessionUser() {
   var token = sessionStorage.getItem('pec_jwt');
+  if (!token) return null;
+  try {
+    var payload = JSON.parse(atob(token.split('.')[1]));
+    if (payload.exp && payload.exp * 1000 <= Date.now()) {
+      sessionStorage.removeItem('pec_jwt');
+      return null;
+    }
+    return payload;
+  } catch (error) {
+    sessionStorage.removeItem('pec_jwt');
+    return null;
+  }
+}
+
+function initHomeEntryState() {
+  var user = getSessionUser();
+  document.querySelectorAll('[data-pec-entry]').forEach(function (link) {
+    if (!user) {
+      link.textContent = 'Join PEC';
+      link.href = 'pages/auth.html';
+      return;
+    }
+    link.textContent = 'Enter PEC';
+    link.href = 'pages/dashboard.html';
+    link.classList.add('authenticated-entry');
+  });
+}
+
+function initPublicAuthState() {
+  var user = getSessionUser();
   var links = document.querySelectorAll('[data-auth-link]');
   if (!links.length) return;
-  var user = null;
-  if (token) {
-    try { user = JSON.parse(atob(token.split('.')[1])); } catch (error) { sessionStorage.removeItem('pec_jwt'); }
-  }
   var inPages = window.location.pathname.indexOf('/pages/') !== -1;
   links.forEach(function (link) {
     if (!user) {
@@ -118,11 +144,12 @@ function initMobileMenu() {
 function setActiveNavLink() {
   var currentPage = window.location.pathname.split('/').pop() || 'index.html';
   var currentHash = window.location.hash;
+  var isPublicPage = currentPage === 'public.html';
   document.querySelectorAll('.navbar-nav a, .mobile-menu a').forEach(function (link) {
     var href = link.getAttribute('href') || '';
     var linkHash = href.indexOf('#') >= 0 ? href.slice(href.indexOf('#')) : '';
     var linkPage = href.split('#')[0].split('/').pop();
-    if ((linkHash && linkHash === currentHash) || (!linkHash && linkPage === currentPage) || (currentPage === 'index.html' && linkHash === '#home' && !currentHash)) {
+    if ((linkHash && linkHash === currentHash) || (!linkHash && linkPage === currentPage) || (!isPublicPage && currentPage === 'index.html' && linkHash === '#home' && !currentHash)) {
       link.classList.add('active');
     } else {
       link.classList.remove('active');
@@ -335,7 +362,7 @@ function initScrollReveal() {
     observer.observe(el);
   });
 
-  var staggerSections = ['#about', '#activities', '#coordinators', '#events', '#leaderboard', '#contact'];
+  var staggerSections = ['#about', '#activities', '#coordinators'];
   staggerSections.forEach(function (selector) {
     var section = document.querySelector(selector);
     if (!section) return;
@@ -507,18 +534,29 @@ function initScrollEffects() {
    SECTION 8 - SMOOTH SCROLL
    ============================================ */
 function initSmoothScroll() {
-  document.querySelectorAll('a[href^="#"]').forEach(function (link) {
+  document.querySelectorAll('.navbar a[href], .mobile-menu a[href]').forEach(function (link) {
     link.addEventListener('click', function (e) {
-      var targetId = this.getAttribute('href');
-      if (targetId === '#') return;
-      var target = document.querySelector(targetId);
-      if (target) {
-        e.preventDefault();
-        var navHeight = document.querySelector('.navbar') ? document.querySelector('.navbar').offsetHeight : 72;
-        window.scrollTo({
-          top: target.getBoundingClientRect().top + window.pageYOffset - navHeight,
-          behavior: 'smooth'
-        });
+      var rawHref = this.getAttribute('href') || '';
+      if (rawHref === '#') return;
+      var url;
+      try { url = new URL(rawHref, window.location.href); } catch (error) { return; }
+      if (!url.hash || url.pathname !== window.location.pathname) return;
+      var target = document.querySelector(url.hash);
+      if (!target) return;
+      e.preventDefault();
+      history.pushState(null, '', url.hash);
+      var navHeight = document.querySelector('.navbar') ? document.querySelector('.navbar').offsetHeight : 72;
+      window.scrollTo({
+        top: target.getBoundingClientRect().top + window.pageYOffset - navHeight,
+        behavior: 'smooth'
+      });
+      setActiveNavLink();
+      var hamburger = document.querySelector('.hamburger');
+      var mobileMenu = document.querySelector('.mobile-menu');
+      if (hamburger && mobileMenu) {
+        hamburger.classList.remove('active');
+        mobileMenu.classList.remove('active');
+        document.body.style.overflow = '';
       }
     });
   });
@@ -815,6 +853,7 @@ function initHeroCodeEditor() {
    ============================================ */
  document.addEventListener('DOMContentLoaded', function () {
    initPublicAuthState();
+   initHomeEntryState();
    initMobileMenu();
    setActiveNavLink();
    window.addEventListener('hashchange', setActiveNavLink);
@@ -830,8 +869,4 @@ function initHeroCodeEditor() {
   initCoordinatorCardTilt();
    renderActivities();
    initActivityShowcase();
-   renderEvents();
-  renderLeaderboard(currentTab);
-  renderTopStudents(currentTab);
-  initLeaderboardTabs();
 });

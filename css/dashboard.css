@@ -11,16 +11,80 @@
 .dashboard-layout {
   display: flex;
   min-height: 100vh;
-  padding-top: var(--nav-height);
+  padding-top: 0;
   overflow-x: hidden;
 }
 
 .dashboard-layout > .dashboard-main {
-  padding-top: 40px;
+  padding-top: 0;
 }
 
+.dashboard-layout .sidebar,
+.dashboard-layout .dashboard-sidebar {
+  top: 0;
+}
+
+.dashboard-topbar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-height: 64px;
+  margin: 0 -32px 28px;
+  padding: 0 32px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.dashboard-topbar-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  color: var(--text-primary);
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.dashboard-topbar-brand:hover { color: var(--tangerine); }
+.dashboard-topbar-logo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  background: var(--tangerine);
+  color: #fff;
+}
+.dashboard-topbar-context { color: var(--text-muted); font-size: 0.85rem; }
+.dashboard-topbar-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+.dashboard-topbar-back:hover { color: var(--tangerine); transform: translateX(-2px); }
+.dashboard-topbar-actions { display: flex; align-items: center; gap: 14px; margin-left: auto; }
+.dashboard-topbar-logout {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+}
+.dashboard-topbar-logout:hover { border-color: var(--tangerine); color: var(--tangerine); }
+.dashboard-layout .theme-toggle { display: none !important; }
+.mobile-back-link { display: none; color: var(--text-secondary); font-size: 0.78rem; align-items: center; gap: 5px; }
+.mobile-back-link:hover { color: var(--tangerine); }
+
 @media (max-height: 760px) {
-  .dashboard-layout > .dashboard-main { padding-top: 24px; }
+  .dashboard-layout > .dashboard-main { padding-top: 0; }
 }
 
 .sidebar {

@@ -10,6 +10,11 @@
   <link rel="stylesheet" href="../css/dashboard.css">
   <link rel="stylesheet" href="../css/responsive-overrides.css">
   <style>
+    #app-coordinator .dashboard-header { border-left: 3px solid var(--primary); padding-left: 18px; }
+    #app-coordinator .dashboard-section, #app-coordinator .dashboard-stat-card { transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease; }
+    #app-coordinator .dashboard-section:hover, #app-coordinator .dashboard-stat-card:hover { transform: translateY(-3px); border-color: var(--primary); box-shadow: 0 14px 28px rgba(0,0,0,0.12); }
+  </style>
+  <style>
     .dash-view{display:none}.dash-view.active{display:block}.sub-page{display:none}.sub-page.active{display:block}
     .podium{display:flex;align-items:flex-end;justify-content:center;gap:16px;margin:32px 0}.podium-item{text-align:center}
     .podium-item .rank{font-size:14px;color:var(--text-secondary);margin-bottom:8px}
@@ -91,9 +96,10 @@
     </aside>
     <div class="sidebar-overlay" onclick="this.classList.remove('active');this.previousElementSibling.classList.remove('active')"></div>
     <main class="dashboard-main">
+      <div class="dashboard-topbar"><a href="../index.html" class="dashboard-topbar-brand"><span class="dashboard-topbar-logo">P</span><span>PEC</span></a><span class="dashboard-topbar-context" data-role-context>Portal</span><div class="dashboard-topbar-actions"><a href="../index.html" class="dashboard-topbar-back"><i class="fas fa-arrow-left"></i> Back to PEC</a><button type="button" class="dashboard-topbar-logout" onclick="switchRole(null)"><i class="fas fa-sign-out-alt"></i> Logout</button></div></div>
       <div class="mobile-topbar">
         <button class="mobile-hamburger" onclick="var s=this.closest('[id^=app-]').querySelector('.sidebar');var o=this.closest('[id^=app-]').querySelector('.sidebar-overlay');s.classList.toggle('active');o.classList.toggle('active')"><i class="fas fa-bars"></i></button>
-        <span class="mobile-title">Dashboard</span>
+        <span class="mobile-title">Dashboard</span><a href="../index.html" class="mobile-back-link"><i class="fas fa-arrow-left"></i> Back</a>
         <div class="mobile-actions">
           <button class="btn-icon" onclick="switchRole(null)" title="Logout"><i class="fas fa-sign-out-alt"></i></button>
         </div>
@@ -431,9 +437,10 @@
     </aside>
     <div class="sidebar-overlay" onclick="this.classList.remove('active');this.previousElementSibling.classList.remove('active')"></div>
     <main class="dashboard-main">
+      <div class="dashboard-topbar"><a href="../index.html" class="dashboard-topbar-brand"><span class="dashboard-topbar-logo">P</span><span>PEC</span></a><span class="dashboard-topbar-context" data-role-context>Portal</span><div class="dashboard-topbar-actions"><a href="../index.html" class="dashboard-topbar-back"><i class="fas fa-arrow-left"></i> Back to PEC</a><button type="button" class="dashboard-topbar-logout" onclick="switchRole(null)"><i class="fas fa-sign-out-alt"></i> Logout</button></div></div>
       <div class="mobile-topbar">
         <button class="mobile-hamburger" onclick="var s=this.closest('[id^=app-]').querySelector('.sidebar');var o=this.closest('[id^=app-]').querySelector('.sidebar-overlay');s.classList.toggle('active');o.classList.toggle('active')"><i class="fas fa-bars"></i></button>
-        <span class="mobile-title">Dashboard</span>
+        <span class="mobile-title">Dashboard</span><a href="../index.html" class="mobile-back-link"><i class="fas fa-arrow-left"></i> Back</a>
         <div class="mobile-actions">
           <button class="btn-icon" onclick="switchRole(null)" title="Logout"><i class="fas fa-sign-out-alt"></i></button>
         </div>
@@ -791,9 +798,10 @@
     </aside>
     <div class="sidebar-overlay" onclick="this.classList.remove('active');this.previousElementSibling.classList.remove('active')"></div>
     <main class="dashboard-main">
+      <div class="dashboard-topbar"><a href="../index.html" class="dashboard-topbar-brand"><span class="dashboard-topbar-logo">P</span><span>PEC</span></a><span class="dashboard-topbar-context" data-role-context>Portal</span><div class="dashboard-topbar-actions"><a href="../index.html" class="dashboard-topbar-back"><i class="fas fa-arrow-left"></i> Back to PEC</a><button type="button" class="dashboard-topbar-logout" onclick="switchRole(null)"><i class="fas fa-sign-out-alt"></i> Logout</button></div></div>
       <div class="mobile-topbar">
         <button class="mobile-hamburger" onclick="var s=this.closest('[id^=app-]').querySelector('.sidebar');var o=this.closest('[id^=app-]').querySelector('.sidebar-overlay');s.classList.toggle('active');o.classList.toggle('active')"><i class="fas fa-bars"></i></button>
-        <span class="mobile-title">Dashboard</span>
+        <span class="mobile-title">Dashboard</span><a href="../index.html" class="mobile-back-link"><i class="fas fa-arrow-left"></i> Back</a>
         <div class="mobile-actions">
           <button class="btn-icon" onclick="switchRole(null)" title="Logout"><i class="fas fa-sign-out-alt"></i></button>
         </div>
