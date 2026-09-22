@@ -2,6 +2,7 @@ const pool = require('../config/db');
 
 // Get list of students (basic info)
 exports.getAll = async (req, res) => {
+  if (req.user.role === 'student') return res.status(403).json({ success: false, message: 'Students may only access their own profile' });
   try {
     const [rows] = await pool.query('SELECT sp.id AS profile_id, u.id AS user_id, u.name, u.email, sp.roll_number, sp.branch, sp.semester, sp.phone FROM student_profiles sp JOIN users u ON sp.user_id = u.id');
     res.json({ success: true, students: rows });
@@ -14,9 +15,12 @@ exports.getAll = async (req, res) => {
 // Get a single student profile (including mentor assignment)
 exports.getById = async (req, res) => {
   const id = req.params.id;
+  if (req.user.role === 'student' && Number(id) !== Number(req.user.user_id)) {
+    return res.status(403).json({ success: false, message: 'You can only access your own profile' });
+  }
   try {
     const [rows] = await pool.query(
-      `SELECT sp.*, u.name, u.email FROM student_profiles sp JOIN users u ON sp.user_id = u.id WHERE sp.id = ?`,
+       `SELECT sp.*, u.id AS user_id, u.name, u.email FROM student_profiles sp JOIN users u ON sp.user_id = u.id WHERE sp.user_id = ?`,
       [id]
     );
     if (!rows.length) return res.status(404).json({ success: false, message: 'Student not found' });

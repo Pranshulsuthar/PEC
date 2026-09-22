@@ -100,7 +100,7 @@
 
       <!-- Student Dashboard -->
       <div class="sub-page active" id="student-dashboard">
-        <div class="dashboard-header"><h1>Good Evening, <span class="user-name">Arjun Kumar</span></h1><p>Here's what's happening with your progress today.</p></div>
+        <div class="dashboard-header dashboard-student-header"><a href="../index.html" class="dashboard-back-link"><i class="fas fa-arrow-left"></i> Back to PEC</a><h1>Good Evening, <span class="user-name">Student</span></h1><p>Here's your current PEC activity overview.</p></div>
         <div class="dashboard-stats">
           <div class="dashboard-stat-card"><div class="stat-header"><div class="stat-icon" style="background:rgba(59,130,246,0.1);color:#3b82f6"><i class="fas fa-fire"></i></div></div><div class="stat-value">0</div><div class="stat-label">Total Tasks</div></div>
           <div class="dashboard-stat-card"><div class="stat-header"><div class="stat-icon" style="background:rgba(34,197,94,0.1);color:#22c55e"><i class="fas fa-check-circle"></i></div></div><div class="stat-value">0</div><div class="stat-label">Completed</div></div>
@@ -145,8 +145,8 @@
         <div class="dashboard-grid">
           <div class="dashboard-section" style="grid-column:span 2;"><div class="dashboard-section-body">
             <div style="display:flex;gap:24px;align-items:center;flex-wrap:wrap;">
-              <div class="user-avatar" style="width:80px;height:80px;font-size:32px;">AK</div>
-              <div><h2 style="margin:0;">Arjun Kumar</h2><p style="color:var(--text-secondary);margin:4px 0;">Computer Science &middot; 3rd Year</p><p style="color:var(--text-muted);font-size:13px;margin:0;">Enrollment: PEC2024001 &middot; arjun.kumar@pec.edu.in</p></div>
+               <div class="user-avatar student-profile-avatar" style="width:80px;height:80px;font-size:32px;">ST</div>
+               <div><h2 class="student-profile-name" style="margin:0;">Student</h2><p class="student-profile-meta" style="color:var(--text-secondary);margin:4px 0;">Profile information not added yet</p><p class="student-profile-contact" style="color:var(--text-muted);font-size:13px;margin:0;">Student ID unavailable &middot; Email unavailable</p></div>
             </div>
           </div></div>
           <div class="dashboard-section"><div class="dashboard-section-header"><h3>Stats</h3></div><div class="dashboard-section-body">
@@ -165,19 +165,11 @@
       </div>
 
       <!-- Student Mentor -->
-      <div class="sub-page" id="student-mentor">
-        <div class="dashboard-header"><h1>My Mentor</h1></div>
-        <div class="dashboard-grid">
-          <div class="dashboard-section" style="grid-column:span 2;"><div class="dashboard-section-header"><h3>Mentor Details</h3></div><div class="dashboard-section-body">
-            <div style="display:flex;gap:24px;align-items:center;flex-wrap:wrap;">
-              <div class="mentor-avatar" style="width:72px;height:72px;font-size:28px;">RV</div>
-              <div><h3 style="margin:0;">Rahul Verma</h3><p style="color:var(--text-secondary);margin:4px 0;">DSA & Problem Solving &middot; 8 mentees &middot; 4.8 rating</p><p style="color:#22c55e;font-size:13px;margin:0;"><i class="fas fa-circle" style="font-size:8px;"></i> Available</p></div>
-            </div>
-          </div></div>
-          <div class="dashboard-section"><div class="dashboard-section-header"><h3>Recent Feedback</h3></div><div class="dashboard-section-body">
-            <div class="feedback-item"><div class="feedback-header"><span class="feedback-from">Rahul Verma</span><span class="feedback-date">Sep 18</span></div><div class="feedback-text">Great work on the linked list assignment! Clean and well-structured code.</div></div>
-            <div class="feedback-item"><div class="feedback-header"><span class="feedback-from">Rahul Verma</span><span class="feedback-date">Sep 14</span></div><div class="feedback-text">Work on time complexity analysis. Try more DP problems.</div></div>
-          </div></div>
+       <div class="sub-page" id="student-mentor">
+         <div class="dashboard-header"><h1>My Mentor</h1><p>Your assigned mentor and group details.</p></div>
+         <div class="dashboard-grid">
+           <div class="dashboard-section student-mentor-details" style="grid-column:span 2;"><div class="dashboard-section-header"><h3>Mentor Details</h3></div><div class="dashboard-section-body"><p class="empty-state">Loading mentor assignment...</p></div></div>
+           <div class="dashboard-section"><div class="dashboard-section-header"><h3>Group Access</h3></div><div class="dashboard-section-body student-mentor-group"><p class="empty-state">No group assigned yet.</p></div></div>
           <div class="dashboard-section" style="grid-column:span 3;"><div class="dashboard-section-body" style="text-align:center;"><button class="btn btn-primary btn-lg"><i class="fas fa-calendar-alt"></i> Schedule Meeting</button></div></div>
         </div>
       </div>
@@ -473,9 +465,10 @@
       </div>
 
       <!-- Mentor Mentees -->
-      <div class="sub-page" id="mentor-mentees">
-        <div class="dashboard-header"><h1>My Mentees</h1><p>Manage and track your mentees' progress.</p></div>
-        <div class="dashboard-grid" style="grid-template-columns:repeat(auto-fill,minmax(300px,1fr));">
+       <div class="sub-page" id="mentor-mentees">
+         <div class="dashboard-header"><h1>My Mentees</h1><p>Students assigned to you will appear here.</p></div>
+         <div class="dashboard-grid mentor-mentees-list" style="grid-template-columns:repeat(auto-fill,minmax(300px,1fr));">
+           <div class="dashboard-section mentor-empty-state"><div class="dashboard-section-body"><p class="empty-state">No mentees assigned yet. Coordinators can assign students from Mentor Allocation.</p></div></div>
           <div class="dashboard-section"><div class="dashboard-section-body">
             <div style="display:flex;gap:12px;align-items:center;margin-bottom:12px;"><div class="student-avatar">AK</div><div><h4 style="margin:0;">Arjun Kumar</h4><p style="margin:0;font-size:12px;color:var(--text-secondary);">DSA &middot; 3rd Year CS</p></div></div>
             <div class="progress-bar-container"><div class="progress-header"><span class="progress-label">Progress</span><span class="progress-value">75%</span></div><div class="progress-bar"><div class="progress-fill blue" style="width:75%"></div></div></div>
@@ -528,10 +521,14 @@
       </div>
 
       <!-- Mentor Student Profile -->
-      <div class="sub-page" id="mentor-student-profile">
-        <div class="dashboard-header"><h1>Student Profile</h1></div>
-        <div class="dashboard-grid">
-          <div class="dashboard-section" style="grid-column:span 2;"><div class="dashboard-section-body">
+       <div class="sub-page" id="mentor-student-profile">
+         <div class="dashboard-header"><h1>Student Profile</h1><p>Only students assigned to your mentor account appear here.</p></div>
+         <div class="dashboard-grid mentor-selected-student">
+           <div class="dashboard-section mentor-student-profile-card" style="grid-column:span 2;"><div class="dashboard-section-body"><p class="empty-state">Select an assigned student from My Mentees to view their profile.</p></div></div>
+           <div class="dashboard-section mentor-student-stats"><div class="dashboard-section-header"><h3>Stats</h3></div><div class="dashboard-section-body"><p class="empty-state">No student selected.</p></div></div>
+           <div class="dashboard-section mentor-student-progress"><div class="dashboard-section-header"><h3>Progress</h3></div><div class="dashboard-section-body"><p class="empty-state">No progress data recorded yet.</p></div></div>
+           <div class="dashboard-section mentor-student-notes" style="grid-column:span 3;"><div class="dashboard-section-header"><h3>Mentor Notes</h3></div><div class="dashboard-section-body"><p class="empty-state">No student selected.</p></div></div>
+           <div class="dashboard-section mentor-student-actions" style="grid-column:span 3;"><div class="dashboard-section-body" style="text-align:center;"><button class="btn btn-primary btn-lg" disabled><i class="fas fa-calendar-alt"></i> Schedule Meeting</button></div></div>
             <div style="display:flex;gap:24px;align-items:center;flex-wrap:wrap;">
               <div class="user-avatar" style="width:72px;height:72px;font-size:28px;">AK</div>
               <div><h3 style="margin:0;">Arjun Kumar</h3><p style="color:var(--text-secondary);margin:4px 0;">Computer Science &middot; 3rd Year &middot; PEC2024001</p><p style="color:#22c55e;font-size:13px;margin:0;"><i class="fas fa-circle" style="font-size:8px;"></i> Active</p></div>

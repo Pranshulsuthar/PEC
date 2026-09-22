@@ -33,6 +33,11 @@ exports.assignMentorToStudent = async (req, res) => {
   const { mentor_id, student_id } = req.body;
   if (!mentor_id || !student_id) return res.status(400).json({ success: false, message: 'mentor_id and student_id required' });
   try {
+    const [[mentor]] = await pool.query("SELECT id FROM users WHERE id = ? AND role = 'mentor'", [mentor_id]);
+    const [[student]] = await pool.query("SELECT id FROM users WHERE id = ? AND role = 'student'", [student_id]);
+    if (!mentor || !student) return res.status(404).json({ success: false, message: 'Valid mentor and student are required' });
+    const [[existing]] = await pool.query("SELECT id FROM mentor_student WHERE student_id = ? AND status = 'active' LIMIT 1", [student_id]);
+    if (existing) return res.status(409).json({ success: false, message: 'Student already has an active mentor' });
     await pool.query(`
       INSERT INTO mentor_student (mentor_id, student_id, assigned_by, status) VALUES (?, ?, ?, 'active')
       ON DUPLICATE KEY UPDATE assigned_by = VALUES(assigned_by), status = 'active'

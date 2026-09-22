@@ -66,6 +66,26 @@
 /* ============================================
    SECTION 2 - MOBILE MENU
    ============================================ */
+function initPublicAuthState() {
+  var token = sessionStorage.getItem('pec_jwt');
+  var links = document.querySelectorAll('[data-auth-link]');
+  if (!links.length) return;
+  var user = null;
+  if (token) {
+    try { user = JSON.parse(atob(token.split('.')[1])); } catch (error) { sessionStorage.removeItem('pec_jwt'); }
+  }
+  links.forEach(function (link) {
+    if (!user) {
+      link.textContent = 'Login';
+      link.href = 'pages/auth.html';
+      return;
+    }
+    link.textContent = (user.name || 'Account') + ' · ' + (user.role || 'User');
+    link.href = 'pages/dashboard.html';
+    link.classList.add('authenticated-user-link');
+  });
+}
+
 function initMobileMenu() {
   var hamburger = document.querySelector('.hamburger');
   var mobileMenu = document.querySelector('.mobile-menu');
@@ -115,6 +135,34 @@ var activities = [
   { title: "Mini Coding Contest", difficulty: "Hard", status: "Upcoming", description: "A short coding contest with multiple problems. Compete with peers.", icon: "fas fa-flag-checkered", category: "Contest" },
   { title: "Problem Solving Session", difficulty: "Easy", status: "Active", description: "Collaborative problem-solving session to build algorithmic thinking.", icon: "fas fa-lightbulb", category: "Session" }
 ];
+
+function initActivityShowcase() {
+  var slider = document.querySelector('[data-activity-slider]');
+  if (!slider) return;
+  var slides = slider.querySelectorAll('.activity-slide');
+  var dots = slider.querySelectorAll('.activity-slider-dots button');
+  var current = 0;
+  var timer;
+
+  function show(index) {
+    current = (index + slides.length) % slides.length;
+    slides.forEach(function (slide, i) { slide.classList.toggle('active', i === current); });
+    dots.forEach(function (dot, i) { dot.classList.toggle('active', i === current); dot.setAttribute('aria-selected', i === current ? 'true' : 'false'); });
+  }
+
+  function start() {
+    clearInterval(timer);
+    timer = setInterval(function () { show(current + 1); }, 2000);
+  }
+
+  dots.forEach(function (dot, i) {
+    dot.addEventListener('click', function () { show(i); start(); });
+  });
+  slider.addEventListener('mouseenter', function () { clearInterval(timer); });
+  slider.addEventListener('mouseleave', start);
+  show(0);
+  start();
+}
 
 function renderActivities() {
   var container = document.getElementById('activitiesGrid');
@@ -523,6 +571,22 @@ function clearContactErrors() {
 /* ============================================
    SECTION 10 - COUNTER ANIMATION
    ============================================ */
+function loadPublicStats() {
+  var counters = document.querySelectorAll('.stats-bar .stat-number');
+  if (!counters.length) return;
+  fetch('/api/public/stats').then(function (response) { return response.json(); }).then(function (data) {
+    if (!data.success) return;
+    var values = [data.stats.activeStudents, data.stats.solved, data.stats.mentors, data.stats.activities];
+    counters.forEach(function (counter, index) {
+      counter.setAttribute('data-count', String(values[index] || 0));
+      counter.textContent = '0';
+    });
+    animateCounters();
+  }).catch(function () {
+    counters.forEach(function (counter) { counter.textContent = '0'; counter.setAttribute('data-count', '0'); });
+  });
+}
+
 function animateCounters() {
   var counters = document.querySelectorAll('.stat-number[data-count]');
   if (!counters.length) return;
@@ -743,21 +807,23 @@ function initHeroCodeEditor() {
 /* ============================================
    SECTION 15 - MAIN INIT
    ============================================ */
-document.addEventListener('DOMContentLoaded', function () {
-  initMobileMenu();
+ document.addEventListener('DOMContentLoaded', function () {
+   initPublicAuthState();
+   initMobileMenu();
   setActiveNavLink();
   initScrollReveal();
   initScrollEffects();
   initSmoothScroll();
   initContactForm();
-  animateCounters();
-  initButtonInteractions();
+   loadPublicStats();
+   initButtonInteractions();
   initNavbarAnimation();
   initSectionTransitions();
   initHeroAnimation();
   initCoordinatorCardTilt();
-  renderActivities();
-  renderEvents();
+   renderActivities();
+   initActivityShowcase();
+   renderEvents();
   renderLeaderboard(currentTab);
   renderTopStudents(currentTab);
   initLeaderboardTabs();

@@ -5,7 +5,7 @@
 function switchRole(role) {
   if (!role) {
     sessionStorage.removeItem('pec_jwt');
-    window.location.replace('auth.html');
+    window.location.replace('../index.html');
     return;
   }
   // after switching UI, load role‑specific data from backend
@@ -408,7 +408,7 @@ function apiRequest(path) {
   }).then(function (response) {
     if (response.status === 401 || response.status === 403) {
       sessionStorage.removeItem('pec_jwt');
-      window.location.replace('auth.html');
+      window.location.replace('../pages/auth.html');
       return null;
     }
     return response.json();
@@ -484,29 +484,81 @@ function loadStudentDashboard() {
     renderRoleIdentity('#app-student', data.profile, 'Student');
     var stats = data.progress || {};
     var values = document.querySelectorAll('#app-student .dashboard-stat-card .stat-value');
-    if (values[0]) values[0].textContent = data.tasks.length;
+    if (values[0]) values[0].textContent = data.progress.total_tasks || 0;
     if (values[1]) values[1].textContent = stats.completed_tasks || 0;
     if (values[2]) values[2].textContent = stats.current_streak || 0;
-    if (values[3]) values[3].textContent = stats.rank || 0;
+    if (values[3]) values[3].textContent = stats.rank ? '#' + stats.rank : '—';
+    var studentHeader = document.querySelector('#app-student .dashboard-student-header h1');
+    if (studentHeader) studentHeader.innerHTML = getGreeting() + ', <span class="user-name">' + escapeHtml(data.profile.name || 'Student') + '</span>';
+    var profileName = data.profile.name || 'Student';
+    document.querySelectorAll('#app-student .user-name').forEach(function (el) { el.textContent = profileName; });
+    var profileHeader = document.querySelector('#app-student .student-profile-name');
+    if (profileHeader) profileHeader.textContent = profileName;
+    var profileAvatar = document.querySelector('#app-student .student-profile-avatar');
+    if (profileAvatar) profileAvatar.textContent = initials(profileName);
+    var profileMeta = document.querySelector('#app-student .student-profile-meta');
+    if (profileMeta) profileMeta.textContent = [data.profile.branch, data.profile.year ? data.profile.year + ' Year' : ''].filter(Boolean).join(' · ') || 'Profile information not added yet';
+    var profileContact = document.querySelector('#app-student .student-profile-contact');
+    if (profileContact) profileContact.textContent = (data.profile.student_code || 'Student ID unavailable') + ' · ' + (data.profile.email || 'Email unavailable');
+    var profileStats = document.querySelectorAll('#app-student .student-profile-stat');
+    if (profileStats[0]) profileStats[0].textContent = data.progress.total_tasks || 0;
+    if (profileStats[1]) profileStats[1].textContent = data.progress.completed_tasks || 0;
+    if (profileStats[2]) profileStats[2].textContent = data.progress.rank ? '#' + data.progress.rank : '—';
+    if (profileStats[3]) profileStats[3].textContent = data.progress.points || 0;
     renderNews('#app-student', data.news);
     renderStudentCollections(data);
+    var groupId = data.profile.group_id || null;
     var mentorCard = document.querySelector('#app-student .mentor-info-card');
     if (mentorCard) mentorCard.innerHTML = data.mentor ? '<div class="mentor-avatar">' + escapeHtml(initials(data.mentor.name)) + '</div><div><div class="mentor-name">' + escapeHtml(data.mentor.name) + '</div><div class="mentor-spec">' + escapeHtml(data.mentor.specialization || 'Mentor') + '</div><div class="mentor-status">Mentor ID: ' + escapeHtml(data.mentor.mentor_code || 'Assigned') + '</div></div>' : '<div class="mentor-avatar"><i class="fas fa-user-clock"></i></div><div><div class="mentor-name">No mentor assigned</div><div class="mentor-spec">A coordinator will assign your mentor.</div><div class="mentor-status">Waiting for assignment</div></div>';
+    var mentorDetails = document.querySelector('#app-student .student-mentor-details .dashboard-section-body');
+    var mentorGroup = document.querySelector('#app-student .student-mentor-group');
+    if (data.mentor) {
+      if (mentorDetails) mentorDetails.innerHTML = '<div style="display:flex;gap:24px;align-items:center;flex-wrap:wrap;"><div class="mentor-avatar" style="width:72px;height:72px;font-size:28px;">' + escapeHtml(initials(data.mentor.name)) + '</div><div><h3 style="margin:0;">' + escapeHtml(data.mentor.name) + '</h3><p style="color:var(--text-secondary);margin:4px 0;">Mentor ID: ' + escapeHtml(data.mentor.mentor_code || 'Unavailable') + '</p><p style="color:#22c55e;font-size:13px;margin:0;"><i class="fas fa-circle" style="font-size:8px;"></i> Assigned</p></div></div>';
+      if (mentorGroup) mentorGroup.innerHTML = '<p><strong>' + escapeHtml(data.mentor.group_name || 'Assigned group') + '</strong></p><p style="color:var(--text-secondary);">Group ID: ' + escapeHtml(data.mentor.group_id || 'Unavailable') + '</p><p class="empty-state">You can access mentor content for this assigned group only.</p>';
+    } else {
+      if (mentorDetails) mentorDetails.innerHTML = '<p class="empty-state">No mentor assigned yet. A coordinator will assign a mentor to your account.</p>';
+      if (mentorGroup) mentorGroup.innerHTML = '<p class="empty-state">No group access until a mentor is assigned.</p>';
+    }
     var currentChallenge = Array.from(document.querySelectorAll('#app-student .dashboard-section h3')).find(function (heading) { return heading.textContent.trim() === 'Current Challenge'; });
     if (currentChallenge) { var body = currentChallenge.parentElement.nextElementSibling; body.innerHTML = data.tasks.length ? data.tasks.map(function (task) { return '<div class="task-item"><div class="task-title">' + escapeHtml(task.title) + '</div><div class="task-desc">' + escapeHtml(task.description || 'No description') + '</div></div>'; }).join('') : '<p class="empty-state">No tasks assigned yet. Your mentor will add tasks here.</p>'; }
   }).catch(function (error) { console.error('Student dashboard failed', error); });
 }
 
+function renderMentorStudentProfile(student) {
+  var card = document.querySelector('#app-mentor .mentor-student-profile-card .dashboard-section-body');
+  var stats = document.querySelector('#app-mentor .mentor-student-stats .dashboard-section-body');
+  var progress = document.querySelector('#app-mentor .mentor-student-progress .dashboard-section-body');
+  var notes = document.querySelector('#app-mentor .mentor-student-notes .dashboard-section-body');
+  if (!student) {
+    if (card) card.innerHTML = '<p class="empty-state">Select an assigned student from My Mentees to view their profile.</p>';
+    if (stats) stats.innerHTML = '<p class="empty-state">No student selected.</p>';
+    if (progress) progress.innerHTML = '<p class="empty-state">No progress data recorded yet.</p>';
+    return;
+  }
+  if (card) card.innerHTML = '<div style="display:flex;gap:24px;align-items:center;flex-wrap:wrap;"><div class="user-avatar" style="width:72px;height:72px;font-size:28px;">' + escapeHtml(initials(student.name)) + '</div><div><h3 style="margin:0;">' + escapeHtml(student.name) + '</h3><p style="color:var(--text-secondary);margin:4px 0;">Student ID: ' + escapeHtml(student.student_code || 'Unavailable') + '</p><p style="color:#22c55e;font-size:13px;margin:0;"><i class="fas fa-circle" style="font-size:8px;"></i> Assigned to you</p></div></div>';
+  if (stats) stats.innerHTML = '<div class="student-meta">No challenges or points recorded yet.</div>';
+  if (progress) progress.innerHTML = '<p class="empty-state">No progress data recorded yet.</p>';
+}
+
 function loadMentorDashboard() {
+  var initialMenteeList = document.querySelector('#app-mentor .mentor-mentees-list');
+  if (initialMenteeList) initialMenteeList.innerHTML = '<div class="dashboard-section mentor-empty-state"><div class="dashboard-section-body"><p class="empty-state">Loading assigned mentees...</p></div></div>';
   apiRequest('/api/dashboard/mentor').then(function (data) {
     if (!data || !data.success) return;
     renderRoleIdentity('#app-mentor', data.profile, 'Mentor');
     var values = document.querySelectorAll('#app-mentor .dashboard-stat-card .stat-value');
     if (values[0]) values[0].textContent = data.students.length;
     if (values[1]) values[1].textContent = data.students.length;
-    if (values[2]) values[2].textContent = data.submissions.filter(function (item) { return item.status === 'submitted'; }).length;
-    if (values[3]) values[3].textContent = data.tasks.length;
+    if (values[2]) values[2].textContent = data.pendingReviews || 0;
+    if (values[3]) values[3].textContent = data.capacity.assigned + ' / ' + data.capacity.maximum;
+    var capacityLabel = document.querySelector('#app-mentor .dashboard-stat-card:nth-child(1) .stat-label');
+    if (capacityLabel) capacityLabel.textContent = data.capacity.full ? 'Mentor Capacity Full' : 'Mentees';
     renderNews('#app-mentor', data.news);
+    var menteeList = document.querySelector('#app-mentor .mentor-mentees-list');
+    if (menteeList) {
+      menteeList.innerHTML = data.students.length ? data.students.map(function (student) { return '<div class="dashboard-section"><div class="dashboard-section-body"><div style="display:flex;gap:12px;align-items:center;margin-bottom:12px;"><div class="student-avatar">' + escapeHtml(initials(student.name)) + '</div><div><h4 style="margin:0;">' + escapeHtml(student.name) + '</h4><p style="margin:0;font-size:12px;color:var(--text-secondary);">' + escapeHtml(student.student_code || 'Student ID unavailable') + '</p></div></div><div class="student-meta">No progress data recorded yet.</div><button class="btn btn-primary btn-sm mentor-view-student" data-student-id="' + escapeHtml(student.id) + '" style="margin-top:12px;width:100%;">View Profile</button></div></div>'; }).join('') : '<div class="dashboard-section mentor-empty-state"><div class="dashboard-section-body"><p class="empty-state">No mentees assigned yet. Coordinators can assign students from Mentor Allocation.</p></div></div>';
+      menteeList.querySelectorAll('.mentor-view-student').forEach(function (button) { button.addEventListener('click', function () { var student = data.students.find(function (item) { return String(item.id) === String(button.dataset.studentId); }); renderMentorStudentProfile(student); navigateTo('mentor-student-profile'); }); });
+    }
   }).catch(function (error) { console.error('Mentor dashboard failed', error); });
 }
 
@@ -517,8 +569,9 @@ function loadCoordinatorDashboard() {
     var values = document.querySelectorAll('#app-coordinator .dashboard-stat-card .stat-value');
     if (values[0]) values[0].textContent = data.stats.students;
     if (values[1]) values[1].textContent = data.stats.mentors;
+    if (values[2]) values[2].textContent = data.stats.activeStudents;
     if (values[4]) values[4].textContent = data.stats.tasks;
-    if (values[5]) values[5].textContent = data.stats.events;
+    if (values[5]) values[5].textContent = data.stats.solved;
     renderNews('#app-coordinator', data.news);
     renderCoordinatorNews(data.news);
   }).catch(function (error) { console.error('Coordinator dashboard failed', error); });

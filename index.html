@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/hero-code.css">
+  <link rel="stylesheet" href="css/activity-showcase.css">
 </head>
 <body>
 
@@ -35,7 +36,7 @@
       </div>
       <div class="navbar-actions">
         <button class="theme-toggle" aria-label="Toggle theme">&#127769;</button>
-        <a href="pages/auth.html" class="navbar-login">Login</a>
+        <a href="pages/auth.html" class="navbar-login" data-auth-link>Login</a>
         <button class="hamburger" aria-label="Toggle navigation">
           <span></span><span></span><span></span>
         </button>
@@ -52,7 +53,7 @@
     <a href="pages/public.html#events">Events</a>
     <a href="pages/public.html#leaderboard">Leaderboard</a>
     <a href="pages/public.html#contact">Contact</a>
-    <a href="pages/auth.html" class="btn btn-primary">Login</a>
+    <a href="pages/auth.html" class="btn btn-primary" data-auth-link>Login</a>
   </div>
 
   <!-- Hero Section -->
@@ -106,7 +107,8 @@
       <div class="section-header fade-in">
         <span class="section-label">About PEC</span>
         <h2>What is PEC?</h2>
-        <p>PEC provides students with a structured environment to learn programming, practice problem solving, participate in technical activities, interact with mentors and improve their skills.</p>
+        <p>The Programming Excellence Community (PEC) is a student-driven community at Swami Keshvanand Institute of Technology, Management & Gramothan (SKIT), Jaipur, dedicated to fostering programming skills, logical thinking, problem-solving abilities, and a culture of continuous learning. PEC aims to bridge the gap between theoretical knowledge and practical problem-solving while encouraging collaboration, innovation, and confidence.
+Code,complete, Conquer</p>
       </div>
       <div class="features-grid">
         <div class="card fade-in"><div class="card-icon blue"><i class="fas fa-brain"></i></div><h4>Problem Solving</h4><p>Develop logical and algorithmic thinking through structured challenges and practice.</p></div>
@@ -125,13 +127,26 @@
         <h2>What We Do</h2>
         <p>PEC offers a wide range of programming activities designed to enhance your technical skills.</p>
       </div>
-      <div class="services-grid">
-        <div class="card fade-in"><div class="card-icon blue"><i class="fas fa-tasks"></i></div><h4>Weekly Coding Challenges</h4><p>Regular programming problems and challenges to keep your skills sharp.</p></div>
-        <div class="card fade-in"><div class="card-icon purple"><i class="fas fa-project-diagram"></i></div><h4>DSA Practice</h4><p>Practice data structures and algorithms with curated problem sets.</p></div>
-        <div class="card fade-in"><div class="card-icon cyan"><i class="fas fa-bug"></i></div><h4>Debugging Challenges</h4><p>Find and fix programming bugs to strengthen your debugging skills.</p></div>
-        <div class="card fade-in"><div class="card-icon green"><i class="fas fa-trophy"></i></div><h4>Coding Competitions</h4><p>Participate in coding contests and compete with fellow students.</p></div>
-        <div class="card fade-in"><div class="card-icon yellow"><i class="fas fa-laptop-code"></i></div><h4>Project Development</h4><p>Build practical technical projects to apply your programming knowledge.</p></div>
-        <div class="card fade-in"><div class="card-icon red"><i class="fas fa-chalkboard-teacher"></i></div><h4>Mentorship Sessions</h4><p>Interact with mentors and receive personalized guidance and feedback.</p></div>
+      <div class="activity-showcase fade-in" data-activity-slider>
+        <div class="activity-showcase-media">
+          <div class="activity-slide active"><img src=" alt="PEC community activity"></div>
+          <div class="activity-slide"><img src="WhatsApp Image 2026-09-21 at 12.32.00 PM.jpeg" alt="PEC collaborative coding activity"></div>
+          <div class="activity-slide"><img src="ChatGPT Image Sep 21, 2026, 10_47_22 AM.png" alt="PEC coding workshop"></div>
+          <div class="activity-slide"><img src="1766168196222.png" alt="PEC programming community activity"></div>
+          <div class="activity-slide"><img src="FINAL Programming Excellence Club Logo (1).png" alt="Programming Excellence Community activity"></div>
+        </div>
+        <div class="activity-showcase-content">
+          <span class="section-label">PEC ACTIVITY SPOTLIGHT</span>
+          <h3>Building Skills Through Practice</h3>
+          <p>PEC activities bring students together to solve meaningful programming problems, exchange ideas, and turn concepts into practical solutions. From focused coding sessions and debugging practice to collaborative project work, every activity is designed to build confidence, consistency, and a stronger problem-solving mindset.</p>
+        </div>
+        <div class="activity-slider-dots" role="tablist" aria-label="Activity photos">
+          <button class="active" type="button" role="tab" aria-label="Show activity photo 1" aria-selected="true"></button>
+          <button type="button" role="tab" aria-label="Show activity photo 2" aria-selected="false"></button>
+          <button type="button" role="tab" aria-label="Show activity photo 3" aria-selected="false"></button>
+          <button type="button" role="tab" aria-label="Show activity photo 4" aria-selected="false"></button>
+          <button type="button" role="tab" aria-label="Show activity photo 5" aria-selected="false"></button>
+        </div>
       </div>
     </div>
   </section>

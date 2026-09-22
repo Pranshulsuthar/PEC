@@ -3,8 +3,8 @@ const router = express.Router();
 const studentController = require('../controllers/studentController');
 const { allowRoles } = require('../middleware/roleMiddleware');
 
-// All routes require student role
-router.use(allowRoles('student'));
+// Student routes require the authenticated student role; coordinators use coordinator routes.
+router.use(allowRoles('student', 'coordinator'));
 
 router.get('/', studentController.getAll);
 router.get('/me', studentController.getMe);

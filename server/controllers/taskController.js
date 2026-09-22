@@ -2,7 +2,19 @@ const pool = require('../config/db');
 
 exports.getAll = async (req, res) => {
   try {
-    const [rows] = await pool.query("SELECT * FROM tasks WHERE status <> 'archived' ORDER BY created_at DESC");
+    let sql = "SELECT t.* FROM tasks t";
+    const params = [];
+    if (req.user.role === 'student') {
+      sql += " JOIN task_assignments ta ON ta.task_id = t.id AND ta.student_id = ? WHERE t.status <> 'archived'";
+      params.push(req.user.user_id);
+    } else if (req.user.role === 'mentor') {
+      sql += " WHERE t.created_by = ? AND t.status <> 'archived'";
+      params.push(req.user.user_id);
+    } else {
+      sql += " WHERE t.status <> 'archived'";
+    }
+    sql += ' ORDER BY t.created_at DESC';
+    const [rows] = await pool.query(sql, params);
     res.json({ success: true, tasks: rows });
   } catch (err) {
     console.error(err);
@@ -13,7 +25,18 @@ exports.getAll = async (req, res) => {
 exports.getById = async (req, res) => {
   const id = req.params.id;
   try {
-    const [rows] = await pool.query('SELECT * FROM tasks WHERE id = ?', [id]);
+    let sql = 'SELECT t.* FROM tasks t';
+    const params = [id];
+    if (req.user.role === 'student') {
+      sql += ' JOIN task_assignments ta ON ta.task_id = t.id AND ta.student_id = ? WHERE t.id = ?';
+      params.unshift(req.user.user_id);
+    } else if (req.user.role === 'mentor') {
+      sql += ' WHERE t.id = ? AND t.created_by = ?';
+      params.push(req.user.user_id);
+    } else {
+      sql += ' WHERE t.id = ?';
+    }
+    const [rows] = await pool.query(sql, params);
     if (!rows.length) return res.status(404).json({ success: false, message: 'Task not found' });
     res.json({ success: true, task: rows[0] });
   } catch (err) {

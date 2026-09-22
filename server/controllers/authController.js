@@ -41,7 +41,19 @@ exports.register = async (req, res) => {
     }
   }
   const connection = await pool.getConnection();
+  let mentorLock = false;
   try {
+    await connection.beginTransaction();
+
+    if (role === 'mentor') {
+      const [[lock]] = await connection.query("SELECT GET_LOCK('pec_mentor_registration', 10) AS acquired");
+      mentorLock = Number(lock.acquired) === 1;
+      if (!mentorLock) throw Object.assign(new Error('Mentor registration is busy. Please try again.'), { statusCode: 409 });
+      const [[mentorCount]] = await connection.query("SELECT COUNT(*) AS count FROM users WHERE role = 'mentor'");
+      if (Number(mentorCount.count) >= 16) {
+        throw Object.assign(new Error('Mentor capacity has been reached. Maximum 16 mentors are allowed.'), { statusCode: 409 });
+      }
+    }
     // Check email exists
     const [users] = await connection.query('SELECT id FROM users WHERE email = ?', [email]);
     if (users.length) {
@@ -57,22 +69,36 @@ exports.register = async (req, res) => {
     const user_id = result.insertId;
     // Insert into role‑specific table
     if (role === 'student') {
-      const { student_id, roll_number, branch, semester, year, skills } = req.body;
-      if (!student_id) {
-        throw Object.assign(new Error('Student ID is required'), { statusCode: 400 });
-      }
+      const { student_id, group_id, roll_number, branch, semester, year, skills } = req.body;
+      const [[studentNumber]] = await connection.query("SELECT COUNT(*) + 100 AS next_number FROM users WHERE role = 'student'");
+      const studentCode = student_id || `PEC_${studentNumber.next_number}`;
       await connection.query(
-        `INSERT INTO student_profiles (user_id, student_code, roll_number, branch, semester, year, skills) VALUES (?,?,?,?,?,?,?)`,
-        [user_id, student_id, roll_number || null, branch || null, semester || null, year || null, skills || null]
+        `INSERT INTO student_profiles (user_id, student_code, group_id, roll_number, branch, semester, year, skills) VALUES (?,?,?,?,?,?,?,?)`,
+        [user_id, studentCode, group_id || null, roll_number || null, branch || null, semester || null, year || null, skills || null]
       );
+      const [mentors] = await connection.query("SELECT u.id FROM users u JOIN mentor_profiles mp ON mp.user_id = u.id WHERE u.role = 'mentor' AND (? IS NULL OR mp.group_id = ?) ORDER BY mp.mentor_number, u.id FOR UPDATE", [group_id || null, group_id || null]);
+      for (const mentor of mentors) {
+        const [[assigned]] = await connection.query("SELECT COUNT(*) AS count FROM mentor_student WHERE mentor_id = ? AND status = 'active'", [mentor.id]);
+        if (Number(assigned.count) < 4) {
+          await connection.query("INSERT INTO mentor_student (mentor_id, student_id, assigned_by, status) VALUES (?, ?, NULL, 'active')", [mentor.id, user_id]);
+          break;
+        }
+      }
     } else if (role === 'mentor') {
-      const { mentor_id, designation, department, experience, skills } = req.body;
+      const { mentor_id, group_id, group_name, designation, department, experience, skills } = req.body;
+      if (!group_id || !group_name) {
+        throw Object.assign(new Error('Group ID and group name are required'), { statusCode: 400 });
+      }
+      const [[mentorNumberRow]] = await connection.query("SELECT COALESCE(MAX(mentor_number), 0) + 1 AS mentor_number FROM mentor_profiles");
+      if (Number(mentorNumberRow.mentor_number) > 16) {
+        throw Object.assign(new Error('Mentor capacity has been reached. Maximum 16 mentors are allowed.'), { statusCode: 409 });
+      }
       if (!mentor_id) {
         throw Object.assign(new Error('Mentor ID is required'), { statusCode: 400 });
       }
       await connection.query(
-        'INSERT INTO mentor_profiles (user_id, mentor_code, designation, department, specialization, experience, bio) VALUES (?,?,?,?,?,?,?)',
-        [user_id, mentor_id, designation || null, department || null, null, experience || null, skills || null]
+        'INSERT INTO mentor_profiles (user_id, mentor_code, mentor_number, group_id, group_name, designation, department, specialization, experience, bio) VALUES (?,?,?,?,?,?,?,?,?,?)',
+        [user_id, mentor_id, mentorNumberRow.mentor_number, group_id, group_name, designation || null, department || null, null, experience || null, skills || null]
       );
     } else if (role === 'coordinator') {
       const { coordinator_id, designation, department, employee_id } = req.body;
@@ -92,6 +118,9 @@ exports.register = async (req, res) => {
     console.error('Register error:', err);
     return res.status(err.statusCode || (err.code === 'ER_DUP_ENTRY' ? 409 : 500)).json({ success: false, message: err.statusCode ? err.message : (err.code === 'ER_DUP_ENTRY' ? 'ID or email already exists' : 'Server error') });
   } finally {
+    if (mentorLock) {
+      try { await connection.query("SELECT RELEASE_LOCK('pec_mentor_registration')"); } catch (error) { console.error('Mentor lock release error:', error); }
+    }
     connection.release();
   }
 };
@@ -117,6 +146,7 @@ exports.login = async (req, res) => {
     if (user.role !== role) {
       return res.status(403).json({ success: false, message: 'Role mismatch' });
     }
+    await pool.query('UPDATE users SET last_login = NOW(), is_active = 1 WHERE id = ?', [user.id]);
     const token = generateToken(user);
     const { id: user_id, name, email: userEmail, role: userRole } = user;
     return res.json({ success: true, message: 'Login successful', token, user: { user_id, name, email: userEmail, role: userRole } });

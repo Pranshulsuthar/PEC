@@ -497,17 +497,21 @@ document.addEventListener('submit', function (e) {
     var password = document.getElementById('mentor-signup-password').value;
     var confirm = document.getElementById('mentor-confirm-password').value;
     var mentor_id = document.getElementById('mentor-id').value.trim();
+    var group_id = document.getElementById('mentor-group-id').value.trim();
+    var group_name = document.getElementById('mentor-group-name').value.trim();
     var experience = document.getElementById('mentor-experience').value.trim();
     var skills = document.getElementById('mentor-skills').value.trim();
     if (!name) return showFieldError('mentor-fullname', 'Name required');
     if (!mentor_id) return showFieldError('mentor-id', 'Mentor ID required');
+    if (!group_id) return showFieldError('mentor-group-id', 'Group ID required');
+    if (!group_name) return showFieldError('mentor-group-name', 'Group name required');
     if (!validateEmail(email)) return showFieldError('mentor-signup-email', 'Invalid email');
     if (!validatePassword(password)) return showFieldError('mentor-signup-password', 'Password too short');
     if (!confirmPasswordMatch(password, confirm)) return showFieldError('mentor-confirm-password', 'Passwords do not match');
     var department = document.getElementById('mentor-department').value;
     var designation = document.getElementById('mentor-designation').value;
     setLoading(true);
-    postJSON('/api/auth/register', { name: name, email: email, password: password, role: 'mentor', mentor_id: mentor_id, experience: experience, skills: skills, department: department, designation: designation })
+    postJSON('/api/auth/register', { name: name, email: email, password: password, role: 'mentor', mentor_id: mentor_id, group_id: group_id, group_name: group_name, experience: experience, skills: skills, department: department, designation: designation })
       .then(completeAuth)
       .catch(function () { showFormSuccess('Unable to connect to PEC server'); })
       .finally(function () { setLoading(false); });

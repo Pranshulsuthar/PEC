@@ -30,6 +30,19 @@ app.use((err, req, res, next) => {
 app.use(express.static(path.join(__dirname, '..')));
 
 // Public routes
+app.get('/api/public/stats', async (req, res) => {
+  try {
+    const [[students]] = await pool.query("SELECT COUNT(*) AS count FROM users WHERE role = 'student'");
+    const [[activeStudents]] = await pool.query("SELECT COUNT(*) AS count FROM users WHERE role = 'student' AND is_active = 1 AND last_login >= DATE_SUB(NOW(), INTERVAL 30 DAY)");
+    const [[mentors]] = await pool.query("SELECT COUNT(*) AS count FROM users WHERE role = 'mentor'");
+    const [[solved]] = await pool.query("SELECT COUNT(*) AS count FROM task_submissions WHERE status = 'accepted'");
+    const [[activities]] = await pool.query("SELECT COUNT(*) AS count FROM tasks WHERE status = 'published'");
+    res.json({ success: true, stats: { students: students.count, activeStudents: activeStudents.count, mentors: mentors.count, solved: solved.count, activities: activities.count } });
+  } catch (error) {
+    console.error('Public stats error:', error);
+    res.status(500).json({ success: false, message: 'Unable to load statistics' });
+  }
+});
 app.use('/api/auth', authRoutes);
 
 // Protected routes – JWT verification
