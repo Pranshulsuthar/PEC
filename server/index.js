@@ -37,11 +37,11 @@ app.use(express.static(path.join(__dirname, '..')));
 app.get('/api/public/stats', async (req, res) => {
   try {
     const [[students]] = await pool.query("SELECT COUNT(*) AS count FROM users WHERE role = 'student'");
-    const [[activeStudents]] = await pool.query("SELECT COUNT(*) AS count FROM users WHERE role = 'student'");
+    const [[activeStudents]] = await pool.query("SELECT COUNT(*) AS count FROM users WHERE role = 'student' AND is_active = 1");
     const [[mentors]] = await pool.query("SELECT COUNT(*) AS count FROM users WHERE role = 'mentor'");
-    const [[solved]] = await pool.query("SELECT COUNT(*) AS count FROM task_submissions WHERE status = 'accepted'");
+    const [[solved]] = await pool.query("SELECT COALESCE(SUM(score), 0) AS count FROM task_submissions WHERE status = 'accepted'");
     const [[activities]] = await pool.query("SELECT COUNT(*) AS count FROM tasks WHERE status = 'published'");
-    res.json({ success: true, stats: { students: students.count, activeStudents: activeStudents.count, mentors: mentors.count, solved: solved.count, activities: activities.count } });
+    res.json({ success: true, stats: { students: Number(students.count), activeStudents: Number(activeStudents.count), mentors: Number(mentors.count), solved: Number(solved.count), activities: Number(activities.count) } });
   } catch (error) {
     console.error('Public stats error:', error);
     res.status(500).json({ success: false, message: 'Unable to load statistics' });

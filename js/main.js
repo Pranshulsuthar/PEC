@@ -85,6 +85,13 @@
   } else {
     updateToggleButtons(getPreferredTheme());
   }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.dashboard-topbar-brand, .dashboard-topbar-context').forEach(function (element, index) {
+      element.style.setProperty('--brand-entry-order', index);
+      element.classList.add('dashboard-brand-entry');
+    });
+  });
 })();
 
 /* ============================================

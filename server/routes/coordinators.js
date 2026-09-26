@@ -6,10 +6,17 @@ const { allowRoles } = require('../middleware/roleMiddleware');
 router.use(allowRoles('coordinator'));
 
 router.get('/dashboard', coordinatorController.getDashboard);
+router.get('/news', coordinatorController.getNews);
 
 router.get('/students', coordinatorController.getAllStudents);
 router.get('/mentors', coordinatorController.getAllMentors);
 router.get('/assignments', coordinatorController.listAssignments);
+router.get('/events', coordinatorController.getEvents);
+router.get('/submissions', coordinatorController.getSubmissions);
+router.get('/leaderboard', coordinatorController.getLeaderboard);
+router.get('/resources', coordinatorController.getResources);
+router.post('/resources', coordinatorController.createResource);
+router.delete('/resources/:id', coordinatorController.deleteResource);
 router.post('/assign', coordinatorController.assignMentorToStudent);
 router.delete('/assign/:id', coordinatorController.unassignMentor);
 router.post('/tasks', coordinatorController.createTask);

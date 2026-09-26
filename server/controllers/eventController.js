@@ -2,7 +2,7 @@ const pool = require('../config/db');
 
 exports.getAll = async (req, res) => {
   try {
-    const [rows] = await pool.query("SELECT * FROM events WHERE status = 'published' ORDER BY event_date ASC");
+    const [rows] = await pool.query('SELECT * FROM events ORDER BY event_date ASC');
     res.json({ success: true, events: rows });
   } catch (err) {
     console.error(err);
@@ -41,10 +41,11 @@ exports.update = async (req, res) => {
   const id = req.params.id;
   const { title, description, event_date, start_time, end_time, location, image_url, status } = req.body;
   try {
-    await pool.query(
+    const [result] = await pool.query(
       'UPDATE events SET title = ?, description = ?, event_date = ?, start_time = ?, end_time = ?, location = ?, image_url = ?, status = ? WHERE id = ?',
       [title, description, event_date, start_time, end_time, location, image_url, status, id]
     );
+    if (!result.affectedRows) return res.status(404).json({ success: false, message: 'Event not found' });
     res.json({ success: true, message: 'Event updated' });
   } catch (err) {
     console.error(err);
@@ -55,7 +56,8 @@ exports.update = async (req, res) => {
 exports.delete = async (req, res) => {
   const id = req.params.id;
   try {
-    await pool.query('DELETE FROM events WHERE id = ?', [id]);
+    const [result] = await pool.query('DELETE FROM events WHERE id = ?', [id]);
+    if (!result.affectedRows) return res.status(404).json({ success: false, message: 'Event not found' });
     res.json({ success: true, message: 'Event deleted' });
   } catch (err) {
     console.error(err);

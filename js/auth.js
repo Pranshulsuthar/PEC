@@ -547,6 +547,17 @@ document.addEventListener('submit', function (e) {
    ============================================================ */
 
 document.addEventListener('DOMContentLoaded', function () {
+  var requestedView = new URLSearchParams(window.location.search).get('view');
+  if (requestedView && document.getElementById('view-' + requestedView)) {
+    showAuth(requestedView);
+    if (requestedView === 'student-signup' || requestedView === 'mentor-signup') {
+      document.querySelectorAll('.auth-view').forEach(function (view) { view.classList.remove('active'); });
+      var signupView = document.getElementById('view-' + requestedView);
+      signupView.classList.add('active');
+      var signupCard = signupView.querySelector('.signup-card');
+      if (signupCard) signupCard.classList.add('active');
+    }
+  }
   initRoleCards();
   initRoleCardAnimations();
   initEntryAnimations();

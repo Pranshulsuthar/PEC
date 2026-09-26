@@ -2,20 +2,20 @@ const pool = require('../config/db');
 
 exports.getAll = async (req, res) => {
   try {
-    let sql = "SELECT t.* FROM tasks t";
+    let sql = "SELECT t.*, COUNT(DISTINCT ts.id) AS submission_count FROM tasks t LEFT JOIN task_submissions ts ON ts.task_id = t.id";
     const params = [];
     if (req.user.role === 'student') {
-      sql += " JOIN task_assignments ta ON ta.task_id = t.id AND ta.student_id = ? WHERE t.status <> 'archived'";
-      params.push(req.user.user_id);
+      sql += " JOIN task_assignments ta ON ta.task_id = t.id AND ta.student_id = ? AND ta.status = 'assigned' WHERE t.status = 'published' AND NOT EXISTS (SELECT 1 FROM task_submissions ts WHERE ts.task_id = t.id AND ts.student_id = ?)";
+      params.push(req.user.user_id, req.user.user_id);
     } else if (req.user.role === 'mentor') {
-      sql += " WHERE t.created_by = ? AND t.status <> 'archived'";
-      params.push(req.user.user_id);
+      sql += " WHERE t.status = 'published' AND (t.created_by = ? OR EXISTS (SELECT 1 FROM task_assignments ta JOIN mentor_student ms ON ms.student_id = ta.student_id AND ms.mentor_id = ? AND ms.status = 'active' WHERE ta.task_id = t.id))";
+      params.push(req.user.user_id, req.user.user_id);
     } else if (req.user.role === 'coordinator') {
       sql += " WHERE t.status <> 'archived'";
     } else {
       return res.status(403).json({ success: false, message: 'Role not permitted' });
     }
-    sql += ' ORDER BY t.created_at DESC';
+    sql += ' GROUP BY t.id ORDER BY t.created_at DESC';
     const [rows] = await pool.query(sql, params);
     res.json({ success: true, tasks: rows });
   } catch (err) {
@@ -30,13 +30,14 @@ exports.getById = async (req, res) => {
     let sql = 'SELECT t.* FROM tasks t';
     const params = [];
     if (req.user.role === 'student') {
-      sql += ' JOIN task_assignments ta ON ta.task_id = t.id AND ta.student_id = ? WHERE t.id = ?';
+      sql += " JOIN task_assignments ta ON ta.task_id = t.id AND ta.student_id = ? AND ta.status = 'assigned' WHERE t.id = ? AND t.status = 'published'";
       params.push(req.user.user_id, id);
     } else if (req.user.role === 'mentor') {
-      sql += " JOIN task_assignments ta ON ta.task_id = t.id JOIN mentor_student ms ON ms.student_id = ta.student_id AND ms.mentor_id = ? AND ms.status = 'active' WHERE t.id = ? AND t.created_by = ?";
-      params.push(req.user.user_id, id, req.user.user_id);
+      sql += " WHERE t.id = ? AND t.status = 'published' AND (t.created_by = ? OR EXISTS (SELECT 1 FROM task_assignments ta JOIN mentor_student ms ON ms.student_id = ta.student_id AND ms.mentor_id = ? AND ms.status = 'active' WHERE ta.task_id = t.id))";
+      params.push(id, req.user.user_id, req.user.user_id);
     } else if (req.user.role === 'coordinator') {
       sql += ' WHERE t.id = ?';
+      params.push(id);
     } else {
       return res.status(403).json({ success: false, message: 'Role not permitted' });
     }
@@ -64,14 +65,13 @@ exports.create = async (req, res) => {
         'INSERT INTO tasks (title, description, difficulty, category, deadline, created_by, status) VALUES (?,?,?,?,?,?,?)',
         [title, description || null, difficulty || 'Easy', category || null, deadline || null, req.user.user_id, 'published']
       );
+      let assignedCount = 0;
       if (req.user.role === 'mentor') {
-        const [mentees] = await connection.query("SELECT student_id FROM mentor_student WHERE mentor_id = ? AND status = 'active'", [req.user.user_id]);
-        for (const mentee of mentees) {
-          await connection.query('INSERT INTO task_assignments (task_id, student_id, assigned_by, deadline) VALUES (?,?,?,?)', [result.insertId, mentee.student_id, req.user.user_id, deadline || null]);
-        }
+        const [assigned] = await connection.query("INSERT INTO task_assignments (task_id, student_id, assigned_by, deadline) SELECT ?, student_id, ?, ? FROM mentor_student WHERE mentor_id = ? AND status = 'active'", [result.insertId, req.user.user_id, deadline || null, req.user.user_id]);
+        assignedCount = assigned.affectedRows;
       }
       await connection.commit();
-      res.status(201).json({ success: true, task_id: result.insertId, assigned_count: req.user.role === 'mentor' ? (await pool.query("SELECT COUNT(*) AS count FROM task_assignments WHERE task_id = ?", [result.insertId]))[0][0].count : 0 });
+      res.status(201).json({ success: true, task_id: result.insertId, assigned_count: assignedCount });
     } catch (error) {
       await connection.rollback();
       throw error;
@@ -79,6 +79,7 @@ exports.create = async (req, res) => {
       connection.release();
     }
   } catch (err) {
+    if (err.code === 'ER_DUP_ENTRY') return res.status(409).json({ success: false, message: 'This task is already assigned to the student.' });
     console.error(err);
     res.status(500).json({ success: false, message: 'Server error' });
   }
@@ -94,8 +95,8 @@ exports.update = async (req, res) => {
         ? 'UPDATE tasks SET title = ?, description = ?, difficulty = ?, category = ?, deadline = ?, status = ? WHERE id = ?'
         : "UPDATE tasks SET title = ?, description = ?, difficulty = ?, category = ?, deadline = ?, status = ? WHERE id = ? AND created_by = ?",
       isCoordinator
-        ? [title, description, difficulty, category, deadline, req.body.status || 'published', id]
-        : [title, description, difficulty, category, deadline, req.body.status || 'published', id, req.user.user_id]
+        ? [title || null, description || null, difficulty || 'Easy', category || null, deadline || null, req.body.status || 'published', id]
+        : [title || null, description || null, difficulty || 'Easy', category || null, deadline || null, req.body.status || 'published', id, req.user.user_id]
     );
     if (!result.affectedRows) return res.status(404).json({ success: false, message: 'Task not found' });
     res.json({ success: true, message: 'Task updated' });

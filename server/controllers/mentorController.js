@@ -23,11 +23,11 @@ exports.getById = async (req, res) => {
     if (!rows.length) return res.status(404).json({ success: false, message: 'Mentor not found' });
     const mentor = rows[0];
     // Assigned students
-    const [studentRows] = await pool.query(
-      `SELECT sp.id AS profile_id, u.id AS student_id, u.name AS student_name, u.email, sp.branch, sp.roll_number
-       FROM mentor_student ms JOIN users u ON ms.student_id = u.id
-       LEFT JOIN student_profiles sp ON sp.user_id = u.id
-       WHERE ms.mentor_id = ? AND ms.status = 'active'`,
+      const [studentRows] = await pool.query(
+       `SELECT sp.id AS profile_id, u.id AS student_id, u.name AS student_name, u.email, sp.branch, sp.roll_number
+        FROM mentor_student ms JOIN users u ON ms.student_id = u.id AND u.role = 'student'
+        LEFT JOIN student_profiles sp ON sp.user_id = u.id
+        WHERE ms.mentor_id = ? AND ms.status = 'active'`,
       [id]
     );
     mentor.assigned_students = studentRows;

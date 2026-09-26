@@ -7,7 +7,7 @@ const { allowRoles } = require('../middleware/roleMiddleware');
 router.post('/', allowRoles('student'), submissionController.create);
 router.get('/', submissionController.getAll); // protected, can filter by role inside
 router.get('/:id', submissionController.getById);
-router.put('/:id', allowRoles('mentor'), submissionController.update);
+router.put('/:id', allowRoles('mentor', 'coordinator'), submissionController.update);
 router.delete('/:id', allowRoles('student'), submissionController.delete);
 
 module.exports = router;
