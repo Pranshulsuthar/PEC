@@ -13,6 +13,7 @@
   <link rel="stylesheet" href="css/hero-code.css">
   <link rel="stylesheet" href="css/activity-showcase.css">
   <link rel="stylesheet" href="css/responsive-overrides.css">
+  <link rel="stylesheet" href="css/logout-overlay.css">
 </head>
 <body>
 
@@ -34,7 +35,7 @@
       </div>
       <div class="navbar-actions">
         <button class="theme-toggle" aria-label="Toggle theme">&#127769;</button>
-        <a href="pages/auth.html" class="navbar-login" data-auth-link>Login</a>
+        <a href="pages/auth.html" class="navbar-login navbar-auth" data-auth-link>Sign In</a>
         <button class="hamburger" aria-label="Toggle navigation">
           <span></span><span></span><span></span>
         </button>
@@ -49,7 +50,7 @@
     <a href="index.html#activities">Activities</a>
     <a href="index.html#coordinators">Coordinators</a>
 
-    <a href="pages/auth.html" class="btn btn-primary" data-auth-link>Login</a>
+    <a href="pages/auth.html" class="btn btn-primary" data-auth-link>Sign In</a>
   </div>
 
   <!-- Hero Section -->
@@ -214,8 +215,8 @@ Code,complete, Conquer</p>
   <footer class="footer">
     <div class="container">
       <div class="footer-grid">
-        <div class="footer-brand">
-          <div class="footer-logo"><div class="navbar-logo">P</div><span class="brand-name">PEC</span></div>
+        <div class="footer-brand"> 
+          <div class="footer-logo"><div class="navbar-logo" style="border-radius: 50%;"><img src="All Photoes/ChatGPT Image Sep 21, 2026, 10_47_22 AM.png"></div><span class="brand-name">PEC</span></div>
           <p>Programming Excellence Community — A community for students to learn, practice, and grow in programming.</p>
         </div>
         <div class="footer-links">
@@ -235,6 +236,7 @@ Code,complete, Conquer</p>
     </div>
   </footer>
 
+  <script src="js/logout-overlay.js"></script>
   <script src="js/main.js"></script>
 </body>
 </html>

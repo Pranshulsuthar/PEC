@@ -68,7 +68,7 @@ img {
   .hero-art-shape-cyan { width: 165px; height: 95px; }
   .hero-art-shape-gold { width: 90px; height: 90px; }
   .navbar-brand-tagline { display: none; }
-  .navbar-actions { gap: 4px; }
+  .navbar-actions { gap: 15px; }
   .theme-toggle { width: 34px; height: 34px; }
   .hero-buttons .btn { max-width: none; }
   .stats-bar .container { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -145,3 +145,92 @@ img {
   .dashboard-stats { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
   .dashboard-section-body { padding: 16px; }
 }
+
+/* Navbar auth action (Sign In / Log Out) stays visible right of the theme toggle */
+.navbar-actions .navbar-auth {
+  display: inline-flex;
+  align-items: center;
+}
+
+@media (max-width: 768px) {
+  .navbar-actions .navbar-auth { padding: 8px 14px; font-size: 0.82rem; }
+}
+
+@media (max-width: 400px) {
+  .navbar-actions .navbar-auth { padding: 7px 10px; font-size: 0.76rem; }
+}
+
+/* Phone & tablet navbar polish: even gaps and a proper tap target for the menu button */
+@media (max-width: 980px) {
+  .navbar .container { gap: 12px; }
+  .navbar-actions { gap: 15px; }
+  .hamburger {
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border-radius: var(--radius);
+    transition: var(--transition);
+  }
+  .hamburger:hover { background: var(--primary-bg); }
+  .theme-toggle { width: 40px; height: 40px; flex: 0 0 auto; }
+  .navbar-actions .navbar-auth { min-height: 40px; }
+}
+
+@media (max-width: 600px) {
+  .navbar-actions { gap: 12px; }
+  .hamburger { width: 36px; height: 36px; }
+  .theme-toggle { width: 36px; height: 36px; }
+  .navbar-actions .navbar-auth { min-height: 36px; }
+}
+
+@media (max-width: 400px) {
+  .navbar-actions { gap: 10px; }
+}
+
+@media (max-width: 1172px) {
+  .coordinator-team {
+    grid-template-columns: repeat(3, minmax(0, 260px));
+    gap: 24px;
+  }
+
+  .coordinator-profile:nth-child(5),
+  .coordinator-profile:nth-child(6) { grid-column: auto; }
+}
+
+@media (max-width: 900px) {
+  .coordinator-team { grid-template-columns: repeat(2, minmax(0, 260px)); }
+}
+
+@media (max-width: 600px) {
+  .coordinator-team {
+    grid-template-columns: minmax(0, 360px);
+    gap: 20px;
+  }
+
+  .coordinator-profile {
+    min-height: 340px;
+    padding-top: 22px;
+  }
+
+  .coordinator-photo-wrap {
+    width: 148px;
+    height: 148px;
+    flex-basis: 148px;
+  }
+
+  .coordinator-profile img {
+    width: 130px;
+    height: 130px;
+  }
+
+  .coordinator-profile-body { padding: 16px 16px 20px; }
+  .coordinator-profile h3 { font-size: clamp(1.05rem, 4vw, 1.2rem); }
+}
+
+@media (max-width: 360px) {
+  .coordinator-team { grid-template-columns: minmax(0, 100%); }
+  .coordinator-profile { min-height: 320px; }
+}
+

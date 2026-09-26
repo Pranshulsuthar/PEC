@@ -94,6 +94,45 @@
   --shadow-xl: 0 20px 25px -5px rgba(0,0,0,0.4), 0 8px 10px -6px rgba(0,0,0,0.3);
 }
 
+/* Soft Ember theme: soft dark red base with warm beige text and accents. */
+[data-theme="ember"] {
+  --pool: #C98A8A;
+  --pool-light: #3A2828;
+  --pool-dark: #E8D8BE;
+  --tangerine: #A85C5C;
+  --tangerine-light: #C68787;
+  --tangerine-dark: #8F4A4A;
+  --text-primary: #F1E6D2;
+  --text-secondary: #CDBFAE;
+  --text-muted: #A9967F;
+  --text-light: #7E6B5B;
+  --background: #24191A;
+  --surface: #302020;
+  --surface-2: #3A2828;
+  --border: rgba(232, 216, 190, 0.18);
+  --border-light: rgba(232, 216, 190, 0.1);
+  --primary: #A85C5C;
+  --primary-light: #C68787;
+  --primary-dark: #8F4A4A;
+  --primary-bg: rgba(168, 92, 92, 0.18);
+  --secondary: #C98A8A;
+  --secondary-dark: #A85C5C;
+  --accent: #C98A8A;
+  --success: #9DBF8A;
+  --success-bg: rgba(157, 191, 138, 0.14);
+  --warning: #D9A96A;
+  --warning-bg: rgba(217, 169, 106, 0.14);
+  --danger: #D98A8A;
+  --danger-bg: rgba(217, 138, 138, 0.16);
+  --info: #9DB4C4;
+  --info-bg: rgba(157, 180, 196, 0.14);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.24);
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.34), 0 1px 2px rgba(0, 0, 0, 0.24);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.34), 0 2px 4px -2px rgba(0, 0, 0, 0.24);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.36), 0 4px 6px -4px rgba(0, 0, 0, 0.24);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.44), 0 8px 10px -6px rgba(0, 0, 0, 0.34);
+}
+
 /* ==================================================
    2. Reset and Base
    ================================================== */
@@ -633,7 +672,7 @@ textarea.form-control {
 .navbar-actions {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 15px;
 }
 
 .navbar-login {
@@ -649,6 +688,18 @@ textarea.form-control {
 .navbar-login:hover {
   background: var(--tangerine);
   color: var(--text-primary);
+}
+
+.navbar-actions .navbar-auth-logout {
+  background: var(--tangerine);
+  border-color: var(--tangerine);
+  color: #14212b;
+}
+
+.navbar-actions .navbar-auth-logout:hover {
+  background: var(--tangerine-light);
+  border-color: var(--tangerine-light);
+  color: #14212b;
 }
 
 .hamburger {
@@ -3451,4 +3502,108 @@ textarea.form-control {
     opacity: 1 !important;
     transform: none !important;
   }
+}
+
+/* ==================================================
+   50. Soft Ember Theme Overrides
+   Third theme layered on top of the light/dark system.
+   Only components with hardcoded theme-conditional
+   colors need an explicit ember override.
+   ================================================== */
+
+/* Smooth, subtle cross-fade while a theme switch is in progress.
+   The class is added briefly by js/main.js. */
+html.theme-transition,
+html.theme-transition *,
+html.theme-transition *::before,
+html.theme-transition *::after {
+  transition: background-color 0.32s ease, color 0.32s ease,
+    border-color 0.32s ease, box-shadow 0.32s ease,
+    fill 0.32s ease, stroke 0.32s ease !important;
+}
+
+[data-theme="ember"] .navbar {
+  background: rgba(36, 25, 26, 0.92);
+}
+
+[data-theme="ember"] .theme-toggle {
+  background: linear-gradient(135deg, rgba(168, 92, 92, 0.38), rgba(232, 216, 190, 0.14));
+  border-color: rgba(232, 216, 190, 0.28);
+  box-shadow: 0 10px 22px rgba(143, 74, 74, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  color: #E8D8BE;
+}
+
+[data-theme="ember"] .theme-toggle:hover {
+  border-color: rgba(232, 216, 190, 0.5);
+  box-shadow: 0 14px 26px rgba(143, 74, 74, 0.34);
+}
+
+[data-theme="ember"] .cta-section {
+  background: linear-gradient(135deg, #302020 0%, #6E3A3A 55%, #8F4A4A 100%);
+  color: var(--text-primary);
+  border-top: 1px solid rgba(232, 216, 190, 0.16);
+  border-bottom: 1px solid rgba(232, 216, 190, 0.16);
+}
+
+[data-theme="ember"] .cta-section p {
+  color: var(--text-secondary);
+}
+
+[data-theme="ember"] .footer-grid {
+  border-bottom-color: rgba(36, 25, 26, 0.14);
+}
+
+[data-theme="ember"] .form-control:focus,
+[data-theme="ember"] .auth-card .form-control:focus {
+  box-shadow: 0 0 0 3px rgba(168, 92, 92, 0.2);
+}
+
+/* Auth page accents */
+[data-theme="ember"] .auth-brand-side {
+  background: linear-gradient(160deg, #24191A 0%, #302020 52%, #3A2828 100%);
+}
+
+[data-theme="ember"] .auth-bg-circle { opacity: 0.08; }
+[data-theme="ember"] .auth-blob { opacity: 0.14; }
+
+[data-theme="ember"] .auth-orbital::before {
+  background: radial-gradient(circle at center, rgba(232, 216, 190, 0.34), rgba(232, 216, 190, 0.12), rgba(232, 216, 190, 0));
+}
+
+[data-theme="ember"] .auth-orbital::after {
+  border-color: rgba(232, 216, 190, 0.22);
+}
+
+[data-theme="ember"] .auth-orbital-ring {
+  border-color: rgba(201, 138, 138, 0.42);
+  box-shadow: inset 0 0 24px rgba(201, 138, 138, 0.06), 0 0 12px rgba(201, 138, 138, 0.04);
+}
+
+[data-theme="ember"] .auth-orbital-arc-1 { border-top-color: rgba(201, 138, 138, 0.5); }
+[data-theme="ember"] .auth-orbital-arc-2 { border-top-color: rgba(232, 216, 190, 0.5); }
+
+[data-theme="ember"] .auth-orbital-center {
+  box-shadow: 0 24px 60px rgba(143, 74, 74, 0.28), inset 0 -18px 28px rgba(40, 20, 20, 0.3), inset 0 10px 16px rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="ember"] .auth-sphere-main {
+  box-shadow: 0 20px 60px rgba(201, 138, 138, 0.2), inset 0 -10px 30px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="ember"] .auth-panel {
+  background: var(--surface);
+  border-color: var(--border);
+}
+
+[data-theme="ember"] .auth-back {
+  background: rgba(58, 40, 40, 0.5);
+  border-color: rgba(232, 216, 190, 0.12);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.28);
+}
+
+[data-theme="ember"] .student-card .role-card-icon,
+[data-theme="ember"] .mentor-card .role-card-icon,
+[data-theme="ember"] .coordinator-card .role-card-icon {
+  background: linear-gradient(135deg, #3A2828, rgba(168, 92, 92, 0.28));
+  color: #E8D8BE;
 }

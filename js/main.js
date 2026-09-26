@@ -4,40 +4,64 @@
 (function () {
   'use strict';
   var THEME_KEY = 'pec-theme';
+  var THEME_ORDER = ['dark', 'light', 'ember'];
+  var THEME_ICONS = { dark: '☀', light: '☾', ember: '✦' };
+  var NEXT_THEME = { dark: 'light', light: 'ember', ember: 'dark' };
+  var NEXT_LABEL = { dark: 'light', light: 'soft red', ember: 'dark' };
+  var transitionTimer = null;
+
+  function normalizeTheme(theme) {
+    return THEME_ORDER.indexOf(theme) === -1 ? null : theme;
+  }
 
   function getPreferredTheme() {
-    var saved = localStorage.getItem(THEME_KEY);
+    var saved = normalizeTheme(localStorage.getItem(THEME_KEY));
     if (saved) return saved;
     return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
   }
 
-  function applyTheme(theme) {
-    document.documentElement.setAttribute('data-theme', theme);
+  function applyTheme(theme, animate) {
+    theme = normalizeTheme(theme) || 'light';
+    var root = document.documentElement;
+
+    if (animate) {
+      root.classList.add('theme-transition');
+      if (transitionTimer) window.clearTimeout(transitionTimer);
+      transitionTimer = window.setTimeout(function () {
+        root.classList.remove('theme-transition');
+        transitionTimer = null;
+      }, 360);
+    }
+
+    root.setAttribute('data-theme', theme);
     localStorage.setItem(THEME_KEY, theme);
     updateToggleButtons(theme);
   }
 
   function updateToggleButtons(theme) {
+    var icon = THEME_ICONS[theme] || THEME_ICONS.light;
+    var label = 'Switch to ' + (NEXT_LABEL[theme] || 'next') + ' theme';
     document.querySelectorAll('.theme-toggle').forEach(function (btn) {
-      var icon = theme === 'dark' ? '☀' : '☾';
       btn.innerHTML = '<span aria-hidden="true">' + icon + '</span>';
-      btn.setAttribute('aria-label', theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme');
-      btn.title = theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme';
+      btn.setAttribute('aria-label', label);
+      btn.title = label;
     });
   }
 
   function toggleTheme() {
-    var current = document.documentElement.getAttribute('data-theme') || 'light';
-    applyTheme(current === 'dark' ? 'light' : 'dark');
+    var current = normalizeTheme(document.documentElement.getAttribute('data-theme')) || 'light';
+    applyTheme(NEXT_THEME[current] || 'dark', true);
   }
 
-  applyTheme(getPreferredTheme());
+  applyTheme(getPreferredTheme(), false);
 
   window.PECTheme = {
     toggle: toggleTheme,
-    set: applyTheme,
+    set: function (theme) {
+      applyTheme(theme, true);
+    },
     get: function () {
-      return document.documentElement.getAttribute('data-theme') || 'light';
+      return normalizeTheme(document.documentElement.getAttribute('data-theme')) || 'light';
     }
   };
 
@@ -50,7 +74,7 @@
 
   window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function (e) {
     if (!localStorage.getItem(THEME_KEY)) {
-      applyTheme(e.matches ? 'dark' : 'light');
+      applyTheme(e.matches ? 'dark' : 'light', true);
     }
   });
 
@@ -103,15 +127,63 @@ function initPublicAuthState() {
   var inPages = window.location.pathname.indexOf('/pages/') !== -1;
   links.forEach(function (link) {
     if (!user) {
-      link.textContent = 'Login';
+      link.textContent = 'Sign In';
       link.href = inPages ? 'auth.html' : 'pages/auth.html';
+      link.classList.remove('navbar-auth-logout');
+      link.removeAttribute('data-auth-logout');
       return;
     }
-    link.textContent = (user.name || 'Account') + ' · ' + (user.role || 'User');
+    link.textContent = 'Log Out';
     link.href = inPages ? 'dashboard.html' : 'pages/dashboard.html';
-    link.classList.add('authenticated-user-link');
+    link.classList.add('navbar-auth-logout');
+    link.setAttribute('data-auth-logout', '');
   });
 }
+
+/* --------------------------------------------
+   Logout: plays the PEC logout animation, then
+   runs the existing logout (clear session token
+   + redirect following the current app flow).
+   -------------------------------------------- */
+
+var pecLogoutInProgress = false;
+
+function pecRedirectAfterLogout() {
+  var inPages = window.location.pathname.indexOf('/pages/') !== -1;
+  var target = inPages ? '../index.html' : 'index.html';
+  if (!inPages && window.location.hash) target += window.location.hash;
+  window.location.replace(target);
+}
+
+function pecPerformLogout() {
+  sessionStorage.removeItem('pec_jwt');
+  if (typeof initPublicAuthState === 'function') initPublicAuthState();
+  if (typeof initHomeEntryState === 'function') initHomeEntryState();
+  pecRedirectAfterLogout();
+}
+
+function pecStartLogout() {
+  if (pecLogoutInProgress) return;
+  pecLogoutInProgress = true;
+
+  var complete = function () {
+    pecLogoutInProgress = false;
+    pecPerformLogout();
+  };
+
+  if (window.PECLogoutOverlay && typeof window.PECLogoutOverlay.play === 'function') {
+    window.PECLogoutOverlay.play(complete);
+  } else {
+    complete();
+  }
+}
+
+document.addEventListener('click', function (e) {
+  var link = e.target.closest ? e.target.closest('[data-auth-link]') : null;
+  if (!link || !link.hasAttribute('data-auth-logout')) return;
+  e.preventDefault();
+  pecStartLogout();
+});
 
 function initMobileMenu() {
   var hamburger = document.querySelector('.hamburger');
