@@ -37,7 +37,7 @@ app.use(express.static(path.join(__dirname, '..')));
 app.get('/api/public/stats', async (req, res) => {
   try {
     const [[students]] = await pool.query("SELECT COUNT(*) AS count FROM users WHERE role = 'student'");
-    const [[activeStudents]] = await pool.query("SELECT COUNT(*) AS count FROM users WHERE role = 'student' AND is_active = 1 AND last_login >= DATE_SUB(NOW(), INTERVAL 30 DAY)");
+    const [[activeStudents]] = await pool.query("SELECT COUNT(*) AS count FROM users WHERE role = 'student'");
     const [[mentors]] = await pool.query("SELECT COUNT(*) AS count FROM users WHERE role = 'mentor'");
     const [[solved]] = await pool.query("SELECT COUNT(*) AS count FROM task_submissions WHERE status = 'accepted'");
     const [[activities]] = await pool.query("SELECT COUNT(*) AS count FROM tasks WHERE status = 'published'");

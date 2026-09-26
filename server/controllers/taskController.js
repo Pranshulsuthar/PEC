@@ -10,8 +10,10 @@ exports.getAll = async (req, res) => {
     } else if (req.user.role === 'mentor') {
       sql += " WHERE t.created_by = ? AND t.status <> 'archived'";
       params.push(req.user.user_id);
-    } else {
+    } else if (req.user.role === 'coordinator') {
       sql += " WHERE t.status <> 'archived'";
+    } else {
+      return res.status(403).json({ success: false, message: 'Role not permitted' });
     }
     sql += ' ORDER BY t.created_at DESC';
     const [rows] = await pool.query(sql, params);
@@ -26,15 +28,17 @@ exports.getById = async (req, res) => {
   const id = req.params.id;
   try {
     let sql = 'SELECT t.* FROM tasks t';
-    const params = [id];
+    const params = [];
     if (req.user.role === 'student') {
       sql += ' JOIN task_assignments ta ON ta.task_id = t.id AND ta.student_id = ? WHERE t.id = ?';
-      params.unshift(req.user.user_id);
+      params.push(req.user.user_id, id);
     } else if (req.user.role === 'mentor') {
-      sql += ' WHERE t.id = ? AND t.created_by = ?';
-      params.push(req.user.user_id);
-    } else {
+      sql += " JOIN task_assignments ta ON ta.task_id = t.id JOIN mentor_student ms ON ms.student_id = ta.student_id AND ms.mentor_id = ? AND ms.status = 'active' WHERE t.id = ? AND t.created_by = ?";
+      params.push(req.user.user_id, id, req.user.user_id);
+    } else if (req.user.role === 'coordinator') {
       sql += ' WHERE t.id = ?';
+    } else {
+      return res.status(403).json({ success: false, message: 'Role not permitted' });
     }
     const [rows] = await pool.query(sql, params);
     if (!rows.length) return res.status(404).json({ success: false, message: 'Task not found' });
@@ -48,6 +52,10 @@ exports.getById = async (req, res) => {
 exports.create = async (req, res) => {
   const { title, description, difficulty, category, deadline } = req.body;
   if (!title) return res.status(400).json({ success: false, message: 'Title required' });
+  if (req.user.role === 'mentor') {
+    const [[profile]] = await pool.query('SELECT id FROM mentor_profiles WHERE user_id = ?', [req.user.user_id]);
+    if (!profile) return res.status(403).json({ success: false, message: 'Mentor profile required' });
+  }
   try {
     const connection = await pool.getConnection();
     try {
@@ -80,10 +88,16 @@ exports.update = async (req, res) => {
   const id = req.params.id;
   const { title, description, difficulty, category, deadline } = req.body;
   try {
-    await pool.query(
-      'UPDATE tasks SET title = ?, description = ?, difficulty = ?, category = ?, deadline = ?, status = ? WHERE id = ?',
-      [title, description, difficulty, category, deadline, req.body.status || 'published', id]
+    const isCoordinator = req.user.role === 'coordinator';
+    const [result] = await pool.query(
+      isCoordinator
+        ? 'UPDATE tasks SET title = ?, description = ?, difficulty = ?, category = ?, deadline = ?, status = ? WHERE id = ?'
+        : "UPDATE tasks SET title = ?, description = ?, difficulty = ?, category = ?, deadline = ?, status = ? WHERE id = ? AND created_by = ?",
+      isCoordinator
+        ? [title, description, difficulty, category, deadline, req.body.status || 'published', id]
+        : [title, description, difficulty, category, deadline, req.body.status || 'published', id, req.user.user_id]
     );
+    if (!result.affectedRows) return res.status(404).json({ success: false, message: 'Task not found' });
     res.json({ success: true, message: 'Task updated' });
   } catch (err) {
     console.error(err);
@@ -94,7 +108,14 @@ exports.update = async (req, res) => {
 exports.delete = async (req, res) => {
   const id = req.params.id;
   try {
-    await pool.query("UPDATE tasks SET status = 'archived' WHERE id = ?", [id]);
+    const isCoordinator = req.user.role === 'coordinator';
+    const [result] = await pool.query(
+      isCoordinator
+        ? "UPDATE tasks SET status = 'archived' WHERE id = ?"
+        : "UPDATE tasks SET status = 'archived' WHERE id = ? AND created_by = ?",
+      isCoordinator ? [id] : [id, req.user.user_id]
+    );
+    if (!result.affectedRows) return res.status(404).json({ success: false, message: 'Task not found' });
     res.json({ success: true, message: 'Task deleted' });
   } catch (err) {
     console.error(err);

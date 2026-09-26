@@ -12,10 +12,12 @@ exports.getAll = async (req, res) => {
 
 // Get mentor profile + assigned students
 exports.getById = async (req, res) => {
-  const id = req.params.id;
+  const id = Number(req.params.id);
+  if (!Number.isInteger(id) || id < 1) return res.status(400).json({ success: false, message: 'Valid mentor ID is required' });
+  if (req.user.role === 'mentor' && id !== Number(req.user.user_id)) return res.status(403).json({ success: false, message: 'Mentors may only access their own profile' });
   try {
     const [rows] = await pool.query(
-      `SELECT mp.*, u.name, u.email FROM mentor_profiles mp JOIN users u ON mp.user_id = u.id WHERE mp.user_id = ?`,
+      `SELECT mp.*, u.name, u.email FROM mentor_profiles mp JOIN users u ON mp.user_id = u.id WHERE mp.user_id = ? AND u.role = 'mentor'`,
       [id]
     );
     if (!rows.length) return res.status(404).json({ success: false, message: 'Mentor not found' });
@@ -56,13 +58,15 @@ exports.update = async (req, res) => {
 
 // Get mentees assigned to this mentor (protected)
 exports.getMentees = async (req, res) => {
-  const id = req.params.id;
+  const id = Number(req.params.id);
+  if (!Number.isInteger(id) || id < 1) return res.status(400).json({ success: false, message: 'Valid mentor ID is required' });
+  if (req.user.role === 'mentor' && id !== Number(req.user.user_id)) return res.status(403).json({ success: false, message: 'Mentors may only access their own mentees' });
   try {
     const [rows] = await pool.query(
-      `SELECT sp.id AS profile_id, u.id AS student_id, u.name, u.email, sp.branch, sp.roll_number
-       FROM mentor_student ms JOIN users u ON ms.student_id = u.id
+      `SELECT sp.id AS profile_id, u.id AS student_id, sp.student_code, u.name, u.email, sp.branch, sp.year, sp.roll_number, sp.skills
+       FROM mentor_student ms JOIN users u ON ms.student_id = u.id AND u.role = 'student'
        LEFT JOIN student_profiles sp ON sp.user_id = u.id
-       WHERE ms.mentor_id = ? AND ms.status = 'active'`,
+       WHERE ms.mentor_id = ? AND ms.status = 'active' ORDER BY u.name`,
       [id]
     );
     res.json({ success: true, mentees: rows });

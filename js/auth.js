@@ -483,8 +483,10 @@ document.addEventListener('submit', function (e) {
     if (!validatePassword(password)) return showFieldError('student-signup-password', 'Password must be at least 8 characters');
     if (!confirmPasswordMatch(password, confirm)) return showFieldError('student-confirm-password', 'Passwords do not match');
     var year = document.getElementById('student-year').value;
+    if (!student_id) return showFieldError('student-id', 'Student ID required');
+    if (!enrollment_no) return showFieldError('student-enrollment', 'Enrollment number required');
     setLoading(true);
-    postJSON('/api/auth/register', { name: name, email: email, password: password, role: 'student', student_id: student_id, roll_number: enrollment_no, branch: branch, year: year, skills: skills })
+    postJSON('/api/auth/register', { name: name, email: email, password: password, role: 'student', student_id: student_id, enrollment_no: enrollment_no, branch: branch, year: year, skills: skills })
       .then(completeAuth)
       .catch(function () { showFormSuccess('Unable to connect to PEC server'); })
       .finally(function () { setLoading(false); });

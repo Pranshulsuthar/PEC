@@ -2,7 +2,7 @@ const pool = require('../config/db');
 
 // Get list of students (basic info)
 exports.getAll = async (req, res) => {
-  if (req.user.role === 'student') return res.status(403).json({ success: false, message: 'Students may only access their own profile' });
+  if (req.user.role !== 'coordinator') return res.status(403).json({ success: false, message: 'Coordinator access required' });
   try {
     const [rows] = await pool.query('SELECT sp.id AS profile_id, u.id AS user_id, u.name, u.email, sp.roll_number, sp.branch, sp.semester, sp.phone FROM student_profiles sp JOIN users u ON sp.user_id = u.id');
     res.json({ success: true, students: rows });
@@ -14,9 +14,19 @@ exports.getAll = async (req, res) => {
 
 // Get a single student profile (including mentor assignment)
 exports.getById = async (req, res) => {
-  const id = req.params.id;
+  const id = Number(req.params.id);
+  if (!Number.isInteger(id) || id < 1) return res.status(400).json({ success: false, message: 'Valid student ID is required' });
   if (req.user.role === 'student' && Number(id) !== Number(req.user.user_id)) {
     return res.status(403).json({ success: false, message: 'You can only access your own profile' });
+  }
+  if (req.user.role === 'mentor') {
+    try {
+      const [assigned] = await pool.query("SELECT id FROM mentor_student WHERE mentor_id = ? AND student_id = ? AND status = 'active'", [req.user.user_id, id]);
+      if (!assigned.length) return res.status(403).json({ success: false, message: 'You can only access students assigned to you' });
+    } catch (err) {
+      console.error(err);
+      return res.status(500).json({ success: false, message: 'Server error' });
+    }
   }
   try {
     const [rows] = await pool.query(
@@ -50,11 +60,12 @@ exports.update = async (req, res) => {
     return res.status(403).json({ success: false, message: 'Cannot modify other students' });
   }
   try {
-    // Update users table for name/email
+    const [[currentProfile]] = await pool.query('SELECT student_code FROM student_profiles WHERE user_id = ?', [req.user.user_id]);
+    if (!currentProfile) return res.status(404).json({ success: false, message: 'Student profile not found' });
     await pool.query('UPDATE users SET name = ?, email = ? WHERE id = ?', [name, email, req.user.user_id]);
     await pool.query(
       `UPDATE student_profiles SET roll_number = ?, branch = ?, semester = ?, section = ?, year = ?, github_url = ?, linkedin_url = ? WHERE user_id = ?`,
-      [enrollment_no, branch, semester, section, year, github_url, linkedin_url, req.user.user_id]
+      [enrollment_no || currentProfile.student_code, branch, semester, section, year, github_url, linkedin_url, req.user.user_id]
     );
     res.json({ success: true, message: 'Profile updated' });
   } catch (err) {

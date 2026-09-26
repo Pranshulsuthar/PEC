@@ -124,6 +124,23 @@ window.addEventListener('hashchange', function() {
   if (hash) navigateTo(hash);
 });
 
+document.addEventListener('click', function (event) {
+  var backButton = event.target.closest('[data-dashboard-back]');
+  if (!backButton) return;
+  event.preventDefault();
+  var referrer = document.referrer;
+  if (referrer) {
+    try {
+      var previousPage = new URL(referrer);
+      if (previousPage.origin === window.location.origin && previousPage.href !== window.location.href) {
+        window.history.back();
+        return;
+      }
+    } catch (error) {}
+  }
+  window.location.href = '../index.html';
+});
+
 // ========================================
 // SECTION 3 - SIDEBAR NAVIGATION
 // ========================================
@@ -152,7 +169,7 @@ function initSidebarNav() {
 // ========================================
 
 function initSidebarToggle() {
-  document.querySelectorAll('.sidebar-toggle, .menu-toggle').forEach(function(btn) {
+  document.querySelectorAll('.sidebar-toggle, .menu-toggle, [data-dashboard-sidebar-toggle]').forEach(function(btn) {
     btn.addEventListener('click', function() {
       var app = this.closest('[id^="app-"]');
       if (!app) return;
@@ -409,7 +426,7 @@ function apiRequest(path) {
   return fetch(path, {
     headers: { 'Authorization': 'Bearer ' + token }
   }).then(function (response) {
-    if (response.status === 401 || response.status === 403) {
+    if (response.status === 401) {
       sessionStorage.removeItem('pec_jwt');
       window.location.replace('../pages/auth.html');
       return null;
@@ -511,8 +528,8 @@ function loadStudentDashboard() {
     renderNews('#app-student', data.news);
     renderStudentCollections(data);
     var groupId = data.profile.group_id || null;
-    var mentorCard = document.querySelector('#app-student .mentor-info-card');
-    if (mentorCard) mentorCard.innerHTML = data.mentor ? '<div class="mentor-avatar">' + escapeHtml(initials(data.mentor.name)) + '</div><div><div class="mentor-name">' + escapeHtml(data.mentor.name) + '</div><div class="mentor-spec">' + escapeHtml(data.mentor.specialization || 'Mentor') + '</div><div class="mentor-status">Mentor ID: ' + escapeHtml(data.mentor.mentor_code || 'Assigned') + '</div></div>' : '<div class="mentor-avatar"><i class="fas fa-user-clock"></i></div><div><div class="mentor-name">No mentor assigned</div><div class="mentor-spec">A coordinator will assign your mentor.</div><div class="mentor-status">Waiting for assignment</div></div>';
+    var mentorCard = document.querySelector('#app-student .student-mentor-card');
+    if (mentorCard) mentorCard.innerHTML = data.mentor ? '<div class="mentor-avatar">' + escapeHtml(initials(data.mentor.name)) + '</div><div><div class="mentor-name">' + escapeHtml(data.mentor.name) + '</div><div class="mentor-spec">' + escapeHtml(data.mentor.specialization || data.mentor.designation || 'Mentor') + '</div><div class="mentor-status">Mentor ID: ' + escapeHtml(data.mentor.mentor_code || 'Assigned') + '</div></div>' : '<div class="mentor-avatar"><i class="fas fa-user-clock"></i></div><div><div class="mentor-name">No mentor assigned</div><div class="mentor-spec">A coordinator will assign your mentor.</div><div class="mentor-status">Waiting for assignment</div></div>';
     var mentorDetails = document.querySelector('#app-student .student-mentor-details .dashboard-section-body');
     var mentorGroup = document.querySelector('#app-student .student-mentor-group');
     if (data.mentor) {
@@ -522,8 +539,8 @@ function loadStudentDashboard() {
       if (mentorDetails) mentorDetails.innerHTML = '<p class="empty-state">No mentor assigned yet. A coordinator will assign a mentor to your account.</p>';
       if (mentorGroup) mentorGroup.innerHTML = '<p class="empty-state">No group access until a mentor is assigned.</p>';
     }
-    var currentChallenge = Array.from(document.querySelectorAll('#app-student .dashboard-section h3')).find(function (heading) { return heading.textContent.trim() === 'Current Challenge'; });
-    if (currentChallenge) { var body = currentChallenge.parentElement.nextElementSibling; body.innerHTML = data.tasks.length ? data.tasks.map(function (task) { return '<div class="task-item"><div class="task-title">' + escapeHtml(task.title) + '</div><div class="task-desc">' + escapeHtml(task.description || 'No description') + '</div></div>'; }).join('') : '<p class="empty-state">No tasks assigned yet. Your mentor will add tasks here.</p>'; }
+    var challengeContainer = document.querySelector('#app-student .student-current-challenge');
+    if (challengeContainer) challengeContainer.innerHTML = data.tasks.length ? data.tasks.map(function (task) { return '<div class="task-item"><div class="task-title">' + escapeHtml(task.title) + '</div><div class="task-desc">' + escapeHtml(task.description || 'No description') + '</div></div>'; }).join('') : '<p class="empty-state">No tasks assigned yet. Your mentor will add tasks here.</p>';
   }).catch(function (error) { console.error('Student dashboard failed', error); });
 }
 
@@ -531,14 +548,13 @@ function renderMentorStudentProfile(student) {
   var card = document.querySelector('#app-mentor .mentor-student-profile-card .dashboard-section-body');
   var stats = document.querySelector('#app-mentor .mentor-student-stats .dashboard-section-body');
   var progress = document.querySelector('#app-mentor .mentor-student-progress .dashboard-section-body');
-  var notes = document.querySelector('#app-mentor .mentor-student-notes .dashboard-section-body');
   if (!student) {
     if (card) card.innerHTML = '<p class="empty-state">Select an assigned student from My Mentees to view their profile.</p>';
     if (stats) stats.innerHTML = '<p class="empty-state">No student selected.</p>';
     if (progress) progress.innerHTML = '<p class="empty-state">No progress data recorded yet.</p>';
     return;
   }
-  if (card) card.innerHTML = '<div style="display:flex;gap:24px;align-items:center;flex-wrap:wrap;"><div class="user-avatar" style="width:72px;height:72px;font-size:28px;">' + escapeHtml(initials(student.name)) + '</div><div><h3 style="margin:0;">' + escapeHtml(student.name) + '</h3><p style="color:var(--text-secondary);margin:4px 0;">Student ID: ' + escapeHtml(student.student_code || 'Unavailable') + '</p><p style="color:#22c55e;font-size:13px;margin:0;"><i class="fas fa-circle" style="font-size:8px;"></i> Assigned to you</p></div></div>';
+  if (card) card.innerHTML = '<div style="display:flex;gap:24px;align-items:center;flex-wrap:wrap;"><div class="user-avatar" style="width:72px;height:72px;font-size:28px;">' + escapeHtml(initials(student.name)) + '</div><div><h3 style="margin:0;">' + escapeHtml(student.name) + '</h3><p style="color:var(--text-secondary);margin:4px 0;">Student ID: ' + escapeHtml(student.student_code || 'Unavailable') + '</p><p style="color:var(--text-secondary);margin:0;">Enrollment: ' + escapeHtml(student.enrollment_no || 'Unavailable') + ' · ' + escapeHtml(student.branch || 'Branch unavailable') + (student.year ? ' · Year ' + escapeHtml(student.year) : '') + '</p><p style="color:#22c55e;font-size:13px;margin:4px 0 0;"><i class="fas fa-circle" style="font-size:8px;"></i> Assigned to you</p><p style="color:var(--text-secondary);margin:4px 0 0;">Skills: ' + escapeHtml(student.skills || 'Not provided') + '</p></div></div>';
   if (stats) stats.innerHTML = '<div class="student-meta">No challenges or points recorded yet.</div>';
   if (progress) progress.innerHTML = '<p class="empty-state">No progress data recorded yet.</p>';
 }
@@ -549,35 +565,110 @@ function loadMentorDashboard() {
   apiRequest('/api/dashboard/mentor').then(function (data) {
     if (!data || !data.success) return;
     renderRoleIdentity('#app-mentor', data.profile, 'Mentor');
+    var mentorName = document.querySelector('#app-mentor .mentor-dashboard-name');
+    if (mentorName) mentorName.textContent = data.profile.name || 'Mentor';
     var values = document.querySelectorAll('#app-mentor .dashboard-stat-card .stat-value');
     if (values[0]) values[0].textContent = data.students.length;
-    if (values[1]) values[1].textContent = data.students.length;
-    if (values[2]) values[2].textContent = data.pendingReviews || 0;
-    if (values[3]) values[3].textContent = data.capacity.assigned + ' / ' + data.capacity.maximum;
-    var capacityLabel = document.querySelector('#app-mentor .dashboard-stat-card:nth-child(1) .stat-label');
-    if (capacityLabel) capacityLabel.textContent = data.capacity.full ? 'Mentor Capacity Full' : 'Mentees';
+    if (values[1]) values[1].textContent = data.pendingReviews || 0;
+    if (values[2]) values[2].textContent = data.capacity.assigned + ' / ' + data.capacity.maximum;
+    if (values[3]) values[3].textContent = data.meetings || 0;
     renderNews('#app-mentor', data.news);
     var menteeList = document.querySelector('#app-mentor .mentor-mentees-list');
     if (menteeList) {
-      menteeList.innerHTML = data.students.length ? data.students.map(function (student) { return '<div class="dashboard-section"><div class="dashboard-section-body"><div style="display:flex;gap:12px;align-items:center;margin-bottom:12px;"><div class="student-avatar">' + escapeHtml(initials(student.name)) + '</div><div><h4 style="margin:0;">' + escapeHtml(student.name) + '</h4><p style="margin:0;font-size:12px;color:var(--text-secondary);">' + escapeHtml(student.student_code || 'Student ID unavailable') + '</p></div></div><div class="student-meta">No progress data recorded yet.</div><button class="btn btn-primary btn-sm mentor-view-student" data-student-id="' + escapeHtml(student.id) + '" style="margin-top:12px;width:100%;">View Profile</button></div></div>'; }).join('') : '<div class="dashboard-section mentor-empty-state"><div class="dashboard-section-body"><p class="empty-state">No mentees assigned yet. Coordinators can assign students from Mentor Allocation.</p></div></div>';
+      menteeList.innerHTML = data.students.length ? data.students.map(function (student) { return '<div class="dashboard-section"><div class="dashboard-section-body"><div style="display:flex;gap:12px;align-items:center;margin-bottom:12px;"><div class="student-avatar">' + escapeHtml(initials(student.name)) + '</div><div><h4 style="margin:0;">' + escapeHtml(student.name) + '</h4><p style="margin:0;font-size:12px;color:var(--text-secondary);">' + escapeHtml(student.student_code || 'Student ID unavailable') + '</p><p style="margin:4px 0 0;font-size:12px;color:var(--text-secondary);">' + escapeHtml([student.branch, student.year ? student.year + ' Year' : ''].filter(Boolean).join(' · ') || 'Profile details unavailable') + '</p></div></div><button class="btn btn-primary btn-sm mentor-view-student" data-student-id="' + escapeHtml(student.id) + '" style="margin-top:12px;width:100%;">View Profile</button></div></div>'; }).join('') : '<div class="dashboard-section mentor-empty-state"><div class="dashboard-section-body"><p class="empty-state">No mentees assigned yet. Coordinators can assign students from Mentor Allocation.</p></div></div>';
       menteeList.querySelectorAll('.mentor-view-student').forEach(function (button) { button.addEventListener('click', function () { var student = data.students.find(function (item) { return String(item.id) === String(button.dataset.studentId); }); renderMentorStudentProfile(student); navigateTo('mentor-student-profile'); }); });
     }
+    var mentorList = document.querySelector('#app-mentor .mentor-dashboard-mentees');
+    if (mentorList) mentorList.innerHTML = data.students.length ? data.students.slice(0, 5).map(function (student) { return '<div class="student-list-item"><div class="student-avatar">' + escapeHtml(initials(student.name)) + '</div><div class="student-info"><div class="student-name">' + escapeHtml(student.name) + '</div><div class="student-meta">' + escapeHtml(student.student_code || 'Student ID unavailable') + '</div></div><span class="student-status status-active">Assigned</span></div>'; }).join('') : '<div class="student-list-item"><div class="student-info"><div class="student-name">No mentees assigned yet.</div><div class="student-meta">Coordinators can assign students from Mentor Allocation.</div></div></div>';
   }).catch(function (error) { console.error('Mentor dashboard failed', error); });
 }
 
 function loadCoordinatorDashboard() {
-  apiRequest('/api/dashboard/coordinator').then(function (data) {
+  Promise.all([
+    apiRequest('/api/dashboard/coordinator'),
+    apiRequest('/api/coordinators/students'),
+    apiRequest('/api/coordinators/mentors'),
+    apiRequest('/api/coordinators/assignments')
+  ]).then(function (results) {
+    var data = results[0];
     if (!data || !data.success) return;
     renderRoleIdentity('#app-coordinator', { name: window.currentUser.name }, 'Coordinator');
     var values = document.querySelectorAll('#app-coordinator .dashboard-stat-card .stat-value');
     if (values[0]) values[0].textContent = data.stats.students;
     if (values[1]) values[1].textContent = data.stats.mentors;
     if (values[2]) values[2].textContent = data.stats.activeStudents;
-    if (values[4]) values[4].textContent = data.stats.tasks;
-    if (values[5]) values[5].textContent = data.stats.solved;
+    if (values[3]) values[3].textContent = data.stats.assignedMentees;
+    if (values[4]) values[4].textContent = data.stats.unassignedStudents;
+    if (values[5]) values[5].textContent = data.stats.pendingSubmissions;
     renderNews('#app-coordinator', data.news);
     renderCoordinatorNews(data.news);
+    renderCoordinatorStudents(results[1] && results[1].students || []);
+    renderCoordinatorMentors(results[2] && results[2].mentors || []);
+    renderCoordinatorAssignments(results[3] && results[3].assignments || []);
+    refreshCoordinatorAssignmentOptions(results[2] && results[2].mentors || [], results[1] && results[1].students || []);
+    initCoordinatorAssignmentForm();
   }).catch(function (error) { console.error('Coordinator dashboard failed', error); });
+}
+
+function renderCoordinatorStudents(students) {
+  var tbody = document.getElementById('coordinator-students');
+  var recent = document.getElementById('coordinator-recent-students');
+  var rows = students.map(function (student) {
+    var mentor = student.mentor_name ? escapeHtml(student.mentor_name) + ' (' + escapeHtml(student.mentor_code || '') + ')' : 'Unassigned';
+    return '<tr><td>' + escapeHtml(student.name) + '</td><td>' + escapeHtml(student.student_code || '—') + '</td><td>' + escapeHtml(student.email) + '</td><td>' + escapeHtml(student.roll_number || '—') + '</td><td>' + escapeHtml(student.branch || '—') + '</td><td>' + escapeHtml(student.year || '—') + '</td><td>' + mentor + '</td></tr>';
+  }).join('');
+  if (tbody) tbody.innerHTML = rows || '<tr><td colspan="7" class="empty-state">No students registered yet.</td></tr>';
+  if (recent) recent.innerHTML = students.length ? students.slice(0, 6).map(function (student) { return '<div class="student-list-item"><div class="student-avatar">' + escapeHtml(initials(student.name)) + '</div><div class="student-info"><div class="student-name">' + escapeHtml(student.name) + '</div><div class="student-meta">' + escapeHtml(student.student_code || 'Student ID unavailable') + ' · ' + escapeHtml(student.branch || 'Branch not set') + (student.year ? ' · Year ' + escapeHtml(student.year) : '') + '</div></div><span class="student-status ' + (student.mentor_id ? 'status-active' : 'status-pending') + '">' + (student.mentor_id ? 'Assigned' : 'New') + '</span></div>'; }).join('') : '<p class="empty-state">No students registered yet.</p>';
+}
+
+function renderCoordinatorMentors(mentors) {
+  var tbody = document.getElementById('coordinator-mentors');
+  if (!tbody) return;
+  tbody.innerHTML = mentors.length ? mentors.map(function (mentor) { return '<tr><td>' + escapeHtml(mentor.name) + '</td><td>' + escapeHtml(mentor.mentor_code || '—') + '</td><td>' + escapeHtml(mentor.email) + '</td><td>' + escapeHtml(mentor.department || '—') + '</td><td>' + escapeHtml(mentor.designation || '—') + '</td><td>' + escapeHtml([mentor.group_name, mentor.group_id].filter(Boolean).join(' · ') || '—') + '</td><td>' + Number(mentor.assigned_students || 0) + '</td></tr>'; }).join('') : '<tr><td colspan="7" class="empty-state">No mentors registered yet.</td></tr>';
+}
+
+function renderCoordinatorAssignments(assignments) {
+  var tbody = document.getElementById('coordinator-assignments');
+  if (!tbody) return;
+  tbody.innerHTML = assignments.length ? assignments.map(function (assignment) { return '<tr><td>' + escapeHtml(assignment.student_name) + '</td><td>' + escapeHtml(assignment.student_code || '—') + '</td><td>' + escapeHtml(assignment.mentor_name) + '</td><td>' + escapeHtml(assignment.mentor_code || '—') + '</td><td>' + new Date(assignment.assigned_at).toLocaleDateString() + '</td><td><button class="btn btn-sm btn-ghost" data-unassign-id="' + escapeHtml(assignment.assignment_id) + '">Remove</button></td></tr>'; }).join('') : '<tr><td colspan="6" class="empty-state">No mentees assigned yet.</td></tr>';
+  tbody.querySelectorAll('[data-unassign-id]').forEach(function (button) { button.addEventListener('click', function () { apiMutation('/api/coordinators/assign/' + encodeURIComponent(button.dataset.unassignId), 'DELETE').then(function (result) { if (!result || !result.success) return showToast(result && result.message || 'Unable to remove assignment', 'error'); showToast('Assignment removed', 'success'); loadCoordinatorDashboard(); }); }); });
+}
+
+function refreshCoordinatorAssignmentOptions(mentors, students) {
+  var form = document.getElementById('mentor-assignment-form');
+  if (!form) return;
+  var mentorSelect = document.getElementById('assignment-mentor');
+  var studentSelect = document.getElementById('assignment-student');
+  var selectedMentor = mentorSelect.value;
+  var selectedStudent = studentSelect.value;
+  mentorSelect.innerHTML = '<option value="">Select a mentor</option>' + mentors.map(function (mentor) { return '<option value="' + escapeHtml(mentor.mentor_id) + '">' + escapeHtml(mentor.name) + ' (' + escapeHtml(mentor.mentor_code || 'No ID') + ') · ' + Number(mentor.assigned_students || 0) + '/4</option>'; }).join('');
+  var availableStudents = students.filter(function (student) { return !student.mentor_id; });
+  studentSelect.innerHTML = '<option value="">Select a student</option>' + availableStudents.map(function (student) { return '<option value="' + escapeHtml(student.student_id) + '">' + escapeHtml(student.name) + ' (' + escapeHtml(student.student_code || 'No ID') + ')</option>'; }).join('');
+  if (mentors.some(function (mentor) { return String(mentor.mentor_id) === selectedMentor; })) mentorSelect.value = selectedMentor;
+  if (availableStudents.some(function (student) { return String(student.student_id) === selectedStudent; })) studentSelect.value = selectedStudent;
+  studentSelect.disabled = availableStudents.length === 0;
+  mentorSelect.disabled = mentors.length === 0;
+  var submitButton = form.querySelector('button[type="submit"]');
+  if (submitButton) submitButton.disabled = availableStudents.length === 0 || mentors.length === 0;
+}
+
+function initCoordinatorAssignmentForm() {
+  var form = document.getElementById('mentor-assignment-form');
+  if (!form || form.dataset.initialized) return;
+  form.dataset.initialized = 'true';
+  Promise.all([apiRequest('/api/coordinators/mentors'), apiRequest('/api/coordinators/students')]).then(function (results) {
+    if (!results[0] || !results[1]) return;
+    refreshCoordinatorAssignmentOptions(results[0].mentors || [], results[1].students || []);
+    form.addEventListener('submit', function (event) {
+      event.preventDefault();
+      apiMutation('/api/coordinators/assign', 'POST', { mentor_id: document.getElementById('assignment-mentor').value, student_id: document.getElementById('assignment-student').value }).then(function (result) {
+        if (!result || !result.success) return showToast(result && result.message || 'Unable to assign student', 'error');
+        showToast('Mentee assigned', 'success');
+        form.reset();
+        loadCoordinatorDashboard();
+      });
+    });
+  }).catch(function (error) { console.error('Coordinator assignment form failed', error); });
 }
 
 function renderCoordinatorNews(news) {

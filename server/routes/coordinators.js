@@ -9,6 +9,7 @@ router.get('/dashboard', coordinatorController.getDashboard);
 
 router.get('/students', coordinatorController.getAllStudents);
 router.get('/mentors', coordinatorController.getAllMentors);
+router.get('/assignments', coordinatorController.listAssignments);
 router.post('/assign', coordinatorController.assignMentorToStudent);
 router.delete('/assign/:id', coordinatorController.unassignMentor);
 router.post('/tasks', coordinatorController.createTask);

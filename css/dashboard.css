@@ -35,6 +35,24 @@
   background: var(--surface);
 }
 
+.dashboard-global-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: color 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
+}
+.dashboard-global-back:hover { color: var(--tangerine); border-color: var(--tangerine); transform: translateX(-2px); }
+.dashboard-topbar-actions .theme-toggle { width: 42px; height: 42px; flex: 0 0 auto; }
+.dashboard-topbar-back.dashboard-global-back { margin-left: 0; }
+
 .dashboard-topbar-brand {
   display: inline-flex;
   align-items: center;
@@ -60,12 +78,14 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  margin-left: auto;
   color: var(--text-secondary);
   font-size: 0.85rem;
   transition: color 0.2s ease, transform 0.2s ease;
 }
 .dashboard-topbar-back:hover { color: var(--tangerine); transform: translateX(-2px); }
+.dashboard-global-back { margin-right: auto; }
+.dashboard-topbar-actions { margin-left: 0; }
+.dashboard-topbar-mobile-title { display: none; }
 .dashboard-topbar-actions { display: flex; align-items: center; gap: 14px; margin-left: auto; }
 .dashboard-topbar-logout {
   display: inline-flex;
@@ -79,7 +99,8 @@
   font-size: 0.82rem;
 }
 .dashboard-topbar-logout:hover { border-color: var(--tangerine); color: var(--tangerine); }
-.dashboard-layout .theme-toggle { display: none !important; }
+.dashboard-layout .theme-toggle { display: inline-flex; flex: 0 0 auto; }
+.dashboard-topbar-actions .theme-toggle { width: 42px; height: 42px; }
 .mobile-back-link { display: none; color: var(--text-secondary); font-size: 0.78rem; align-items: center; gap: 5px; }
 .mobile-back-link:hover { color: var(--tangerine); }
 
@@ -3237,9 +3258,15 @@
   .sidebar-toggle {
     display: flex;
   }
-  .mobile-topbar {
-    display: flex !important;
-  }
+  .dashboard-topbar { gap: 8px; margin: 0 -16px 20px; padding: 0 10px; }
+  .dashboard-global-back { padding: 7px 8px; font-size: 0.78rem; }
+  .dashboard-topbar-brand { gap: 5px; }
+  .dashboard-topbar-context { display: none; }
+  .dashboard-topbar-mobile-title { display: inline; color: var(--text-muted); font-size: 0.76rem; }
+  .dashboard-topbar-actions { gap: 6px; }
+  .dashboard-topbar-actions .theme-toggle,
+  .dashboard-topbar-actions .mobile-hamburger { width: 36px; height: 36px; }
+  .dashboard-topbar-actions .mobile-hamburger { display: none; }
   .podium {
     gap: 8px;
   }

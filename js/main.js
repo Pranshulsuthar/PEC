@@ -4,10 +4,10 @@
 (function () {
   'use strict';
   var THEME_KEY = 'pec-theme';
-  var THEME_ORDER = ['dark', 'light', 'ember'];
-  var THEME_ICONS = { dark: '☀', light: '☾', ember: '✦' };
-  var NEXT_THEME = { dark: 'light', light: 'ember', ember: 'dark' };
-  var NEXT_LABEL = { dark: 'light', light: 'soft red', ember: 'dark' };
+  var THEME_ORDER = ['dark', 'light', 'burgundy'];
+  var THEME_ICONS = { dark: '☀', light: '☾', burgundy: '✦' };
+  var NEXT_THEME = { dark: 'light', light: 'burgundy', burgundy: 'dark' };
+  var NEXT_LABEL = { dark: 'light', light: 'burgundy and cream', burgundy: 'dark' };
   var transitionTimer = null;
 
   function normalizeTheme(theme) {
@@ -692,7 +692,7 @@ function loadPublicStats() {
   if (!counters.length) return;
   fetch('/api/public/stats').then(function (response) { return response.json(); }).then(function (data) {
     if (!data.success) return;
-    var values = [data.stats.activeStudents, data.stats.solved, data.stats.mentors, data.stats.activities];
+    var values = [data.stats.students, data.stats.solved, data.stats.mentors, data.stats.activities];
     counters.forEach(function (counter, index) {
       counter.setAttribute('data-count', String(values[index] || 0));
       counter.textContent = '0';

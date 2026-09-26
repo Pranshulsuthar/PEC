@@ -30,11 +30,11 @@
     rgba(11, 21, 28, 0.9);
 }
 
-[data-theme="ember"] .pec-logout-overlay {
+[data-theme="burgundy"] .pec-logout-overlay {
   background:
-    radial-gradient(900px 460px at 50% -8%, rgba(168, 92, 92, 0.18), transparent 62%),
-    radial-gradient(760px 460px at 50% 112%, rgba(232, 216, 190, 0.1), transparent 62%),
-    rgba(36, 25, 26, 0.9);
+    radial-gradient(900px 460px at 50% -8%, rgba(122, 17, 24, 0.1), transparent 62%),
+    radial-gradient(760px 460px at 50% 112%, rgba(207, 194, 168, 0.16), transparent 62%),
+    rgba(243, 235, 215, 0.92);
 }
 
 .pec-logout-overlay.is-leaving {

@@ -96,18 +96,12 @@
     </aside>
     <div class="sidebar-overlay" onclick="this.classList.remove('active');this.previousElementSibling.classList.remove('active')"></div>
     <main class="dashboard-main">
-      <div class="dashboard-topbar"><a href="../index.html" class="dashboard-topbar-brand"><span class="dashboard-topbar-logo">P</span><span>PEC</span></a><span class="dashboard-topbar-context" data-role-context>Portal</span><div class="dashboard-topbar-actions"><a href="../index.html" class="dashboard-topbar-back"><i class="fas fa-arrow-left"></i> Back to PEC</a><button type="button" class="dashboard-topbar-logout" onclick="switchRole(null)"><i class="fas fa-sign-out-alt"></i> Logout</button></div></div>
-      <div class="mobile-topbar">
-        <button class="mobile-hamburger" onclick="var s=this.closest('[id^=app-]').querySelector('.sidebar');var o=this.closest('[id^=app-]').querySelector('.sidebar-overlay');s.classList.toggle('active');o.classList.toggle('active')"><i class="fas fa-bars"></i></button>
-        <span class="mobile-title">Dashboard</span><a href="../index.html" class="mobile-back-link"><i class="fas fa-arrow-left"></i> Back</a>
-        <div class="mobile-actions">
-          <button class="btn-icon" onclick="switchRole(null)" title="Logout"><i class="fas fa-sign-out-alt"></i></button>
-        </div>
-      </div>
+      <div class="dashboard-topbar"><button type="button" class="dashboard-global-back" data-dashboard-back><i class="fas fa-arrow-left"></i> Back</button><a href="../index.html" class="dashboard-topbar-brand"><span class="dashboard-topbar-logo">P</span><span>PEC</span></a><span class="dashboard-topbar-context" data-role-context>Portal</span><span class="mobile-title dashboard-topbar-mobile-title">Dashboard</span><div class="dashboard-topbar-actions"><button type="button" class="mobile-hamburger" data-dashboard-sidebar-toggle aria-label="Toggle sidebar"><i class="fas fa-bars"></i></button><button type="button" class="theme-toggle" aria-label="Switch theme" title="Switch theme"><span aria-hidden="true">☾</span></button></div></div>
+
 
       <!-- Student Dashboard -->
       <div class="sub-page active" id="student-dashboard">
-        <div class="dashboard-header dashboard-student-header"><a href="../index.html" class="dashboard-back-link"><i class="fas fa-arrow-left"></i> Back to PEC</a><h1>Good Evening, <span class="user-name">Student</span></h1><p>Here's your current PEC activity overview.</p></div>
+        <div class="dashboard-header dashboard-student-header"><h1>Good Evening, <span class="user-name">Student</span></h1><p>Here's your current PEC activity overview.</p></div>
         <div class="dashboard-stats">
           <div class="dashboard-stat-card"><div class="stat-header"><div class="stat-icon" style="background:rgba(59,130,246,0.1);color:#3b82f6"><i class="fas fa-fire"></i></div></div><div class="stat-value">0</div><div class="stat-label">Total Tasks</div></div>
           <div class="dashboard-stat-card"><div class="stat-header"><div class="stat-icon" style="background:rgba(34,197,94,0.1);color:#22c55e"><i class="fas fa-check-circle"></i></div></div><div class="stat-value">0</div><div class="stat-label">Completed</div></div>
@@ -123,26 +117,14 @@
             <div class="progress-bar-container"><div class="progress-header"><span class="progress-label">Web Dev</span><span class="progress-value">60%</span></div><div class="progress-bar"><div class="progress-fill green" style="width:60%"></div></div></div>
             <div class="progress-bar-container"><div class="progress-header"><span class="progress-label">Debugging</span><span class="progress-value">85%</span></div><div class="progress-bar"><div class="progress-fill purple" style="width:85%"></div></div></div>
           </div></div>
-          <div class="dashboard-section"><div class="dashboard-section-header"><h3>Recent Submissions</h3></div><div class="dashboard-section-body no-padding">
-            <div class="student-list-item"><div class="student-avatar" style="background:rgba(34,197,94,0.1);color:#22c55e"><i class="fas fa-check"></i></div><div class="student-info"><div class="student-name">Binary Search Implementation</div><div class="student-meta">Submitted Sep 19 &middot; Score: 95/100</div></div><span class="student-status status-active">Accepted</span></div>
-            <div class="student-list-item"><div class="student-avatar" style="background:rgba(245,158,11,0.1);color:#f59e0b"><i class="fas fa-clock"></i></div><div class="student-info"><div class="student-name">React Dashboard Project</div><div class="student-meta">Submitted Sep 18 &middot; Pending Review</div></div><span class="student-status status-pending">Pending</span></div>
-            <div class="student-list-item"><div class="student-avatar" style="background:rgba(34,197,94,0.1);color:#22c55e"><i class="fas fa-check"></i></div><div class="student-info"><div class="student-name">Linked List Operations</div><div class="student-meta">Submitted Sep 16 &middot; Score: 92/100</div></div><span class="student-status status-active">Accepted</span></div>
-          </div></div>
-          <div class="dashboard-section"><div class="dashboard-section-header"><h3>Current Challenge</h3></div><div class="dashboard-section-body">
-            <div class="task-item" style="border-left-color:#3b82f6;"><div class="task-title">Implement LRU Cache</div><div class="task-desc">Design and implement an LRU Cache with O(1) get and put operations.</div><div class="task-meta"><span><i class="fas fa-calendar"></i> Due: Sep 26</span><span><i class="fas fa-signal"></i> Hard</span><span><i class="fas fa-star"></i> 50 pts</span></div></div>
-          </div></div>
-          <div class="dashboard-section"><div class="dashboard-section-header"><h3>Assigned Mentor</h3></div><div class="dashboard-section-body">
-            <div class="mentor-info-card"><div class="mentor-avatar">RV</div><div><div class="mentor-name">Rahul Verma</div><div class="mentor-spec">DSA & Problem Solving</div><div class="mentor-status" style="color:#22c55e;">Available</div></div></div>
-          </div></div>
+          <div class="dashboard-section"><div class="dashboard-section-header"><h3>Recent Submissions</h3></div><div class="dashboard-section-body no-padding student-dashboard-submissions"><p class="empty-state">Loading submissions...</p></div></div>
+          <div class="dashboard-section"><div class="dashboard-section-header"><h3>Current Challenge</h3></div><div class="dashboard-section-body"><div class="student-current-challenge"><p class="empty-state">Loading your assigned challenges...</p></div></div></div>
+          <div class="dashboard-section"><div class="dashboard-section-header"><h3>Assigned Mentor</h3></div><div class="dashboard-section-body"><div class="mentor-info-card student-mentor-card"><div class="mentor-avatar"><i class="fas fa-user-clock"></i></div><div><div class="mentor-name">No mentor assigned</div><div class="mentor-spec">A coordinator will assign your mentor.</div><div class="mentor-status">Waiting for assignment</div></div></div></div></div>
           <div class="dashboard-section"><div class="dashboard-section-header"><h3>Upcoming Events</h3></div><div class="dashboard-section-body no-padding">
             <div class="student-list-item"><div class="event-date-box"><span class="day">25</span><span class="month">Sep</span></div><div class="student-info"><div class="student-name">Tech Talk: System Design</div><div class="student-meta">Online &middot; 4:00 PM IST</div></div></div>
             <div class="student-list-item"><div class="event-date-box" style="background:#22c55e;"><span class="day">30</span><span class="month">Sep</span></div><div class="student-info"><div class="student-name">Hackathon Kickoff</div><div class="student-meta">On-campus &middot; 10:00 AM IST</div></div></div>
           </div></div>
-          <div class="dashboard-section"><div class="dashboard-section-header"><h3>Latest News</h3></div><div class="dashboard-section-body no-padding">
-            <div class="student-list-item"><div class="student-avatar" style="background:rgba(59,130,246,0.1);color:#3b82f6"><i class="fas fa-newspaper"></i></div><div class="student-info"><div class="student-name">New DSA Batch Starting Oct 1</div><div class="student-meta">Sep 18 &middot; Announcements</div></div></div>
-            <div class="student-list-item"><div class="student-avatar" style="background:rgba(34,197,94,0.1);color:#22c55e"><i class="fas fa-trophy"></i></div><div class="student-info"><div class="student-name">September Challenge Results</div><div class="student-meta">Sep 17 &middot; Results</div></div></div>
-            <div class="student-list-item"><div class="student-avatar" style="background:rgba(168,85,247,0.1);color:#a855f7"><i class="fas fa-lightbulb"></i></div><div class="student-info"><div class="student-name">New Learning Path: Full Stack</div><div class="student-meta">Sep 15 &middot; Updates</div></div></div>
-          </div></div>
+          <div class="dashboard-section"><div class="dashboard-section-header"><h3>Latest News</h3></div><div class="dashboard-section-body no-padding"><div class="dashboard-list"></div></div></div>
         </div>
       </div>
 
@@ -437,94 +419,30 @@
     </aside>
     <div class="sidebar-overlay" onclick="this.classList.remove('active');this.previousElementSibling.classList.remove('active')"></div>
     <main class="dashboard-main">
-      <div class="dashboard-topbar"><a href="../index.html" class="dashboard-topbar-brand"><span class="dashboard-topbar-logo">P</span><span>PEC</span></a><span class="dashboard-topbar-context" data-role-context>Portal</span><div class="dashboard-topbar-actions"><a href="../index.html" class="dashboard-topbar-back"><i class="fas fa-arrow-left"></i> Back to PEC</a><button type="button" class="dashboard-topbar-logout" onclick="switchRole(null)"><i class="fas fa-sign-out-alt"></i> Logout</button></div></div>
-      <div class="mobile-topbar">
-        <button class="mobile-hamburger" onclick="var s=this.closest('[id^=app-]').querySelector('.sidebar');var o=this.closest('[id^=app-]').querySelector('.sidebar-overlay');s.classList.toggle('active');o.classList.toggle('active')"><i class="fas fa-bars"></i></button>
-        <span class="mobile-title">Dashboard</span><a href="../index.html" class="mobile-back-link"><i class="fas fa-arrow-left"></i> Back</a>
-        <div class="mobile-actions">
-          <button class="btn-icon" onclick="switchRole(null)" title="Logout"><i class="fas fa-sign-out-alt"></i></button>
-        </div>
-      </div>
+      <div class="dashboard-topbar"><button type="button" class="dashboard-global-back" data-dashboard-back><i class="fas fa-arrow-left"></i> Back</button><a href="../index.html" class="dashboard-topbar-brand"><span class="dashboard-topbar-logo">P</span><span>PEC</span></a><span class="dashboard-topbar-context" data-role-context>Portal</span><span class="mobile-title dashboard-topbar-mobile-title">Dashboard</span><div class="dashboard-topbar-actions"><button type="button" class="mobile-hamburger" data-dashboard-sidebar-toggle aria-label="Toggle sidebar"><i class="fas fa-bars"></i></button><button type="button" class="theme-toggle" aria-label="Switch theme" title="Switch theme"><span aria-hidden="true">☾</span></button></div></div>
+
 
       <!-- Mentor Dashboard -->
       <div class="sub-page active" id="mentor-dashboard">
-        <div class="dashboard-header"><h1>Welcome, Rahul Verma</h1><p>Here's an overview of your mentoring activity.</p></div>
+        <div class="dashboard-header"><h1>Welcome, <span class="mentor-dashboard-name">Mentor</span></h1><p>Here's an overview of your mentoring activity.</p></div>
         <div class="dashboard-stats">
-          <div class="dashboard-stat-card"><div class="stat-header"><div class="stat-icon" style="background:rgba(59,130,246,0.1);color:#3b82f6"><i class="fas fa-users"></i></div></div><div class="stat-value">8</div><div class="stat-label">Total Mentees</div></div>
-          <div class="dashboard-stat-card"><div class="stat-header"><div class="stat-icon" style="background:rgba(34,197,94,0.1);color:#22c55e"><i class="fas fa-user-check"></i></div></div><div class="stat-value">7</div><div class="stat-label">Active</div></div>
-          <div class="dashboard-stat-card"><div class="stat-header"><div class="stat-icon" style="background:rgba(245,158,11,0.1);color:#f59e0b"><i class="fas fa-clipboard-check"></i></div></div><div class="stat-value">5</div><div class="stat-label">Pending Reviews</div></div>
-          <div class="dashboard-stat-card"><div class="stat-header"><div class="stat-icon" style="background:rgba(168,85,247,0.1);color:#a855f7"><i class="fas fa-calendar-check"></i></div></div><div class="stat-value">3</div><div class="stat-label">Meetings</div></div>
+          <div class="dashboard-stat-card"><div class="stat-header"><div class="stat-icon" style="background:rgba(59,130,246,0.1);color:#3b82f6"><i class="fas fa-users"></i></div></div><div class="stat-value">0</div><div class="stat-label">Total Mentees</div></div>
+          <div class="dashboard-stat-card"><div class="stat-header"><div class="stat-icon" style="background:rgba(34,197,94,0.1);color:#22c55e"><i class="fas fa-user-check"></i></div></div><div class="stat-value">0</div><div class="stat-label">Pending Reviews</div></div>
+          <div class="dashboard-stat-card"><div class="stat-header"><div class="stat-icon" style="background:rgba(245,158,11,0.1);color:#f59e0b"><i class="fas fa-clipboard-check"></i></div></div><div class="stat-value">0 / 4</div><div class="stat-label">Mentor Capacity</div></div>
+          <div class="dashboard-stat-card"><div class="stat-header"><div class="stat-icon" style="background:rgba(168,85,247,0.1);color:#a855f7"><i class="fas fa-calendar-check"></i></div></div><div class="stat-value">0</div><div class="stat-label">Meetings</div></div>
         </div>
         <div class="dashboard-grid">
-          <div class="dashboard-section"><div class="dashboard-section-header"><h3>Students Needing Attention</h3></div><div class="dashboard-section-body no-padding">
-            <div class="student-list-item"><div class="student-avatar">NM</div><div class="student-info"><div class="student-name">Neha Mehta</div><div class="student-meta">Progress: 45% &middot; No submissions in 7 days</div></div><span class="student-status status-inactive">At Risk</span></div>
-            <div class="student-list-item"><div class="student-avatar">VT</div><div class="student-info"><div class="student-name">Vikram Tiwari</div><div class="student-meta">Progress: 55% &middot; Missed last 2 meetings</div></div><span class="student-status status-pending">Warning</span></div>
-          </div></div>
-          <div class="dashboard-section"><div class="dashboard-section-header"><h3>Recent Submissions</h3></div><div class="dashboard-section-body no-padding">
-            <div class="student-list-item"><div class="student-avatar">AK</div><div class="student-info"><div class="student-name">Binary Search Implementation</div><div class="student-meta">Arjun Kumar &middot; Sep 20, 2026</div></div><span class="student-status status-pending">Review</span></div>
-            <div class="student-list-item"><div class="student-avatar">PS</div><div class="student-info"><div class="student-name">React Dashboard Project</div><div class="student-meta">Priya Sharma &middot; Sep 19, 2026</div></div><span class="student-status status-active">Approved</span></div>
-            <div class="student-list-item"><div class="student-avatar">RK</div><div class="student-info"><div class="student-name">System Design Document</div><div class="student-meta">Rohan Khanna &middot; Sep 18, 2026</div></div><span class="student-status status-pending">Review</span></div>
-          </div></div>
-          <div class="dashboard-section"><div class="dashboard-section-header"><h3>Latest News</h3></div><div class="dashboard-section-body no-padding">
-            <div class="student-list-item"><div class="student-avatar" style="background:rgba(59,130,246,0.1);color:#3b82f6"><i class="fas fa-newspaper"></i></div><div class="student-info"><div class="student-name">New DSA Batch Starting Oct 1</div><div class="student-meta">Sep 18, 2026</div></div></div>
-            <div class="student-list-item"><div class="student-avatar" style="background:rgba(34,197,94,0.1);color:#22c55e"><i class="fas fa-trophy"></i></div><div class="student-info"><div class="student-name">September Challenge Results</div><div class="student-meta">Sep 17, 2026</div></div></div>
-          </div></div>
+          <div class="dashboard-section"><div class="dashboard-section-header"><h3>My Mentees</h3></div><div class="dashboard-section-body no-padding mentor-dashboard-mentees"><div class="student-list-item"><div class="student-info"><div class="student-name">No mentees assigned yet.</div><div class="student-meta">Coordinators can assign students from Mentor Allocation.</div></div></div></div></div>
+          <div class="dashboard-section"><div class="dashboard-section-header"><h3>Recent Submissions</h3></div><div class="dashboard-section-body no-padding"><p class="empty-state">No submissions from your mentees yet.</p></div></div>
+          <div class="dashboard-section"><div class="dashboard-section-header"><h3>Latest News</h3></div><div class="dashboard-section-body no-padding"><div class="dashboard-list"></div></div></div>
         </div>
       </div>
 
       <!-- Mentor Mentees -->
-       <div class="sub-page" id="mentor-mentees">
-         <div class="dashboard-header"><h1>My Mentees</h1><p>Students assigned to you will appear here.</p></div>
-         <div class="dashboard-grid mentor-mentees-list" style="grid-template-columns:repeat(auto-fill,minmax(300px,1fr));">
-           <div class="dashboard-section mentor-empty-state"><div class="dashboard-section-body"><p class="empty-state">No mentees assigned yet. Coordinators can assign students from Mentor Allocation.</p></div></div>
-          <div class="dashboard-section"><div class="dashboard-section-body">
-            <div style="display:flex;gap:12px;align-items:center;margin-bottom:12px;"><div class="student-avatar">AK</div><div><h4 style="margin:0;">Arjun Kumar</h4><p style="margin:0;font-size:12px;color:var(--text-secondary);">DSA &middot; 3rd Year CS</p></div></div>
-            <div class="progress-bar-container"><div class="progress-header"><span class="progress-label">Progress</span><span class="progress-value">75%</span></div><div class="progress-bar"><div class="progress-fill blue" style="width:75%"></div></div></div>
-            <div style="display:flex;gap:8px;font-size:12px;color:var(--text-secondary);margin:8px 0;"><span>18 challenges</span><span>&middot;</span><span>850 pts</span><span>&middot;</span><span>Rank #5</span></div>
-            <div style="display:flex;gap:8px;"><button class="btn btn-primary btn-sm" style="flex:1;">View Profile</button><button class="btn btn-ghost btn-sm" style="flex:1;">Message</button></div>
-          </div></div>
-          <div class="dashboard-section"><div class="dashboard-section-body">
-            <div style="display:flex;gap:12px;align-items:center;margin-bottom:12px;"><div class="student-avatar">PS</div><div><h4 style="margin:0;">Priya Sharma</h4><p style="margin:0;font-size:12px;color:var(--text-secondary);">Web Dev &middot; 2nd Year CS</p></div></div>
-            <div class="progress-bar-container"><div class="progress-header"><span class="progress-label">Progress</span><span class="progress-value">60%</span></div><div class="progress-bar"><div class="progress-fill green" style="width:60%"></div></div></div>
-            <div style="display:flex;gap:8px;font-size:12px;color:var(--text-secondary);margin:8px 0;"><span>14 challenges</span><span>&middot;</span><span>720 pts</span><span>&middot;</span><span>Rank #8</span></div>
-            <div style="display:flex;gap:8px;"><button class="btn btn-primary btn-sm" style="flex:1;">View Profile</button><button class="btn btn-ghost btn-sm" style="flex:1;">Message</button></div>
-          </div></div>
-          <div class="dashboard-section"><div class="dashboard-section-body">
-            <div style="display:flex;gap:12px;align-items:center;margin-bottom:12px;"><div class="student-avatar">RK</div><div><h4 style="margin:0;">Rohan Khanna</h4><p style="margin:0;font-size:12px;color:var(--text-secondary);">DSA &middot; 3rd Year IT</p></div></div>
-            <div class="progress-bar-container"><div class="progress-header"><span class="progress-label">Progress</span><span class="progress-value">92%</span></div><div class="progress-bar"><div class="progress-fill blue" style="width:92%"></div></div></div>
-            <div style="display:flex;gap:8px;font-size:12px;color:var(--text-secondary);margin:8px 0;"><span>22 challenges</span><span>&middot;</span><span>980 pts</span><span>&middot;</span><span>Rank #1</span></div>
-            <div style="display:flex;gap:8px;"><button class="btn btn-primary btn-sm" style="flex:1;">View Profile</button><button class="btn btn-ghost btn-sm" style="flex:1;">Message</button></div>
-          </div></div>
-          <div class="dashboard-section"><div class="dashboard-section-body">
-            <div style="display:flex;gap:12px;align-items:center;margin-bottom:12px;"><div class="student-avatar">NM</div><div><h4 style="margin:0;">Neha Mehta</h4><p style="margin:0;font-size:12px;color:var(--text-secondary);">DSA &middot; 2nd Year CS</p></div></div>
-            <div class="progress-bar-container"><div class="progress-header"><span class="progress-label">Progress</span><span class="progress-value">45%</span></div><div class="progress-bar"><div class="progress-fill yellow" style="width:45%"></div></div></div>
-            <div style="display:flex;gap:8px;font-size:12px;color:var(--text-secondary);margin:8px 0;"><span>10 challenges</span><span>&middot;</span><span>520 pts</span><span>&middot;</span><span>Rank #12</span></div>
-            <div style="display:flex;gap:8px;"><button class="btn btn-primary btn-sm" style="flex:1;">View Profile</button><button class="btn btn-ghost btn-sm" style="flex:1;">Message</button></div>
-          </div></div>
-          <div class="dashboard-section"><div class="dashboard-section-body">
-            <div style="display:flex;gap:12px;align-items:center;margin-bottom:12px;"><div class="student-avatar">VT</div><div><h4 style="margin:0;">Vikram Tiwari</h4><p style="margin:0;font-size:12px;color:var(--text-secondary);">Web Dev &middot; 3rd Year ECE</p></div></div>
-            <div class="progress-bar-container"><div class="progress-header"><span class="progress-label">Progress</span><span class="progress-value">55%</span></div><div class="progress-bar"><div class="progress-fill purple" style="width:55%"></div></div></div>
-            <div style="display:flex;gap:8px;font-size:12px;color:var(--text-secondary);margin:8px 0;"><span>12 challenges</span><span>&middot;</span><span>600 pts</span><span>&middot;</span><span>Rank #10</span></div>
-            <div style="display:flex;gap:8px;"><button class="btn btn-primary btn-sm" style="flex:1;">View Profile</button><button class="btn btn-ghost btn-sm" style="flex:1;">Message</button></div>
-          </div></div>
-          <div class="dashboard-section"><div class="dashboard-section-body">
-            <div style="display:flex;gap:12px;align-items:center;margin-bottom:12px;"><div class="student-avatar">SG</div><div><h4 style="margin:0;">Sanjay Gupta</h4><p style="margin:0;font-size:12px;color:var(--text-secondary);">DSA &middot; 2nd Year CS</p></div></div>
-            <div class="progress-bar-container"><div class="progress-header"><span class="progress-label">Progress</span><span class="progress-value">70%</span></div><div class="progress-bar"><div class="progress-fill blue" style="width:70%"></div></div></div>
-            <div style="display:flex;gap:8px;font-size:12px;color:var(--text-secondary);margin:8px 0;"><span>17 challenges</span><span>&middot;</span><span>800 pts</span><span>&middot;</span><span>Rank #6</span></div>
-            <div style="display:flex;gap:8px;"><button class="btn btn-primary btn-sm" style="flex:1;">View Profile</button><button class="btn btn-ghost btn-sm" style="flex:1;">Message</button></div>
-          </div></div>
-          <div class="dashboard-section"><div class="dashboard-section-body">
-            <div style="display:flex;gap:12px;align-items:center;margin-bottom:12px;"><div class="student-avatar">MJ</div><div><h4 style="margin:0;">Meera Joshi</h4><p style="margin:0;font-size:12px;color:var(--text-secondary);">Web Dev &middot; 3rd Year CS</p></div></div>
-            <div class="progress-bar-container"><div class="progress-header"><span class="progress-label">Progress</span><span class="progress-value">68%</span></div><div class="progress-bar"><div class="progress-fill green" style="width:68%"></div></div></div>
-            <div style="display:flex;gap:8px;font-size:12px;color:var(--text-secondary);margin:8px 0;"><span>16 challenges</span><span>&middot;</span><span>780 pts</span><span>&middot;</span><span>Rank #7</span></div>
-            <div style="display:flex;gap:8px;"><button class="btn btn-primary btn-sm" style="flex:1;">View Profile</button><button class="btn btn-ghost btn-sm" style="flex:1;">Message</button></div>
-          </div></div>
-          <div class="dashboard-section"><div class="dashboard-section-body">
-            <div style="display:flex;gap:12px;align-items:center;margin-bottom:12px;"><div class="student-avatar">AR</div><div><h4 style="margin:0;">Aditya Rao</h4><p style="margin:0;font-size:12px;color:var(--text-secondary);">DSA &middot; 2nd Year IT</p></div></div>
-            <div class="progress-bar-container"><div class="progress-header"><span class="progress-label">Progress</span><span class="progress-value">62%</span></div><div class="progress-bar"><div class="progress-fill blue" style="width:62%"></div></div></div>
-            <div style="display:flex;gap:8px;font-size:12px;color:var(--text-secondary);margin:8px 0;"><span>15 challenges</span><span>&middot;</span><span>720 pts</span><span>&middot;</span><span>Rank #8</span></div>
-            <div style="display:flex;gap:8px;"><button class="btn btn-primary btn-sm" style="flex:1;">View Profile</button><button class="btn btn-ghost btn-sm" style="flex:1;">Message</button></div>
-          </div></div>
+      <div class="sub-page" id="mentor-mentees">
+        <div class="dashboard-header"><h1>My Mentees</h1><p>Students assigned to you will appear here.</p></div>
+        <div class="dashboard-grid mentor-mentees-list" style="grid-template-columns:repeat(auto-fill,minmax(300px,1fr));">
+          <div class="dashboard-section mentor-empty-state"><div class="dashboard-section-body"><p class="empty-state">Loading assigned mentees...</p></div></div>
         </div>
       </div>
 
@@ -798,31 +716,21 @@
     </aside>
     <div class="sidebar-overlay" onclick="this.classList.remove('active');this.previousElementSibling.classList.remove('active')"></div>
     <main class="dashboard-main">
-      <div class="dashboard-topbar"><a href="../index.html" class="dashboard-topbar-brand"><span class="dashboard-topbar-logo">P</span><span>PEC</span></a><span class="dashboard-topbar-context" data-role-context>Portal</span><div class="dashboard-topbar-actions"><a href="../index.html" class="dashboard-topbar-back"><i class="fas fa-arrow-left"></i> Back to PEC</a><button type="button" class="dashboard-topbar-logout" onclick="switchRole(null)"><i class="fas fa-sign-out-alt"></i> Logout</button></div></div>
-      <div class="mobile-topbar">
-        <button class="mobile-hamburger" onclick="var s=this.closest('[id^=app-]').querySelector('.sidebar');var o=this.closest('[id^=app-]').querySelector('.sidebar-overlay');s.classList.toggle('active');o.classList.toggle('active')"><i class="fas fa-bars"></i></button>
-        <span class="mobile-title">Dashboard</span><a href="../index.html" class="mobile-back-link"><i class="fas fa-arrow-left"></i> Back</a>
-        <div class="mobile-actions">
-          <button class="btn-icon" onclick="switchRole(null)" title="Logout"><i class="fas fa-sign-out-alt"></i></button>
-        </div>
-      </div>
+      <div class="dashboard-topbar"><button type="button" class="dashboard-global-back" data-dashboard-back><i class="fas fa-arrow-left"></i> Back</button><a href="../index.html" class="dashboard-topbar-brand"><span class="dashboard-topbar-logo">P</span><span>PEC</span></a><span class="dashboard-topbar-context" data-role-context>Portal</span><span class="mobile-title dashboard-topbar-mobile-title">Dashboard</span><div class="dashboard-topbar-actions"><button type="button" class="mobile-hamburger" data-dashboard-sidebar-toggle aria-label="Toggle sidebar"><i class="fas fa-bars"></i></button><button type="button" class="theme-toggle" aria-label="Switch theme" title="Switch theme"><span aria-hidden="true">☾</span></button></div></div>
 
-      <div class="sub-page active" id="coord-dashboard">
-        <div class="dashboard-header"><h1>Coordinator Dashboard</h1><p>Complete overview of the PEC community.</p></div>
-        <div class="dashboard-stats">
-          <div class="dashboard-stat-card"><div class="stat-header"><div class="stat-icon" style="background:rgba(59,130,246,0.1);color:#3b82f6"><i class="fas fa-user-graduate"></i></div></div><div class="stat-value">250</div><div class="stat-label">Total Students</div></div>
-          <div class="dashboard-stat-card"><div class="stat-header"><div class="stat-icon" style="background:rgba(34,197,94,0.1);color:#22c55e"><i class="fas fa-chalkboard-teacher"></i></div></div><div class="stat-value">15</div><div class="stat-label">Total Mentors</div></div>
-          <div class="dashboard-stat-card"><div class="stat-header"><div class="stat-icon" style="background:rgba(59,130,246,0.1);color:#3b82f6"><i class="fas fa-user-check"></i></div></div><div class="stat-value">220</div><div class="stat-label">Active Students</div></div>
-          <div class="dashboard-stat-card"><div class="stat-header"><div class="stat-icon" style="background:rgba(34,197,94,0.1);color:#22c55e"><i class="fas fa-user-check"></i></div></div><div class="stat-value">14</div><div class="stat-label">Active Mentors</div></div>
-          <div class="dashboard-stat-card"><div class="stat-header"><div class="stat-icon" style="background:rgba(168,85,247,0.1);color:#a855f7"><i class="fas fa-fire"></i></div></div><div class="stat-value">48</div><div class="stat-label">Total Challenges</div></div>
-          <div class="dashboard-stat-card"><div class="stat-header"><div class="stat-icon" style="background:rgba(245,158,11,0.1);color:#f59e0b"><i class="fas fa-clock"></i></div></div><div class="stat-value">12</div><div class="stat-label">Pending Submissions</div></div>
-        </div>
-        <div class="dashboard-grid">
-          <div class="dashboard-section"><div class="dashboard-section-header"><h3>Recent Registrations</h3></div><div class="dashboard-section-body no-padding">
-            <div class="student-list-item"><div class="student-avatar">KP</div><div class="student-info"><div class="student-name">Kavya Patel</div><div class="student-meta">B.Tech CSE &middot; 1st Year &middot; Sep 20</div></div><span class="student-status status-active">New</span></div>
-            <div class="student-list-item"><div class="student-avatar">DM</div><div class="student-info"><div class="student-name">Deepak Mishra</div><div class="student-meta">B.Tech IT &middot; 2nd Year &middot; Sep 19</div></div><span class="student-status status-active">New</span></div>
-            <div class="student-list-item"><div class="student-avatar">AS</div><div class="student-info"><div class="student-name">Ananya Singh</div><div class="student-meta">B.Tech CSE &middot; 3rd Year &middot; Sep 18</div></div><span class="student-status status-active">New</span></div>
-          </div></div>
+
+        <div class="sub-page active" id="coord-dashboard">
+          <div class="dashboard-header"><h1>Coordinator Dashboard</h1><p>Complete overview of the PEC community.</p></div>
+          <div class="dashboard-stats">
+          <div class="dashboard-stat-card"><div class="stat-header"><div class="stat-icon" style="background:rgba(59,130,246,0.1);color:#3b82f6"><i class="fas fa-user-graduate"></i></div></div><div class="stat-value">0</div><div class="stat-label">Total Students</div></div>
+          <div class="dashboard-stat-card"><div class="stat-header"><div class="stat-icon" style="background:rgba(34,197,94,0.1);color:#22c55e"><i class="fas fa-chalkboard-teacher"></i></div></div><div class="stat-value">0</div><div class="stat-label">Total Mentors</div></div>
+          <div class="dashboard-stat-card"><div class="stat-header"><div class="stat-icon" style="background:rgba(59,130,246,0.1);color:#3b82f6"><i class="fas fa-user-check"></i></div></div><div class="stat-value">0</div><div class="stat-label">Active Students</div></div>
+          <div class="dashboard-stat-card"><div class="stat-header"><div class="stat-icon" style="background:rgba(34,197,94,0.1);color:#22c55e"><i class="fas fa-user-check"></i></div></div><div class="stat-value">0</div><div class="stat-label">Assigned Mentees</div></div>
+          <div class="dashboard-stat-card"><div class="stat-header"><div class="stat-icon" style="background:rgba(168,85,247,0.1);color:#a855f7"><i class="fas fa-user-clock"></i></div></div><div class="stat-value">0</div><div class="stat-label">Unassigned Students</div></div>
+          <div class="dashboard-stat-card"><div class="stat-header"><div class="stat-icon" style="background:rgba(245,158,11,0.1);color:#f59e0b"><i class="fas fa-clock"></i></div></div><div class="stat-value">0</div><div class="stat-label">Pending Submissions</div></div>
+          </div>
+          <div class="dashboard-grid">
+          <div class="dashboard-section"><div class="dashboard-section-header"><h3>Recent Registrations</h3></div><div class="dashboard-section-body no-padding"><div id="coordinator-recent-students"><p class="empty-state">Loading registrations...</p></div></div></div>
           <div class="dashboard-section"><div class="dashboard-section-header"><h3>Recent Submissions</h3></div><div class="dashboard-section-body no-padding">
             <div class="student-list-item"><div class="student-avatar">AK</div><div class="student-info"><div class="student-name">Binary Search Implementation</div><div class="student-meta">Arjun Kumar &middot; Sep 20</div></div><span class="student-status status-pending">Review</span></div>
             <div class="student-list-item"><div class="student-avatar">PS</div><div class="student-info"><div class="student-name">React Dashboard Project</div><div class="student-meta">Priya Sharma &middot; Sep 19</div></div><span class="student-status status-active">Accepted</span></div>
@@ -848,32 +756,22 @@
           </div></div>
         </div>
       </div>
-      <div class="sub-page" id="coord-students"><div class="dashboard-header"><h1>Students</h1></div><div style="display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap;"><input type="text" class="form-input" placeholder="Search students..." style="flex:1;min-width:200px;"><select class="form-input" style="width:auto;"><option>All Mentors</option></select><select class="form-input" style="width:auto;"><option>All Status</option></select></div><div class="dashboard-section"><div class="dashboard-section-body no-padding"><table class="dashboard-table"><thead><tr><th>Name</th><th>Email</th><th>Mentor</th><th>Progress</th><th>Status</th><th>Actions</th></tr></thead><tbody>
-        <tr><td><div style="display:flex;align-items:center;gap:8px;"><div class="student-avatar" style="width:28px;height:28px;font-size:11px;">AK</div>Arjun Kumar</div></td><td>arjun@pec.edu</td><td>Rahul Verma</td><td>75%</td><td><span class="student-status status-active">Active</span></td><td><button class="btn btn-sm btn-ghost">View</button></td></tr>
-        <tr><td><div style="display:flex;align-items:center;gap:8px;"><div class="student-avatar" style="width:28px;height:28px;font-size:11px;">PS</div>Priya Sharma</div></td><td>priya@pec.edu</td><td>Rahul Verma</td><td>60%</td><td><span class="student-status status-active">Active</span></td><td><button class="btn btn-sm btn-ghost">View</button></td></tr>
-        <tr><td><div style="display:flex;align-items:center;gap:8px;"><div class="student-avatar" style="width:28px;height:28px;font-size:11px;">RK</div>Rohan Khanna</div></td><td>rohan@pec.edu</td><td>Sneha Patel</td><td>92%</td><td><span class="student-status status-active">Active</span></td><td><button class="btn btn-sm btn-ghost">View</button></td></tr>
-        <tr><td><div style="display:flex;align-items:center;gap:8px;"><div class="student-avatar" style="width:28px;height:28px;font-size:11px;">NM</div>Neha Mehta</div></td><td>neha@pec.edu</td><td>Rahul Verma</td><td>45%</td><td><span class="student-status status-pending">Pending</span></td><td><button class="btn btn-sm btn-ghost">View</button></td></tr>
-        <tr><td><div style="display:flex;align-items:center;gap:8px;"><div class="student-avatar" style="width:28px;height:28px;font-size:11px;">VT</div>Vikram Tiwari</div></td><td>vikram@pec.edu</td><td>Amit Singh</td><td>55%</td><td><span class="student-status status-active">Active</span></td><td><button class="btn btn-sm btn-ghost">View</button></td></tr>
-        <tr><td><div style="display:flex;align-items:center;gap:8px;"><div class="student-avatar" style="width:28px;height:28px;font-size:11px;">SG</div>Sanjay Gupta</div></td><td>sanjay@pec.edu</td><td>Sneha Patel</td><td>70%</td><td><span class="student-status status-active">Active</span></td><td><button class="btn btn-sm btn-ghost">View</button></td></tr>
-        <tr><td><div style="display:flex;align-items:center;gap:8px;"><div class="student-avatar" style="width:28px;height:28px;font-size:11px;">MJ</div>Meera Joshi</div></td><td>meera@pec.edu</td><td>Amit Singh</td><td>68%</td><td><span class="student-status status-active">Active</span></td><td><button class="btn btn-sm btn-ghost">View</button></td></tr>
-        <tr><td><div style="display:flex;align-items:center;gap:8px;"><div class="student-avatar" style="width:28px;height:28px;font-size:11px;">AR</div>Aditya Rao</div></td><td>aditya@pec.edu</td><td>Deepa Nair</td><td>62%</td><td><span class="student-status status-active">Active</span></td><td><button class="btn btn-sm btn-ghost">View</button></td></tr>
-        <tr><td><div style="display:flex;align-items:center;gap:8px;"><div class="student-avatar" style="width:28px;height:28px;font-size:11px;">KS</div>Kavya Singh</div></td><td>kavya@pec.edu</td><td>Deepa Nair</td><td>50%</td><td><span class="student-status status-inactive">Inactive</span></td><td><button class="btn btn-sm btn-ghost">View</button></td></tr>
-        <tr><td><div style="display:flex;align-items:center;gap:8px;"><div class="student-avatar" style="width:28px;height:28px;font-size:11px;">DN</div>Deepak Nair</div></td><td>deepak@pec.edu</td><td>Karan Malhotra</td><td>40%</td><td><span class="student-status status-inactive">Inactive</span></td><td><button class="btn btn-sm btn-ghost">View</button></td></tr>
-      </tbody></table></div></div></div>
-      <div class="sub-page" id="coord-mentors"><div class="dashboard-header"><h1>Mentors</h1></div><div class="dashboard-section"><div class="dashboard-section-body no-padding"><table class="dashboard-table"><thead><tr><th>Name</th><th>Email</th><th>Mentees</th><th>Specialization</th><th>Status</th><th>Actions</th></tr></thead><tbody>
-        <tr><td><div style="display:flex;align-items:center;gap:8px;"><div class="student-avatar" style="width:28px;height:28px;font-size:11px;">RV</div>Rahul Verma</div></td><td>rahul@pec.edu</td><td>8</td><td>DSA</td><td><span class="student-status status-active">Active</span></td><td><button class="btn btn-sm btn-ghost">View</button></td></tr>
-        <tr><td><div style="display:flex;align-items:center;gap:8px;"><div class="student-avatar" style="width:28px;height:28px;font-size:11px;">SP</div>Sneha Patel</div></td><td>sneha@pec.edu</td><td>6</td><td>System Design</td><td><span class="student-status status-active">Active</span></td><td><button class="btn btn-sm btn-ghost">View</button></td></tr>
-        <tr><td><div style="display:flex;align-items:center;gap:8px;"><div class="student-avatar" style="width:28px;height:28px;font-size:11px;">AS</div>Amit Singh</div></td><td>amit@pec.edu</td><td>7</td><td>Web Dev</td><td><span class="student-status status-active">Active</span></td><td><button class="btn btn-sm btn-ghost">View</button></td></tr>
-        <tr><td><div style="display:flex;align-items:center;gap:8px;"><div class="student-avatar" style="width:28px;height:28px;font-size:11px;">DN</div>Deepa Nair</div></td><td>deepa@pec.edu</td><td>5</td><td>Data Science</td><td><span class="student-status status-active">Active</span></td><td><button class="btn btn-sm btn-ghost">View</button></td></tr>
-        <tr><td><div style="display:flex;align-items:center;gap:8px;"><div class="student-avatar" style="width:28px;height:28px;font-size:11px;">KM</div>Karan Malhotra</div></td><td>karan@pec.edu</td><td>4</td><td>DevOps</td><td><span class="student-status status-inactive">Inactive</span></td><td><button class="btn btn-sm btn-ghost">View</button></td></tr>
-      </tbody></table></div></div></div>
-      <div class="sub-page" id="coord-allocations"><div class="dashboard-header"><h1>Mentor Allocation</h1></div><div style="margin-bottom:16px;"><button class="btn btn-primary"><i class="fas fa-plus"></i> New Assignment</button></div><div class="dashboard-section"><div class="dashboard-section-body no-padding"><table class="dashboard-table"><thead><tr><th>Student</th><th>Mentor</th><th>Since</th><th>Status</th><th>Actions</th></tr></thead><tbody>
-        <tr><td>Arjun Kumar</td><td>Rahul Verma</td><td>Aug 1</td><td><span class="student-status status-active">Active</span></td><td><button class="btn btn-sm btn-ghost">Reassign</button></td></tr>
-        <tr><td>Priya Sharma</td><td>Rahul Verma</td><td>Aug 5</td><td><span class="student-status status-active">Active</span></td><td><button class="btn btn-sm btn-ghost">Reassign</button></td></tr>
-        <tr><td>Rohan Khanna</td><td>Sneha Patel</td><td>Jul 20</td><td><span class="student-status status-active">Active</span></td><td><button class="btn btn-sm btn-ghost">Reassign</button></td></tr>
-        <tr><td>Neha Mehta</td><td>Rahul Verma</td><td>Sep 1</td><td><span class="student-status status-pending">Pending</span></td><td><button class="btn btn-sm btn-ghost">Reassign</button></td></tr>
-        <tr><td>Vikram Tiwari</td><td>Amit Singh</td><td>Aug 10</td><td><span class="student-status status-active">Active</span></td><td><button class="btn btn-sm btn-ghost">Reassign</button></td></tr>
-      </tbody></table></div></div></div>
+      <div class="sub-page" id="coord-students"><div class="dashboard-header"><h1>Students</h1></div><div class="dashboard-section"><div class="dashboard-section-body no-padding"><table class="dashboard-table"><thead><tr><th>Name</th><th>Student ID</th><th>Email</th><th>Enrollment Number</th><th>Branch</th><th>Year</th><th>Mentor</th></tr></thead><tbody id="coordinator-students"><tr><td colspan="7" class="empty-state">Loading students...</td></tr></tbody></table></div></div></div>
+      <div class="sub-page" id="coord-mentors"><div class="dashboard-header"><h1>Mentors</h1></div><div class="dashboard-section"><div class="dashboard-section-body no-padding"><table class="dashboard-table"><thead><tr><th>Name</th><th>Mentor ID</th><th>Email</th><th>Department</th><th>Designation</th><th>Group</th><th>Mentees</th></tr></thead><tbody id="coordinator-mentors"><tr><td colspan="7" class="empty-state">Loading mentors...</td></tr></tbody></table></div></div></div>
+      <div class="sub-page" id="coord-allocations">
+        <div class="dashboard-header"><h1>Mentor Allocation</h1><p>Assign registered students to registered mentors.</p></div>
+        <div class="dashboard-section" style="margin-bottom:16px;">
+          <div class="dashboard-section-header"><h3>Assign Mentee</h3></div>
+          <div class="dashboard-section-body">
+            <form id="mentor-assignment-form" style="display:flex;gap:12px;align-items:end;flex-wrap:wrap;">
+              <label style="display:grid;gap:6px;flex:1;min-width:220px;">Select Mentor<select id="assignment-mentor" class="form-input" required><option value="">Loading mentors...</option></select></label>
+              <label style="display:grid;gap:6px;flex:1;min-width:220px;">Select Student<select id="assignment-student" class="form-input" required><option value="">Loading students...</option></select></label>
+              <button class="btn btn-primary" type="submit">Assign Mentee</button>
+            </form>
+          </div>
+        </div>
+        <div class="dashboard-section"><div class="dashboard-section-header"><h3>Current Assignments</h3></div><div class="dashboard-section-body no-padding"><table class="dashboard-table"><thead><tr><th>Student</th><th>Student ID</th><th>Mentor</th><th>Mentor ID</th><th>Assigned</th><th>Actions</th></tr></thead><tbody id="coordinator-assignments"><tr><td colspan="6" class="empty-state">Loading assignments...</td></tr></tbody></table></div></div>
+      </div>
       <div class="sub-page" id="coord-challenges"><div class="dashboard-header"><h1>Challenges</h1></div><div style="margin-bottom:16px;"><button class="btn btn-primary"><i class="fas fa-plus"></i> Create Challenge</button></div><div class="dashboard-section"><div class="dashboard-section-body no-padding"><table class="dashboard-table"><thead><tr><th>Challenge</th><th>Difficulty</th><th>Points</th><th>Deadline</th><th>Submissions</th><th>Status</th><th>Actions</th></tr></thead><tbody>
         <tr><td>Implement LRU Cache</td><td><span class="chip" style="background:rgba(239,68,68,0.1);color:#ef4444;border:none;font-size:11px;">Hard</span></td><td>50</td><td>Sep 26</td><td>12</td><td><span class="student-status status-active">Active</span></td><td><button class="btn btn-sm btn-ghost">Edit</button></td></tr>
         <tr><td>Binary Search Variants</td><td><span class="chip" style="background:rgba(245,158,11,0.1);color:#f59e0b;border:none;font-size:11px;">Medium</span></td><td>30</td><td>Sep 28</td><td>8</td><td><span class="student-status status-active">Active</span></td><td><button class="btn btn-sm btn-ghost">Edit</button></td></tr>
