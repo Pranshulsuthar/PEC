@@ -19,6 +19,22 @@ async function init() {
       await pool.query(statement);
     }
 
+    await pool.query(`CREATE TABLE IF NOT EXISTS resources (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      title VARCHAR(255) NOT NULL,
+      description TEXT NULL,
+      resource_type ENUM('document','video','link','tutorial','pdf','github') NOT NULL,
+      resource_url VARCHAR(500) NOT NULL,
+      category VARCHAR(100) NULL,
+      uploaded_by INT NOT NULL,
+      status ENUM('draft','published','archived') DEFAULT 'draft',
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      FOREIGN KEY (uploaded_by) REFERENCES users(id) ON DELETE CASCADE,
+      INDEX idx_res_uploader (uploaded_by),
+      INDEX idx_res_status (status)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`);
+
     await pool.query('ALTER TABLE student_profiles ADD COLUMN IF NOT EXISTS phone VARCHAR(20) NULL');
     await pool.query('ALTER TABLE student_profiles ADD COLUMN IF NOT EXISTS year INT NULL');
     await pool.query('ALTER TABLE mentor_profiles ADD COLUMN IF NOT EXISTS specialization VARCHAR(200) NULL');

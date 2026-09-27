@@ -4,7 +4,7 @@ const eventController = require('../controllers/eventController');
 const { allowRoles } = require('../middleware/roleMiddleware');
 
 router.get('/', allowRoles('coordinator'), eventController.getAll);
-router.get('/:id', eventController.getById);
+router.get('/:id', allowRoles('coordinator'), eventController.getById);
 router.post('/', allowRoles('coordinator'), eventController.create);
 router.put('/:id', allowRoles('coordinator'), eventController.update);
 router.delete('/:id', allowRoles('coordinator'), eventController.delete);

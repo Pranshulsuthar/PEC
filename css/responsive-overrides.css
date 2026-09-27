@@ -5,6 +5,45 @@ html {
   scroll-padding-top: var(--nav-height);
 }
 
+.pec-floating-link {
+  position: fixed;
+  right: 22px;
+  bottom: 22px;
+  z-index: 950;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: var(--tangerine);
+  color: #fff;
+  box-shadow: var(--shadow-lg);
+  text-decoration: none;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+.pec-floating-link:hover {
+  background: var(--tangerine-dark);
+  box-shadow: var(--shadow-xl);
+  transform: translateY(-3px);
+}
+
+.pec-floating-link:focus-visible {
+  outline: 3px solid var(--text-primary);
+  outline-offset: 3px;
+}
+
+@media (max-width: 600px) {
+  .pec-floating-link {
+    right: 16px;
+    bottom: 16px;
+    width: 44px;
+    height: 44px;
+  }
+}
+
 section[id] {
   scroll-margin-top: calc(var(--nav-height) + 18px);
 }

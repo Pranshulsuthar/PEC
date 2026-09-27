@@ -2,26 +2,32 @@ const pool = require('../config/db');
 
 exports.getAllStudents = async (req, res) => {
   try {
+    if (req.user.role !== 'coordinator') return res.status(403).json({ success: false, message: 'Coordinator access required' });
     const [rows] = await pool.query(`
        SELECT u.id AS student_id, sp.student_code, u.name, u.email, sp.roll_number, sp.branch, sp.year, sp.skills,
-              ms.id AS assignment_id, ms.mentor_id, mp.mentor_code, mentor.name AS mentor_name
+              assignment.id AS assignment_id, assignment.mentor_id, mp.mentor_code, mentor.name AS mentor_name
       FROM users u LEFT JOIN student_profiles sp ON sp.user_id = u.id
-      LEFT JOIN mentor_student ms ON ms.student_id = u.id AND ms.status = 'active'
-       LEFT JOIN users mentor ON mentor.id = ms.mentor_id AND mentor.role = 'mentor'
+      LEFT JOIN mentor_student assignment ON assignment.id = (
+        SELECT ms.id FROM mentor_student ms JOIN users assigned_mentor ON assigned_mentor.id = ms.mentor_id AND assigned_mentor.role = 'mentor'
+        WHERE ms.student_id = u.id AND ms.status = 'active' ORDER BY ms.assigned_at DESC, ms.id DESC LIMIT 1
+      )
+       LEFT JOIN users mentor ON mentor.id = assignment.mentor_id AND mentor.role = 'mentor'
        LEFT JOIN mentor_profiles mp ON mp.user_id = mentor.id
        WHERE u.role = 'student' ORDER BY u.name
-    `);
+     `);
     res.json({ success: true, students: rows });
   } catch (err) { console.error(err); res.status(500).json({ success: false, message: 'Server error' }); }
 };
 
 exports.getAllMentors = async (req, res) => {
   try {
+    if (req.user.role !== 'coordinator') return res.status(403).json({ success: false, message: 'Coordinator access required' });
     const [rows] = await pool.query(`
        SELECT u.id AS mentor_id, mp.mentor_code, u.name, u.email, mp.specialization, mp.department, mp.group_id, mp.group_name,
-              mp.designation, COUNT(ms.student_id) AS assigned_students
+              mp.designation, COUNT(DISTINCT student.id) AS assigned_students
       FROM users u LEFT JOIN mentor_profiles mp ON mp.user_id = u.id
       LEFT JOIN mentor_student ms ON ms.mentor_id = u.id AND ms.status = 'active'
+      LEFT JOIN users student ON student.id = ms.student_id AND student.role = 'student' AND ms.status = 'active'
       WHERE u.role = 'mentor' GROUP BY u.id, u.name, u.email, mp.mentor_code, mp.specialization, mp.department, mp.group_id, mp.group_name, mp.designation
       ORDER BY u.name
     `);
@@ -31,6 +37,7 @@ exports.getAllMentors = async (req, res) => {
 
 exports.getEvents = async (req, res) => {
   try {
+    if (req.user.role !== 'coordinator') return res.status(403).json({ success: false, message: 'Coordinator access required' });
     const [events] = await pool.query('SELECT e.*, \'Event\' AS category FROM events e ORDER BY e.event_date ASC, e.start_time ASC');
     res.json({ success: true, events });
   } catch (err) { console.error(err); res.status(500).json({ success: false, message: 'Server error' }); }
@@ -38,6 +45,7 @@ exports.getEvents = async (req, res) => {
 
 exports.getSubmissions = async (req, res) => {
   try {
+    if (req.user.role !== 'coordinator') return res.status(403).json({ success: false, message: 'Coordinator access required' });
     const [rows] = await pool.query(`SELECT ts.id, ts.task_id, ts.student_id, ts.submission_text, ts.submission_url, ts.submitted_at, ts.status, ts.score, ts.feedback, t.title, t.description AS challenge_description, t.max_score, u.name AS student_name, sp.student_code, mu.name AS mentor_name FROM task_submissions ts JOIN tasks t ON t.id = ts.task_id JOIN users u ON u.id = ts.student_id AND u.role = 'student' LEFT JOIN student_profiles sp ON sp.user_id = u.id LEFT JOIN mentor_student ms ON ms.student_id = u.id AND ms.status = 'active' LEFT JOIN users mu ON mu.id = ms.mentor_id AND mu.role = 'mentor' ORDER BY ts.submitted_at DESC`);
     res.json({ success: true, submissions: rows });
   } catch (err) { console.error(err); res.status(500).json({ success: false, message: 'Server error' }); }
@@ -45,6 +53,7 @@ exports.getSubmissions = async (req, res) => {
 
 exports.getLeaderboard = async (req, res) => {
   try {
+    if (req.user.role !== 'coordinator') return res.status(403).json({ success: false, message: 'Coordinator access required' });
     const [rows] = await pool.query(`SELECT u.id AS student_id, u.name AS student_name, sp.student_code, mentor.name AS mentor_name, COUNT(DISTINCT CASE WHEN ts.status = 'accepted' THEN ts.task_id END) AS challenges_completed, COALESCE(SUM(CASE WHEN ts.status = 'accepted' THEN ts.score ELSE 0 END), 0) AS points FROM users u LEFT JOIN student_profiles sp ON sp.user_id = u.id LEFT JOIN task_submissions ts ON ts.student_id = u.id LEFT JOIN mentor_student ms ON ms.student_id = u.id AND ms.status = 'active' LEFT JOIN users mentor ON mentor.id = ms.mentor_id AND mentor.role = 'mentor' WHERE u.role = 'student' GROUP BY u.id, u.name, sp.student_code, mentor.name HAVING challenges_completed > 0 OR points > 0 ORDER BY points DESC, challenges_completed DESC, u.name`);
     res.json({ success: true, leaderboard: rows });
   } catch (err) { console.error(err); res.status(500).json({ success: false, message: 'Server error' }); }
@@ -52,7 +61,8 @@ exports.getLeaderboard = async (req, res) => {
 
 exports.getResources = async (req, res) => {
   try {
-    const [rows] = await pool.query(`SELECT id, title, description, resource_type, resource_url, category, status, created_at FROM resources WHERE status <> 'archived' ORDER BY created_at DESC`);
+    if (req.user.role !== 'coordinator') return res.status(403).json({ success: false, message: 'Coordinator access required' });
+    const [rows] = await pool.query(`SELECT id, title, description, resource_type, resource_url, category, status, created_at FROM resources ORDER BY created_at DESC`);
     res.json({ success: true, resources: rows });
   } catch (err) { console.error(err); res.status(500).json({ success: false, message: 'Server error' }); }
 };
@@ -69,7 +79,7 @@ exports.createResource = async (req, res) => {
 
 exports.deleteResource = async (req, res) => {
   try {
-    const [result] = await pool.query("UPDATE resources SET status = 'archived' WHERE id = ?", [req.params.id]);
+    const [result] = await pool.query('DELETE FROM resources WHERE id = ?', [req.params.id]);
     if (!result.affectedRows) return res.status(404).json({ success: false, message: 'Resource not found' });
     res.json({ success: true });
   } catch (err) { console.error(err); res.status(500).json({ success: false, message: 'Server error' }); }
@@ -266,6 +276,7 @@ exports.deleteEvent = async (req, res) => {
 
 exports.getNews = async (req, res) => {
   try {
+    if (req.user.role !== 'coordinator') return res.status(403).json({ success: false, message: 'Coordinator access required' });
     const [news] = await pool.query('SELECT * FROM news ORDER BY created_at DESC');
     res.json({ success: true, news });
   } catch (err) { console.error(err); res.status(500).json({ success: false, message: 'Server error' }); }
@@ -276,20 +287,18 @@ exports.getDashboard = async (req, res) => {
     if (req.user.role !== 'coordinator') return res.status(403).json({ success: false, message: 'Coordinator access required' });
     const [[students]] = await pool.query("SELECT COUNT(*) AS count FROM users WHERE role = 'student'");
     const [[mentors]] = await pool.query("SELECT COUNT(*) AS count FROM users WHERE role = 'mentor'");
-    const [[tasks]] = await pool.query("SELECT COUNT(*) AS count FROM tasks WHERE status = 'published'");
+    const [[tasks]] = await pool.query("SELECT COUNT(*) AS count FROM tasks WHERE status <> 'archived'");
     const [[events]] = await pool.query("SELECT COUNT(*) AS count FROM events WHERE event_date >= CURDATE() AND status = 'published'");
     const [[assigned]] = await pool.query("SELECT COUNT(DISTINCT ms.student_id) AS count FROM mentor_student ms JOIN users student ON student.id = ms.student_id AND student.role = 'student' JOIN users mentor ON mentor.id = ms.mentor_id AND mentor.role = 'mentor' WHERE ms.status = 'active'");
     const [[unassigned]] = await pool.query("SELECT COUNT(*) AS count FROM users u WHERE u.role = 'student' AND NOT EXISTS (SELECT 1 FROM mentor_student ms JOIN users mentor ON mentor.id = ms.mentor_id AND mentor.role = 'mentor' WHERE ms.student_id = u.id AND ms.status = 'active')");
     const [[submissions]] = await pool.query('SELECT COUNT(*) AS count FROM task_submissions');
     const [[pendingSubmissions]] = await pool.query("SELECT COUNT(*) AS count FROM task_submissions WHERE status = 'submitted'");
-    const [[newsCount]] = await pool.query("SELECT COUNT(*) AS count FROM news WHERE status <> 'archived'");
+    const [[newsCount]] = await pool.query("SELECT COUNT(*) AS count FROM news WHERE status = 'published'");
     const [[resourcesCount]] = await pool.query("SELECT COUNT(*) AS count FROM resources WHERE status <> 'archived'");
     const [[publishedEvents]] = await pool.query("SELECT COUNT(*) AS count FROM events WHERE status = 'published' AND event_date >= CURDATE()");
-    const [activity] = await pool.query('SELECT * FROM activity_logs ORDER BY created_at DESC LIMIT 8');
-     const [news] = await pool.query("SELECT id, title, content, category, status, created_at, published_at FROM news WHERE status = 'published' ORDER BY created_at DESC LIMIT 8");
     const [recentStudents] = await pool.query("SELECT u.id, u.name, u.email, sp.student_code, sp.branch, sp.year, u.created_at FROM users u LEFT JOIN student_profiles sp ON sp.user_id = u.id WHERE u.role = 'student' ORDER BY u.created_at DESC LIMIT 6");
     const [recentSubmissions] = await pool.query("SELECT ts.id, ts.status, ts.submitted_at, ts.score, t.title, u.name AS student_name FROM task_submissions ts JOIN tasks t ON t.id = ts.task_id JOIN users u ON u.id = ts.student_id ORDER BY ts.submitted_at DESC LIMIT 5");
     const [upcomingEvents] = await pool.query("SELECT * FROM events WHERE status = 'published' AND event_date >= CURDATE() ORDER BY event_date ASC LIMIT 5");
-    res.json({ success: true, stats: { students: Number(students.count), mentors: Number(mentors.count), assignedMentees: Number(assigned.count), unassignedStudents: Number(unassigned.count), tasks: Number(tasks.count), submissions: Number(submissions.count), pendingSubmissions: Number(pendingSubmissions.count), events: Number(publishedEvents.count), upcomingEvents: Number(events.count), news: Number(newsCount.count), resources: Number(resourcesCount.count) }, activity, news, recentStudents, recentSubmissions, upcomingEvents });
+    res.json({ success: true, stats: { students: Number(students.count), mentors: Number(mentors.count), assignedMentees: Number(assigned.count), unassignedStudents: Number(unassigned.count), tasks: Number(tasks.count), submissions: Number(submissions.count), pendingSubmissions: Number(pendingSubmissions.count), events: Number(publishedEvents.count), upcomingEvents: Number(events.count), news: Number(newsCount.count), resources: Number(resourcesCount.count) }, recentStudents, recentSubmissions, upcomingEvents });
   } catch (err) { console.error(err); res.status(500).json({ success: false, message: 'Server error' }); }
 };

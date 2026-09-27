@@ -96,34 +96,25 @@
     </aside>
     <div class="sidebar-overlay" onclick="this.classList.remove('active');this.previousElementSibling.classList.remove('active')"></div>
     <main class="dashboard-main">
-      <div class="dashboard-topbar"><button type="button" class="dashboard-global-back" data-dashboard-back><i class="fas fa-arrow-left"></i> Back</button><a href="../index.html" class="dashboard-topbar-brand"><span class="dashboard-topbar-logo">P</span><span>PEC</span></a><span class="dashboard-topbar-context" data-role-context>Portal</span><div class="dashboard-topbar-actions"><button type="button" class="mobile-hamburger" data-dashboard-sidebar-toggle aria-label="Toggle sidebar"><i class="fas fa-bars"></i></button><button type="button" class="theme-toggle" aria-label="Switch theme" title="Switch theme"><span aria-hidden="true">☾</span></button></div></div>
+      <div class="dashboard-topbar"><button type="button" class="dashboard-global-back" data-dashboard-back aria-label="Back"><i class="fas fa-arrow-left"></i><span>Back</span></button><div class="dashboard-topbar-branding"><a href="../index.html" class="dashboard-topbar-brand"><span class="dashboard-topbar-logo">P</span><span>PEC</span></a><span class="dashboard-topbar-context" data-role-context>Portal</span></div><div class="dashboard-topbar-actions"><button type="button" class="mobile-hamburger" data-dashboard-sidebar-toggle aria-label="Toggle sidebar"><i class="fas fa-bars"></i></button><button type="button" class="theme-toggle" aria-label="Switch theme" title="Switch theme"><span aria-hidden="true">☾</span></button></div></div>
 
 
       <!-- Student Dashboard -->
       <div class="sub-page active" id="student-dashboard">
         <div class="dashboard-header dashboard-student-header"><h1>Good Evening, <span class="user-name">Student</span></h1><p>Here's your current PEC activity overview.</p></div>
         <div class="dashboard-stats">
-          <div class="dashboard-stat-card"><div class="stat-header"><div class="stat-icon" style="background:rgba(59,130,246,0.1);color:#3b82f6"><i class="fas fa-fire"></i></div></div><div class="stat-value">0</div><div class="stat-label">Total Tasks</div></div>
-          <div class="dashboard-stat-card"><div class="stat-header"><div class="stat-icon" style="background:rgba(34,197,94,0.1);color:#22c55e"><i class="fas fa-check-circle"></i></div></div><div class="stat-value">0</div><div class="stat-label">Completed</div></div>
-          <div class="dashboard-stat-card"><div class="stat-header"><div class="stat-icon" style="background:rgba(245,158,11,0.1);color:#f59e0b"><i class="fas fa-bolt"></i></div></div><div class="stat-value">0</div><div class="stat-label">Current Streak</div></div>
-          <div class="dashboard-stat-card"><div class="stat-header"><div class="stat-icon" style="background:rgba(168,85,247,0.1);color:#a855f7"><i class="fas fa-medal"></i></div></div><div class="stat-value">0</div><div class="stat-label">Rank</div></div>
+          <div class="dashboard-stat-card"><div class="stat-header"><div class="stat-icon" style="background:rgba(59,130,246,0.1);color:#3b82f6"><i class="fas fa-fire"></i></div></div><div class="stat-value student-dashboard-total-tasks">0</div><div class="stat-label">Total Tasks</div></div>
+          <div class="dashboard-stat-card"><div class="stat-header"><div class="stat-icon" style="background:rgba(34,197,94,0.1);color:#22c55e"><i class="fas fa-check-circle"></i></div></div><div class="stat-value student-dashboard-completed">0</div><div class="stat-label">Completed</div></div>
+          <div class="dashboard-stat-card"><div class="stat-header"><div class="stat-icon" style="background:rgba(245,158,11,0.1);color:#f59e0b"><i class="fas fa-bolt"></i></div></div><div class="stat-value student-dashboard-streak">0</div><div class="stat-label">Current Streak</div></div>
+          <div class="dashboard-stat-card"><div class="stat-header"><div class="stat-icon" style="background:rgba(168,85,247,0.1);color:#a855f7"><i class="fas fa-medal"></i></div></div><div class="stat-value student-dashboard-rank">—</div><div class="stat-label">Rank</div></div>
         </div>
         <div class="dashboard-grid">
-          <div class="dashboard-section"><div class="dashboard-section-header"><h3>Overall Progress</h3></div><div class="dashboard-section-body">
-            <div class="progress-bar-container"><div class="progress-header"><span class="progress-label">Overall Completion</span><span class="progress-value">75%</span></div><div class="progress-bar"><div class="progress-fill blue" style="width:75%"></div></div></div>
-          </div></div>
-          <div class="dashboard-section"><div class="dashboard-section-header"><h3>Skill Progress</h3></div><div class="dashboard-section-body">
-            <div class="progress-bar-container"><div class="progress-header"><span class="progress-label">DSA</span><span class="progress-value">75%</span></div><div class="progress-bar"><div class="progress-fill blue" style="width:75%"></div></div></div>
-            <div class="progress-bar-container"><div class="progress-header"><span class="progress-label">Web Dev</span><span class="progress-value">60%</span></div><div class="progress-bar"><div class="progress-fill green" style="width:60%"></div></div></div>
-            <div class="progress-bar-container"><div class="progress-header"><span class="progress-label">Debugging</span><span class="progress-value">85%</span></div><div class="progress-bar"><div class="progress-fill purple" style="width:85%"></div></div></div>
-          </div></div>
+          <div class="dashboard-section"><div class="dashboard-section-header"><h3>Overall Progress</h3></div><div class="dashboard-section-body student-overall-progress"><p class="empty-state">Progress will appear as you complete assigned challenges.</p></div></div>
+           <div class="dashboard-section"><div class="dashboard-section-header"><h3>Activity</h3></div><div class="dashboard-section-body"><p class="empty-state">Activity chart will appear when attempt data is available.</p></div></div>
           <div class="dashboard-section"><div class="dashboard-section-header"><h3>Recent Submissions</h3></div><div class="dashboard-section-body no-padding student-dashboard-submissions"><p class="empty-state">Loading submissions...</p></div></div>
           <div class="dashboard-section"><div class="dashboard-section-header"><h3>Current Challenge</h3></div><div class="dashboard-section-body"><div class="student-current-challenge"><p class="empty-state">Loading your assigned challenges...</p></div></div></div>
           <div class="dashboard-section"><div class="dashboard-section-header"><h3>Assigned Mentor</h3></div><div class="dashboard-section-body"><div class="mentor-info-card student-mentor-card"><div class="mentor-avatar"><i class="fas fa-user-clock"></i></div><div><div class="mentor-name">No mentor assigned</div><div class="mentor-spec">A coordinator will assign your mentor.</div><div class="mentor-status">Waiting for assignment</div></div></div></div></div>
-          <div class="dashboard-section"><div class="dashboard-section-header"><h3>Upcoming Events</h3></div><div class="dashboard-section-body no-padding">
-            <div class="student-list-item"><div class="event-date-box"><span class="day">25</span><span class="month">Sep</span></div><div class="student-info"><div class="student-name">Tech Talk: System Design</div><div class="student-meta">Online &middot; 4:00 PM IST</div></div></div>
-            <div class="student-list-item"><div class="event-date-box" style="background:#22c55e;"><span class="day">30</span><span class="month">Sep</span></div><div class="student-info"><div class="student-name">Hackathon Kickoff</div><div class="student-meta">On-campus &middot; 10:00 AM IST</div></div></div>
-          </div></div>
+          <div class="dashboard-section"><div class="dashboard-section-header"><h3>Upcoming Events</h3></div><div class="dashboard-section-body no-padding student-upcoming-events"><p class="empty-state">Loading events...</p></div></div>
           <div class="dashboard-section"><div class="dashboard-section-header"><h3>Latest News</h3></div><div class="dashboard-section-body no-padding"><div class="dashboard-list"></div></div></div>
         </div>
       </div>
@@ -133,19 +124,19 @@
         <div class="dashboard-header"><h1>My Profile</h1></div>
         <div class="dashboard-grid">
           <div class="dashboard-section" style="grid-column:span 2;"><div class="dashboard-section-body">
-            <div style="display:flex;gap:24px;align-items:center;flex-wrap:wrap;">
-               <div class="user-avatar student-profile-avatar" style="width:80px;height:80px;font-size:32px;">ST</div>
-               <div><h2 class="student-profile-name" style="margin:0;">Student</h2><p class="student-profile-meta" style="color:var(--text-secondary);margin:4px 0;">Profile information not added yet</p><p class="student-profile-contact" style="color:var(--text-muted);font-size:13px;margin:0;">Student ID unavailable &middot; Email unavailable</p></div>
-            </div>
-          </div></div>
-          <div class="dashboard-section"><div class="dashboard-section-header"><h3>Stats</h3></div><div class="dashboard-section-body">
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;text-align:center;">
-              <div><div style="font-size:24px;font-weight:700;color:var(--primary);">24</div><div style="font-size:12px;color:var(--text-secondary);">Challenges</div></div>
-              <div><div style="font-size:24px;font-weight:700;color:#22c55e;">18</div><div style="font-size:12px;color:var(--text-secondary);">Completed</div></div>
-              <div><div style="font-size:24px;font-weight:700;color:#f59e0b;">#5</div><div style="font-size:12px;color:var(--text-secondary);">Rank</div></div>
-              <div><div style="font-size:24px;font-weight:700;color:#a855f7;">850</div><div style="font-size:12px;color:var(--text-secondary);">Points</div></div>
-            </div>
-          </div></div>
+             <div style="display:flex;gap:24px;align-items:center;flex-wrap:wrap;">
+                <div class="user-avatar student-profile-avatar" style="width:80px;height:80px;font-size:32px;">ST</div>
+                <div><h2 class="student-profile-name" style="margin:0;">Student</h2><p class="student-profile-meta" style="color:var(--text-secondary);margin:4px 0;">Profile information not added yet</p><p class="student-profile-contact" style="color:var(--text-muted);font-size:13px;margin:0;">Student ID unavailable &middot; Email unavailable</p></div>
+             </div>
+           </div></div>
+           <div class="dashboard-section"><div class="dashboard-section-header"><h3>Stats</h3></div><div class="dashboard-section-body">
+             <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;text-align:center;">
+               <div><div class="student-profile-challenges" style="font-size:24px;font-weight:700;color:var(--primary);">0</div><div style="font-size:12px;color:var(--text-secondary);">Challenges</div></div>
+               <div><div class="student-profile-completed" style="font-size:24px;font-weight:700;color:#22c55e;">0</div><div style="font-size:12px;color:var(--text-secondary);">Completed</div></div>
+               <div><div class="student-profile-rank" style="font-size:24px;font-weight:700;color:#f59e0b;">—</div><div style="font-size:12px;color:var(--text-secondary);">Rank</div></div>
+               <div><div class="student-profile-points" style="font-size:24px;font-weight:700;color:#a855f7;">0</div><div style="font-size:12px;color:var(--text-secondary);">Points</div></div>
+             </div>
+           </div></div>
           <div class="dashboard-section" style="grid-column:span 3;"><div class="dashboard-section-header"><h3>About</h3></div><div class="dashboard-section-body">
             <p>Passionate computer science student with a strong interest in data structures, algorithms, and web development. Actively participating in coding challenges and hackathons.</p>
             <div style="margin-top:16px;"><h4 style="margin-bottom:8px;">Skills</h4><div style="display:flex;gap:8px;flex-wrap:wrap;"><span class="chip active">C++</span><span class="chip active">Python</span><span class="chip active">JavaScript</span><span class="chip">React</span><span class="chip">Node.js</span><span class="chip">DSA</span></div></div>
@@ -228,10 +219,10 @@
           </div></div>
           <div class="dashboard-section" style="grid-column:span 2;"><div class="dashboard-section-header"><h3>Stats Summary</h3></div><div class="dashboard-section-body">
             <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;text-align:center;">
-              <div><div style="font-size:28px;font-weight:700;color:var(--primary);">24</div><div style="font-size:12px;color:var(--text-secondary);">Attempted</div></div>
-              <div><div style="font-size:28px;font-weight:700;color:#22c55e;">18</div><div style="font-size:12px;color:var(--text-secondary);">Completed</div></div>
-              <div><div style="font-size:28px;font-weight:700;color:#f59e0b;">850</div><div style="font-size:12px;color:var(--text-secondary);">Points</div></div>
-              <div><div style="font-size:28px;font-weight:700;color:#a855f7;">7 days</div><div style="font-size:12px;color:var(--text-secondary);">Streak</div></div>
+               <div><div class="student-stats-attempted" style="font-size:28px;font-weight:700;color:var(--primary);">0</div><div style="font-size:12px;color:var(--text-secondary);">Attempted</div></div>
+               <div><div class="student-stats-completed" style="font-size:28px;font-weight:700;color:#22c55e;">0</div><div style="font-size:12px;color:var(--text-secondary);">Completed</div></div>
+               <div><div class="student-stats-points" style="font-size:28px;font-weight:700;color:#f59e0b;">0</div><div style="font-size:12px;color:var(--text-secondary);">Points</div></div>
+               <div><div class="student-stats-streak" style="font-size:28px;font-weight:700;color:#a855f7;">0 days</div><div style="font-size:12px;color:var(--text-secondary);">Streak</div></div>
             </div>
           </div></div>
         </div>
@@ -381,7 +372,7 @@
     </aside>
     <div class="sidebar-overlay" onclick="this.classList.remove('active');this.previousElementSibling.classList.remove('active')"></div>
     <main class="dashboard-main">
-      <div class="dashboard-topbar"><button type="button" class="dashboard-global-back" data-dashboard-back><i class="fas fa-arrow-left"></i> Back</button><a href="../index.html" class="dashboard-topbar-brand"><span class="dashboard-topbar-logo">P</span><span>PEC</span></a><span class="dashboard-topbar-context" data-role-context>Portal</span><div class="dashboard-topbar-actions"><button type="button" class="mobile-hamburger" data-dashboard-sidebar-toggle aria-label="Toggle sidebar"><i class="fas fa-bars"></i></button><button type="button" class="theme-toggle" aria-label="Switch theme" title="Switch theme"><span aria-hidden="true">☾</span></button></div></div>
+      <div class="dashboard-topbar"><button type="button" class="dashboard-global-back" data-dashboard-back aria-label="Back"><i class="fas fa-arrow-left"></i><span>Back</span></button><div class="dashboard-topbar-branding"><a href="../index.html" class="dashboard-topbar-brand"><span class="dashboard-topbar-logo">P</span><span>PEC</span></a><span class="dashboard-topbar-context" data-role-context>Portal</span></div><div class="dashboard-topbar-actions"><button type="button" class="mobile-hamburger" data-dashboard-sidebar-toggle aria-label="Toggle sidebar"><i class="fas fa-bars"></i></button><button type="button" class="theme-toggle" aria-label="Switch theme" title="Switch theme"><span aria-hidden="true">☾</span></button></div></div>
 
 
       <!-- Mentor Dashboard -->
@@ -395,8 +386,9 @@
         </div>
         <div class="dashboard-grid">
           <div class="dashboard-section"><div class="dashboard-section-header"><h3>My Mentees</h3></div><div class="dashboard-section-body no-padding mentor-dashboard-mentees"><div class="student-list-item"><div class="student-info"><div class="student-name">No mentees assigned yet.</div><div class="student-meta">Coordinators can assign students from Mentor Allocation.</div></div></div></div></div>
-          <div class="dashboard-section"><div class="dashboard-section-header"><h3>Recent Submissions</h3></div><div class="dashboard-section-body no-padding"><p class="empty-state">No submissions from your mentees yet.</p></div></div>
-          <div class="dashboard-section"><div class="dashboard-section-header"><h3>Latest News</h3></div><div class="dashboard-section-body no-padding"><div class="dashboard-list"></div></div></div>
+          <div class="dashboard-section"><div class="dashboard-section-header"><h3>Recent Submissions</h3></div><div class="dashboard-section-body no-padding mentor-dashboard-submissions"><p class="empty-state">Loading submissions...</p></div></div>
+          <div class="dashboard-section"><div class="dashboard-section-header"><h3>Challenges I Created</h3></div><div class="dashboard-section-body no-padding mentor-dashboard-tasks"><p class="empty-state">Loading challenges...</p></div></div>
+          <div class="dashboard-section"><div class="dashboard-section-header"><h3>Pending Reviews</h3></div><div class="dashboard-section-body no-padding mentor-dashboard-reviews"><p class="empty-state">Loading pending reviews...</p></div></div>
         </div>
       </div>
 
@@ -416,26 +408,9 @@
            <div class="dashboard-section mentor-student-stats"><div class="dashboard-section-header"><h3>Stats</h3></div><div class="dashboard-section-body"><p class="empty-state">No student selected.</p></div></div>
            <div class="dashboard-section mentor-student-progress"><div class="dashboard-section-header"><h3>Progress</h3></div><div class="dashboard-section-body"><p class="empty-state">No progress data recorded yet.</p></div></div>
            <div class="dashboard-section mentor-student-notes" style="grid-column:span 3;"><div class="dashboard-section-header"><h3>Mentor Notes</h3></div><div class="dashboard-section-body"><p class="empty-state">No student selected.</p></div></div>
-           <div class="dashboard-section mentor-student-actions" style="grid-column:span 3;"><div class="dashboard-section-body" style="text-align:center;"><button class="btn btn-primary btn-lg" disabled><i class="fas fa-calendar-alt"></i> Schedule Meeting</button></div></div>
-            <div style="display:flex;gap:24px;align-items:center;flex-wrap:wrap;">
-              <div class="user-avatar" style="width:72px;height:72px;font-size:28px;">AK</div>
-              <div><h3 style="margin:0;">Arjun Kumar</h3><p style="color:var(--text-secondary);margin:4px 0;">Computer Science &middot; 3rd Year &middot; PEC2024001</p><p style="color:#22c55e;font-size:13px;margin:0;"><i class="fas fa-circle" style="font-size:8px;"></i> Active</p></div>
-            </div>
-          </div></div>
-          <div class="dashboard-section"><div class="dashboard-section-header"><h3>Stats</h3></div><div class="dashboard-section-body">
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;text-align:center;">
-              <div><div style="font-size:24px;font-weight:700;color:var(--primary);">24</div><div style="font-size:12px;color:var(--text-secondary);">Challenges</div></div>
-              <div><div style="font-size:24px;font-weight:700;color:#22c55e;">18</div><div style="font-size:12px;color:var(--text-secondary);">Completed</div></div>
-              <div><div style="font-size:24px;font-weight:700;color:#f59e0b;">#5</div><div style="font-size:12px;color:var(--text-secondary);">Rank</div></div>
-              <div><div style="font-size:24px;font-weight:700;color:#a855f7;">850</div><div style="font-size:12px;color:var(--text-secondary);">Points</div></div>
-            </div>
-          </div></div>
-          <div class="dashboard-section"><div class="dashboard-section-header"><h3>Progress</h3></div><div class="dashboard-section-body">
-            <div class="progress-bar-container"><div class="progress-header"><span class="progress-label">DSA</span><span class="progress-value">75%</span></div><div class="progress-bar"><div class="progress-fill blue" style="width:75%"></div></div></div>
-            <div class="progress-bar-container"><div class="progress-header"><span class="progress-label">Web Dev</span><span class="progress-value">60%</span></div><div class="progress-bar"><div class="progress-fill green" style="width:60%"></div></div></div>
-            <div class="progress-bar-container"><div class="progress-header"><span class="progress-label">Debugging</span><span class="progress-value">85%</span></div><div class="progress-bar"><div class="progress-fill purple" style="width:85%"></div></div></div>
-          </div></div>
-          <div class="dashboard-section" style="grid-column:span 3;"><div class="dashboard-section-header"><h3>Feedback Form</h3></div><div class="dashboard-section-body">
+            <div class="dashboard-section mentor-student-actions"><div class="dashboard-section-body" style="text-align:center;"><p class="empty-state">Meeting scheduling is not available yet.</p></div></div>
+          </div>
+          <div class="dashboard-section"><div class="dashboard-section-header"><h3>Feedback Form</h3></div><div class="dashboard-section-body">
             <div style="display:grid;gap:16px;">
               <div><label style="font-weight:500;font-size:13px;display:block;margin-bottom:4px;">Feedback</label><textarea class="form-input" rows="3" placeholder="Write feedback for this student..."></textarea></div>
               <div><label style="font-weight:500;font-size:13px;display:block;margin-bottom:4px;">Rating</label>
@@ -444,10 +419,7 @@
               <button class="btn btn-primary">Submit Feedback</button>
             </div>
           </div></div>
-          <div class="dashboard-section" style="grid-column:span 3;"><div class="dashboard-section-header"><h3>Mentor Notes</h3></div><div class="dashboard-section-body">
-            <p style="color:var(--text-secondary);font-size:14px;">Arjun is a dedicated student with strong problem-solving skills. Needs to focus more on system design concepts. Recommend additional reading on scalability patterns.</p>
-          </div></div>
-          <div class="dashboard-section" style="grid-column:span 3;"><div class="dashboard-section-body" style="text-align:center;"><button class="btn btn-primary btn-lg"><i class="fas fa-calendar-alt"></i> Schedule Meeting with Arjun</button></div></div>
+
         </div>
       </div>
 
@@ -678,7 +650,7 @@
     </aside>
     <div class="sidebar-overlay" onclick="this.classList.remove('active');this.previousElementSibling.classList.remove('active')"></div>
     <main class="dashboard-main">
-      <div class="dashboard-topbar"><button type="button" class="dashboard-global-back" data-dashboard-back><i class="fas fa-arrow-left"></i> Back</button><a href="../index.html" class="dashboard-topbar-brand"><span class="dashboard-topbar-logo">P</span><span>PEC</span></a><span class="dashboard-topbar-context" data-role-context>Portal</span><div class="dashboard-topbar-actions"><button type="button" class="mobile-hamburger" data-dashboard-sidebar-toggle aria-label="Toggle sidebar"><i class="fas fa-bars"></i></button><button type="button" class="theme-toggle" aria-label="Switch theme" title="Switch theme"><span aria-hidden="true">☾</span></button></div></div>
+      <div class="dashboard-topbar"><button type="button" class="dashboard-global-back" data-dashboard-back aria-label="Back"><i class="fas fa-arrow-left"></i><span>Back</span></button><div class="dashboard-topbar-branding"><a href="../index.html" class="dashboard-topbar-brand"><span class="dashboard-topbar-logo">P</span><span>PEC</span></a><span class="dashboard-topbar-context" data-role-context>Portal</span></div><div class="dashboard-topbar-actions"><button type="button" class="mobile-hamburger" data-dashboard-sidebar-toggle aria-label="Toggle sidebar"><i class="fas fa-bars"></i></button><button type="button" class="theme-toggle" aria-label="Switch theme" title="Switch theme"><span aria-hidden="true">☾</span></button></div></div>
 
 
         <div class="sub-page active" id="coord-dashboard">

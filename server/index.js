@@ -34,10 +34,31 @@ app.use((err, req, res, next) => {
 app.use(express.static(path.join(__dirname, '..')));
 
 // Public routes
+app.get('/api/public/coordinator-signups', async (req, res) => {
+  const forwardedProto = req.get('x-forwarded-proto');
+  const forwardedHost = req.get('x-forwarded-host');
+  const protocol = forwardedProto ? forwardedProto.split(',')[0].trim() : req.protocol;
+  const host = forwardedHost ? forwardedHost.split(',')[0].trim() : req.get('host');
+  if (!host || /[\s/@\\]/.test(host)) return res.status(400).json({ success: false, message: 'Invalid host' });
+  let baseUrl;
+  try { baseUrl = new URL(protocol + '://' + host); }
+  catch (error) { return res.status(400).json({ success: false, message: 'Invalid host' }); }
+  if (!['http:', 'https:'].includes(baseUrl.protocol)) return res.status(400).json({ success: false, message: 'Invalid host' });
+  baseUrl.username = '';
+  baseUrl.password = '';
+  baseUrl.pathname = '/pages/auth.html';
+  baseUrl.search = '';
+  baseUrl.hash = '';
+  res.json({ success: true, links: {
+    student: new URL('?view=student-signup', baseUrl).href,
+    mentor: new URL('?view=mentor-signup', baseUrl).href
+  } });
+});
+
 app.get('/api/public/stats', async (req, res) => {
   try {
     const [[students]] = await pool.query("SELECT COUNT(*) AS count FROM users WHERE role = 'student'");
-    const [[activeStudents]] = await pool.query("SELECT COUNT(*) AS count FROM users WHERE role = 'student' AND is_active = 1");
+    const [[activeStudents]] = await pool.query("SELECT COUNT(*) AS count FROM users WHERE role = 'student'");
     const [[mentors]] = await pool.query("SELECT COUNT(*) AS count FROM users WHERE role = 'mentor'");
     const [[solved]] = await pool.query("SELECT COALESCE(SUM(score), 0) AS count FROM task_submissions WHERE status = 'accepted'");
     const [[activities]] = await pool.query("SELECT COUNT(*) AS count FROM tasks WHERE status = 'published'");

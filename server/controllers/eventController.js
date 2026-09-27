@@ -2,7 +2,7 @@ const pool = require('../config/db');
 
 exports.getAll = async (req, res) => {
   try {
-    const [rows] = await pool.query('SELECT * FROM events ORDER BY event_date ASC');
+    const [rows] = await pool.query("SELECT * FROM events WHERE status = 'published' AND event_date >= CURDATE() ORDER BY event_date ASC");
     res.json({ success: true, events: rows });
   } catch (err) {
     console.error(err);

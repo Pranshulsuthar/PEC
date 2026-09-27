@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Typing Skills by PEC - Practice endless typing, track your speed, accuracy and improvement.">
+  <title>Typing Skills by PEC</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/typing.css">
+</head>
+<body class="typing-page">
+
+  <!-- ============ HEADER ============ -->
+  <nav class="navbar typing-navbar" id="topbar">
+    <div class="container">
+      <a href="../index.html" class="navbar-brand" id="brandLink">
+        <div class="navbar-logo" style="border-radius:50%; overflow:hidden; padding:0;">
+          <img src="../All Photoes/ChatGPT Image Sep 21, 2026, 10_47_22 AM.png" alt="PEC Logo">
+        </div>
+        <div class="navbar-brand-text">
+          <span class="navbar-brand-name">TYPING SKILLS BY PEC</span>
+          <span class="navbar-brand-tagline">Programming Excellence Community</span>
+        </div>
+      </a>
+      <div class="navbar-actions">
+        <button class="theme-toggle" aria-label="Toggle theme"></button>
+        <a href="#" class="navbar-login back-pec" id="backPec1">&#8592; Back to PEC</a>
+      </div>
+    </div>
+  </nav>
+
+  <main id="app">
+
+    <!-- ============ SCREEN 1 : LANDING ============ -->
+    <section class="screen active" id="screen-home">
+      <div class="container">
+        <div class="landing-hero fade-up">
+          <span class="hero-label"><i class="fas fa-keyboard"></i> PEC &bull; SKILL DEVELOPMENT</span>
+          <h1>Improve Your Typing.<br>Build Your Speed.</h1>
+          <p class="landing-desc">Practice typing continuously, improve your accuracy and discover your real typing performance.</p>
+        </div>
+
+        <div class="duration-block fade-up" style="animation-delay:.1s">
+          <h2 class="block-title">Choose Your Typing Time</h2>
+          <div class="duration-grid" id="durationGrid">
+            <button class="duration-card" data-min="2">
+              <span class="dur-time">2 MIN</span>
+              <span class="dur-desc">Quick Practice</span>
+            </button>
+            <button class="duration-card" data-min="5">
+              <span class="dur-time">5 MIN</span>
+              <span class="dur-desc">Focused Practice</span>
+            </button>
+            <button class="duration-card" data-min="7">
+              <span class="dur-time">7 MIN</span>
+              <span class="dur-desc">Skill Builder</span>
+            </button>
+            <button class="duration-card" data-min="10">
+              <span class="dur-time">10 MIN</span>
+              <span class="dur-desc">Deep Practice</span>
+            </button>
+            <button class="duration-card" data-min="20">
+              <span class="dur-time">20 MIN</span>
+              <span class="dur-desc">Endurance</span>
+            </button>
+          </div>
+          <div class="start-row">
+            <button class="btn btn-primary btn-lg" id="startBtn" disabled>Start Typing &#8594;</button>
+            <p class="start-hint" id="startHint">Select a duration to begin</p>
+          </div>
+        </div>
+
+        <div class="feature-strip fade-up" style="animation-delay:.2s">
+          <div class="feature-item"><i class="fas fa-infinity"></i><span>Endless passages</span></div>
+          <div class="feature-item"><i class="fas fa-chart-line"></i><span>Live analytics</span></div>
+          <div class="feature-item"><i class="fas fa-seedling"></i><span>Visual journey</span></div>
+          <div class="feature-item"><i class="fas fa-keyboard"></i><span>Keyboard heatmap</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ SCREEN 2 : TYPING TEST ============ -->
+    <section class="screen" id="screen-test">
+      <div class="test-shell" id="testShell">
+
+        <div class="test-topbar">
+          <div class="stat-pill"><span class="stat-ico"><i class="far fa-clock"></i></span><span class="stat-lab">TIME</span><span class="stat-val" id="statTime">00:00</span></div>
+          <div class="stat-pill"><span class="stat-ico"><i class="fas fa-bolt"></i></span><span class="stat-lab">WPM</span><span class="stat-val" id="statWpm">0</span></div>
+          <div class="stat-pill"><span class="stat-ico"><i class="fas fa-bullseye"></i></span><span class="stat-lab">ACCURACY</span><span class="stat-val" id="statAcc">100%</span></div>
+          <div class="stat-pill"><span class="stat-ico"><i class="fas fa-times"></i></span><span class="stat-lab">ERRORS</span><span class="stat-val" id="statErr">0</span></div>
+          <div class="stat-pill"><span class="stat-ico"><i class="fas fa-fire"></i></span><span class="stat-lab">COMBO</span><span class="stat-val" id="statCombo">0</span></div>
+          <div class="stat-pill hide-sm"><span class="stat-ico"><i class="fas fa-wave-square"></i></span><span class="stat-lab">CONSISTENCY</span><span class="stat-val" id="statCons">100%</span></div>
+
+          <div class="test-actions">
+            <button class="mini-btn" id="soundBtn" title="Toggle sound"><i class="fas fa-volume-xmark"></i></button>
+            <button class="mini-btn" id="focusBtn" title="Distraction free mode"><i class="fas fa-expand"></i></button>
+            <button class="mini-btn danger" id="endBtn" title="End test">End Test</button>
+          </div>
+        </div>
+
+        <div class="journey-bar" id="journeyBar">
+          <div class="journey-emoji" id="journeyEmoji">🌱</div>
+          <div class="journey-track">
+            <div class="journey-fill" id="journeyFill"></div>
+            <div class="journey-dots" id="journeyDots"></div>
+          </div>
+          <div class="journey-label" id="journeyLabel">Starting your journey</div>
+        </div>
+
+        <div class="typing-area" id="typingArea" tabindex="0">
+          <div class="passage" id="passage"></div>
+          <input id="typeInput" class="ghost-input" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" aria-label="Typing input">
+          <div class="focus-hint" id="focusHint"><i class="fas fa-keyboard"></i> Click here or start typing</div>
+        </div>
+
+        <div class="passage-progress"><div class="passage-progress-fill" id="passageFill"></div></div>
+
+        <div class="keyboard" id="keyboard" aria-hidden="true"></div>
+      </div>
+    </section>
+
+    <!-- ============ SCREEN 3 : RESULTS ============ -->
+    <section class="screen" id="screen-results">
+      <div class="container results-wrap">
+
+        <div class="results-head">
+          <span class="section-label">Session Report</span>
+          <h2 class="results-title">YOUR TYPING RESULTS</h2>
+          <div class="best-badge" id="bestBadge" hidden>&#127881; NEW PERSONAL BEST</div>
+        </div>
+
+        <div class="hero-score reveal">
+          <div class="hero-score-num"><span id="resWpm">0</span></div>
+          <div class="hero-score-unit">WPM</div>
+          <div class="hero-score-sub" id="resSub">Completed session</div>
+        </div>
+
+        <div class="result-grid">
+          <div class="result-card reveal">
+            <h4>Accuracy</h4>
+            <div class="big-num" id="resAcc">0%</div>
+          </div>
+          <div class="result-card reveal">
+            <h4>Correct Characters</h4>
+            <div class="big-num" id="resCorrect">0</div>
+          </div>
+          <div class="result-card reveal">
+            <h4>Incorrect Characters</h4>
+            <div class="big-num bad" id="resWrong">0</div>
+          </div>
+          <div class="result-card reveal">
+            <h4>Total Characters</h4>
+            <div class="big-num" id="resTotal">0</div>
+          </div>
+          <div class="result-card reveal">
+            <h4>Best Combo</h4>
+            <div class="big-num" id="resCombo">0</div>
+          </div>
+          <div class="result-card reveal">
+            <h4>Consistency</h4>
+            <div class="big-num" id="resCons">0%</div>
+          </div>
+          <div class="result-card reveal">
+            <h4>Test Duration</h4>
+            <div class="big-num" id="resDuration">00:00</div>
+          </div>
+          <div class="result-card reveal">
+            <h4>Corrections</h4>
+            <div class="big-num" id="resCorrections">0</div>
+          </div>
+        </div>
+
+        <!-- Summary with rings -->
+        <div class="summary-card reveal">
+          <h3 class="card-heading">Your Performance</h3>
+          <div class="rings">
+            <div class="ring" id="ringWpm">
+              <svg viewBox="0 0 120 120"><circle class="ring-bg" cx="60" cy="60" r="52"></circle><circle class="ring-fg" cx="60" cy="60" r="52"></circle></svg>
+              <div class="ring-inner"><span class="ring-value">0</span><span class="ring-unit">WPM</span></div>
+              <span class="ring-label">Speed</span>
+            </div>
+            <div class="ring" id="ringAcc">
+              <svg viewBox="0 0 120 120"><circle class="ring-bg" cx="60" cy="60" r="52"></circle><circle class="ring-fg" cx="60" cy="60" r="52"></circle></svg>
+              <div class="ring-inner"><span class="ring-value">0%</span><span class="ring-unit">ACCURACY</span></div>
+              <span class="ring-label">Accuracy</span>
+            </div>
+            <div class="ring" id="ringCons">
+              <svg viewBox="0 0 120 120"><circle class="ring-bg" cx="60" cy="60" r="52"></circle><circle class="ring-fg" cx="60" cy="60" r="52"></circle></svg>
+              <div class="ring-inner"><span class="ring-value">0%</span><span class="ring-unit">CONSISTENCY</span></div>
+              <span class="ring-label">Consistency</span>
+            </div>
+            <div class="ring" id="ringErr">
+              <svg viewBox="0 0 120 120"><circle class="ring-bg" cx="60" cy="60" r="52"></circle><circle class="ring-fg" cx="60" cy="60" r="52"></circle></svg>
+              <div class="ring-inner"><span class="ring-value">0</span><span class="ring-unit">ERRORS</span></div>
+              <span class="ring-label">Errors</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Graphs -->
+        <div class="graph-card reveal">
+          <h3 class="card-heading">Speed During Test</h3>
+          <div class="graph-box"><canvas id="canvasWpm" height="220"></canvas><div class="graph-tip" id="tipWpm" hidden></div></div>
+        </div>
+        <div class="graph-card reveal">
+          <h3 class="card-heading">Accuracy During Test</h3>
+          <div class="graph-box"><canvas id="canvasAcc" height="220"></canvas><div class="graph-tip" id="tipAcc" hidden></div></div>
+        </div>
+
+        <!-- Keyboard heatmap -->
+        <div class="graph-card reveal">
+          <h3 class="card-heading">Your Keyboard Performance</h3>
+          <div class="keyboard heatmap-keys" id="resultKeyboard"></div>
+          <div class="key-lists">
+            <div class="key-list">
+              <h5><i class="fas fa-check-circle good"></i> Most Accurate</h5>
+              <ul id="bestKeys"></ul>
+            </div>
+            <div class="key-list">
+              <h5><i class="fas fa-exclamation-circle bad"></i> Needs Practice</h5>
+              <ul id="weakKeys"></ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mistake analysis -->
+        <div class="graph-card reveal">
+          <h3 class="card-heading">Mistake Analysis</h3>
+          <div class="mistake-grid">
+            <div class="mistake-block">
+              <h5>Most Mistyped Characters</h5>
+              <ul id="pairList"></ul>
+            </div>
+            <div class="mistake-block">
+              <h5>Wrong Characters</h5>
+              <div class="mini-num" id="wrongChars">0</div>
+              <h5>Repeated Mistakes</h5>
+              <div class="mini-num" id="repeatMistakes">0</div>
+            </div>
+            <div class="mistake-block">
+              <h5>Most Error-Prone Keys</h5>
+              <ul id="errorKeys"></ul>
+              <h5>Correction Count</h5>
+              <div class="mini-num" id="corrCount">0</div>
+            </div>
+          </div>
+          <div class="practice-tip">
+            <h5><i class="fas fa-lightbulb"></i> Practice Tip</h5>
+            <p id="tipText">Great work, keep practising to sharpen your speed.</p>
+          </div>
+        </div>
+
+        <!-- Journey strip -->
+        <div class="graph-card reveal">
+          <h3 class="card-heading" id="journeyTitle">Your typing journey</h3>
+          <div class="journey-strip" id="journeyStrip"></div>
+        </div>
+
+        <!-- Personal records -->
+        <div class="graph-card reveal" id="recordsCard">
+          <h3 class="card-heading">Personal Records</h3>
+          <div id="recordsBody"></div>
+        </div>
+
+        <!-- Actions -->
+        <div class="result-actions reveal">
+          <button class="btn btn-primary" id="btnAgain">&#8635; Try Again</button>
+          <button class="btn btn-secondary" id="btnDuration">&#9202; Change Duration</button>
+          <button class="btn btn-secondary" id="btnProgress">&#128202; View My Progress</button>
+          <a href="#" class="btn btn-ghost" id="backPec2">&#8592; Back to PEC</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ SCREEN 4 : PROGRESS / HISTORY ============ -->
+    <section class="screen" id="screen-history">
+      <div class="container history-wrap">
+        <div class="results-head">
+          <span class="section-label">Your Progress</span>
+          <h2 class="results-title">RECENT TYPING SESSIONS</h2>
+        </div>
+
+        <div id="histEmpty" class="empty-state" hidden>
+          <div class="empty-icon"><i class="fas fa-seedling"></i></div>
+          <h3>Your typing journey starts here.</h3>
+          <p>Complete your first test to unlock your performance history.</p>
+          <button class="btn btn-primary" id="emptyStart">Start Your First Test</button>
+        </div>
+
+        <div id="histContent" hidden>
+          <div class="record-grid" id="progressStats"></div>
+
+          <div class="graph-card">
+            <h3 class="card-heading">Speed Trend</h3>
+            <div class="graph-box"><canvas id="canvasTrend" height="200"></canvas></div>
+          </div>
+
+          <div class="graph-card">
+            <h3 class="card-heading">Recent Typing Sessions</h3>
+            <div class="session-list" id="sessionList"></div>
+          </div>
+        </div>
+
+        <div class="result-actions">
+          <button class="btn btn-primary" id="histStart">&#8635; New Test</button>
+          <button class="btn btn-secondary" id="histHome">&#9202; Change Duration</button>
+          <a href="#" class="btn btn-ghost" id="backPec3">&#8592; Back to PEC</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ============ END CONFIRM MODAL ============ -->
+  <div class="modal-mask" id="endModal" hidden>
+    <div class="modal-box">
+      <h3>End your typing session?</h3>
+      <p>Your current progress will be saved as a completed session.</p>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" id="modalCancel">Cancel</button>
+        <button class="btn btn-primary" id="modalConfirm">End Test</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ TEST COMPLETE TRANSITION ============ -->
+  <div class="complete-overlay" id="completeOverlay" hidden>
+    <div class="complete-inner">
+      <div class="complete-time" id="completeTime">00:00</div>
+      <div class="complete-title" id="completeTitle">Test Complete</div>
+      <div class="complete-bar"><span></span></div>
+    </div>
+  </div>
+
+  <script src="../js/main.js"></script>
+  <script src="../js/passages.js"></script>
+  <script src="../js/typing.js"></script>
+</body>
+</html>

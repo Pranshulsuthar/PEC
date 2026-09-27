@@ -10,7 +10,15 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="stylesheet" href="../css/style.css">
   <link rel="stylesheet" href="../css/responsive-overrides.css">
-  <style>.auth-view{display:none}.auth-view.active{display:block}</style>
+  <style>
+    .auth-view{display:none}.auth-view.active{display:block}
+    html.shared-signup-link .auth-topbar > .auth-back{display:inline-flex}
+    html.shared-signup-link .auth-view.active .auth-back{display:none}
+    html.shared-signup-link #view-student-signup.active .auth-back,
+    html.shared-signup-link #view-mentor-signup.active .auth-back{display:inline-flex}
+    .shared-signup-action{display:none}
+    html.shared-signup-link .role-card .shared-signup-action{display:inline-block;margin-top:10px;color:var(--primary);font-weight:600}
+  </style>
 </head>
 <body>
 
@@ -56,6 +64,7 @@
           <div class="role-subtitle">Learn. Practice. Grow.</div>
           <p>Access coding activities, mentor guidance, challenges and your personal progress.</p>
           <button class="btn btn-primary">Continue as Student <i class="fas fa-arrow-right" style="margin-left:6px"></i></button>
+          <a class="shared-signup-action" href="?view=student-signup">Create a student account</a>
         </div>
         <div class="role-card mentor-card role-card-animate" data-role="mentor" tabindex="0" role="button">
           <div class="role-card-icon"><i class="fas fa-chalkboard-teacher"></i></div>
@@ -63,6 +72,7 @@
           <div class="role-subtitle">Guide. Review. Inspire.</div>
           <p>Support your assigned mentees, review their work and help them grow.</p>
           <button class="btn btn-primary">Continue as Mentor <i class="fas fa-arrow-right" style="margin-left:6px"></i></button>
+          <a class="shared-signup-action" href="?view=mentor-signup">Create a mentor account</a>
         </div>
         <div class="role-card coordinator-card role-card-animate" data-role="coordinator" tabindex="0" role="button">
           <div class="role-card-icon"><i class="fas fa-cogs"></i></div>

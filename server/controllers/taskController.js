@@ -8,8 +8,8 @@ exports.getAll = async (req, res) => {
       sql += " JOIN task_assignments ta ON ta.task_id = t.id AND ta.student_id = ? AND ta.status = 'assigned' WHERE t.status = 'published' AND NOT EXISTS (SELECT 1 FROM task_submissions ts WHERE ts.task_id = t.id AND ts.student_id = ?)";
       params.push(req.user.user_id, req.user.user_id);
     } else if (req.user.role === 'mentor') {
-      sql += " WHERE t.status = 'published' AND (t.created_by = ? OR EXISTS (SELECT 1 FROM task_assignments ta JOIN mentor_student ms ON ms.student_id = ta.student_id AND ms.mentor_id = ? AND ms.status = 'active' WHERE ta.task_id = t.id))";
-      params.push(req.user.user_id, req.user.user_id);
+      sql += " JOIN mentor_profiles mp ON mp.user_id = ? WHERE t.status = 'published' AND (t.created_by = ? OR EXISTS (SELECT 1 FROM task_assignments ta JOIN mentor_student ms ON ms.student_id = ta.student_id AND ms.mentor_id = ? AND ms.status = 'active' WHERE ta.task_id = t.id))";
+      params.push(req.user.user_id, req.user.user_id, req.user.user_id);
     } else if (req.user.role === 'coordinator') {
       sql += " WHERE t.status <> 'archived'";
     } else {
@@ -33,8 +33,8 @@ exports.getById = async (req, res) => {
       sql += " JOIN task_assignments ta ON ta.task_id = t.id AND ta.student_id = ? AND ta.status = 'assigned' WHERE t.id = ? AND t.status = 'published'";
       params.push(req.user.user_id, id);
     } else if (req.user.role === 'mentor') {
-      sql += " WHERE t.id = ? AND t.status = 'published' AND (t.created_by = ? OR EXISTS (SELECT 1 FROM task_assignments ta JOIN mentor_student ms ON ms.student_id = ta.student_id AND ms.mentor_id = ? AND ms.status = 'active' WHERE ta.task_id = t.id))";
-      params.push(id, req.user.user_id, req.user.user_id);
+      sql += " JOIN mentor_profiles mp ON mp.user_id = ? WHERE t.id = ? AND t.status = 'published' AND (t.created_by = ? OR EXISTS (SELECT 1 FROM task_assignments ta JOIN mentor_student ms ON ms.student_id = ta.student_id AND ms.mentor_id = ? AND ms.status = 'active' WHERE ta.task_id = t.id))";
+      params.push(req.user.user_id, id, req.user.user_id, req.user.user_id);
     } else if (req.user.role === 'coordinator') {
       sql += ' WHERE t.id = ?';
       params.push(id);
