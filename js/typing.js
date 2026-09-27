@@ -401,6 +401,7 @@
     if (pos < currentPassage.length) setCurrent(pos);
     els.passageFill.style.width = (pos / currentPassage.length * 100) + '%';
     updateNextKey();
+    updateLiveStats();
 
     if (pos >= currentPassage.length) {
       els.passageFill.style.width = '100%';
@@ -420,6 +421,7 @@
     setCurrent(pos);
     els.passageFill.style.width = (pos / currentPassage.length * 100) + '%';
     updateNextKey();
+    updateLiveStats();
   }
 
   function onKeyDown(e) {
@@ -616,7 +618,16 @@
   function updateStatsUI() {
     var el = elapsedSec();
     var remain = Math.max(0, durationMs / 1000 - el);
-    els.statTime.textContent = fmtTime(remain);
+    if (els.statTime.textContent !== fmtTime(remain)) {
+      els.statTime.textContent = fmtTime(remain);
+      els.statTime.classList.remove('bump');
+      void els.statTime.offsetWidth;
+      els.statTime.classList.add('bump');
+    }
+    updateLiveStats();
+  }
+
+  function updateLiveStats() {
     setVal(els.statWpm, Math.round(computeWpm()));
     setVal(els.statAcc, computeAcc().toFixed(1) + '%');
     setVal(els.statErr, wrongKS);
@@ -627,9 +638,6 @@
   function setVal(el, v) {
     if (el.textContent === String(v)) return;
     el.textContent = v;
-    el.classList.remove('bump');
-    void el.offsetWidth;
-    el.classList.add('bump');
   }
 
   /* ==================================================
@@ -844,16 +852,18 @@
     });
 
     var best = byAcc.slice(0, 5);
-    var weak = byAcc.slice(-5).reverse();
+    var weak = byAcc.filter(function (k) {
+      return ks[k].correct / ks[k].typed < 1;
+    }).slice(0, 5);
 
-    fillKeyList($('bestKeys'), best, ks, 'good');
-    fillKeyList($('weakKeys'), weak, ks, 'bad');
+    fillKeyList($('bestKeys'), best, ks, 'good', 'Not enough data yet');
+    fillKeyList($('weakKeys'), weak, ks, 'bad', 'No weak keys this session - perfect accuracy');
   }
 
-  function fillKeyList(ul, list, ks, tone) {
+  function fillKeyList(ul, list, ks, tone, emptyMsg) {
     ul.innerHTML = '';
     if (!list.length) {
-      ul.innerHTML = '<li><span>Not enough data yet</span></li>';
+      ul.innerHTML = '<li><span>' + emptyMsg + '</span></li>';
       return;
     }
     list.forEach(function (k) {
@@ -912,7 +922,7 @@
   }
 
   function labelOf(k) {
-    if (k === 'space') return 'SPACE';
+    if (k === 'space' || k === ' ') return 'SPACE';
     if (k === ';' || k === "'" || k === ',' || k === '.' || k === '/' || k === '-' || k === '=' ||
         k === '[' || k === ']' || k === '\\' || k === '`') return k + ' (symbol)';
     return k.toUpperCase();
@@ -1165,14 +1175,26 @@
     return m + ':' + (s < 10 ? '0' : '') + s;
   }
 
+  function niceCeil(v) {
+    if (v <= 5) return 5;
+    var mag = Math.pow(10, Math.floor(Math.log(v) / Math.LN10));
+    var steps = [1, 1.2, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10];
+    for (var i = 0; i < steps.length; i++) {
+      if (v <= steps[i] * mag) return steps[i] * mag;
+    }
+    return 10 * mag;
+  }
+
   function drawWpmChart(s) {
     var canvas = $('canvasWpm'), tip = $('tipWpm');
     var points = toSeries(s.wpmSeries, 'wpm');
     var xMax = Math.max(s.durationSec, points[points.length - 1].x);
+    var maxV = Math.max.apply(null, points.map(function (p) { return p.y; }));
     var opts = {
       color: cssVar('--tangerine') || '#f59e0b',
       fill: 'rgba(245,158,11,0.28)',
       yMin: 0,
+      yMax: niceCeil(maxV),
       xFmt: timeFmt,
       yFmt: function (v) { return Math.round(v); },
       tipFmt: function (v) { return Math.round(v) + ' WPM'; }
@@ -1191,10 +1213,11 @@
     var points = s.accSeries.map(function (p) { return { x: p.t, y: p.v }; });
     var xMax = Math.max(s.durationSec, points[points.length - 1].x);
     var vals = points.map(function (p) { return p.y; });
+    var yMin = Math.max(0, Math.min(92, Math.floor((Math.min.apply(null, vals) - 2) / 4) * 4));
     var opts = {
       color: cssVar('--pool-dark') || '#1597ad',
       fill: 'rgba(21,151,173,0.26)',
-      yMin: Math.max(0, Math.min.apply(null, vals) - 6),
+      yMin: yMin,
       yMax: 100,
       xFmt: timeFmt,
       yFmt: function (v) { return Math.round(v) + '%'; },
@@ -1326,6 +1349,7 @@
       color: cssVar('--tangerine') || '#f59e0b',
       fill: 'rgba(245,158,11,0.26)',
       yMin: 0,
+      yMax: niceCeil(Math.max.apply(null, points.map(function (p) { return p.y; }))),
       xFmt: function (v) { return '#' + (Math.round(v) + 1); },
       yFmt: function (v) { return Math.round(v); },
       tipFmt: function (v) { return Math.round(v) + ' WPM'; }
