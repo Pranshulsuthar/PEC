@@ -3,6 +3,11 @@
 -- No DROP DATABASE statements – only CREATE TABLE IF NOT EXISTS
 -- All tables use InnoDB and UTF8MB4 charset
 
+CREATE TABLE IF NOT EXISTS account_id_counters (
+    prefix VARCHAR(20) NOT NULL PRIMARY KEY,
+    next_value BIGINT UNSIGNED NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 SET NAMES utf8mb4;
 SET foreign_key_checks = 0;
 
@@ -28,13 +33,20 @@ CREATE TABLE IF NOT EXISTS users (
 -- ------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS student_profiles (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL,
+    user_id INT NOT NULL UNIQUE,
+    student_code VARCHAR(50) NULL UNIQUE,
+    email VARCHAR(150) NULL UNIQUE,
+    college_id VARCHAR(80) NULL UNIQUE,
+    enrollment_no VARCHAR(80) NULL UNIQUE,
     roll_number VARCHAR(50) NULL,
     branch VARCHAR(100) NULL,
     semester INT NULL,
     phone VARCHAR(20) NULL,
     `section` VARCHAR(50) NULL,
     `year` INT NULL,
+    linkedin_profile VARCHAR(500) NULL,
+    github_profile VARCHAR(500) NULL,
+    leetcode_profile VARCHAR(500) NULL,
     college VARCHAR(150) NULL,
     bio TEXT NULL,
     skills TEXT NULL,
@@ -55,7 +67,16 @@ CREATE TABLE IF NOT EXISTS student_profiles (
 -- ------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS mentor_profiles (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL,
+    user_id INT NOT NULL UNIQUE,
+    mentor_code VARCHAR(50) NULL UNIQUE,
+    email VARCHAR(150) NULL UNIQUE,
+    college_id VARCHAR(80) NULL UNIQUE,
+    mentor_number INT NULL UNIQUE,
+    group_id VARCHAR(80) NULL UNIQUE,
+    group_name VARCHAR(160) NULL,
+    branch VARCHAR(20) NULL,
+    `year` INT NULL,
+    `section` VARCHAR(50) NULL,
     employee_id VARCHAR(50) NULL,
     designation VARCHAR(100) NULL,
     department VARCHAR(100) NULL,
@@ -74,7 +95,14 @@ CREATE TABLE IF NOT EXISTS mentor_profiles (
 -- ------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS coordinator_profiles (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL,
+    user_id INT NOT NULL UNIQUE,
+    coordinator_code VARCHAR(50) NULL UNIQUE,
+    email VARCHAR(150) NULL UNIQUE,
+    college_id VARCHAR(80) NULL UNIQUE,
+    branch VARCHAR(20) NULL,
+    `year` INT NULL,
+    `section` VARCHAR(50) NULL,
+    employee_id VARCHAR(50) NULL,
     designation VARCHAR(100) NULL,
     department VARCHAR(100) NULL,
     employee_id VARCHAR(50) NULL,
@@ -408,8 +436,18 @@ CREATE TABLE IF NOT EXISTS leaderboard (
     INDEX idx_lb_points (points)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+CREATE TABLE IF NOT EXISTS news_reads (
+    user_id INT NOT NULL,
+    news_id INT NOT NULL,
+    read_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (user_id, news_id),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (news_id) REFERENCES news(id) ON DELETE CASCADE,
+    INDEX idx_news_reads_news (news_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 -- ------------------------------------------------------------
--- Table: activity_logs
+-- Table: audit_logs
 -- ------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS activity_logs (
     id INT AUTO_INCREMENT PRIMARY KEY,

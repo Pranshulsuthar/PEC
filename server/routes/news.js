@@ -5,6 +5,7 @@ const { allowRoles } = require('../middleware/roleMiddleware');
 
 router.get('/', newsController.getAll);
 router.get('/:id', newsController.getById);
+router.put('/:id/read', newsController.markRead);
 router.post('/', allowRoles('coordinator'), newsController.create);
 router.put('/:id', allowRoles('coordinator'), newsController.update);
 router.delete('/:id', allowRoles('coordinator'), newsController.delete);

@@ -16,6 +16,7 @@ function showAuth(viewId) {
 
   var targetId = viewId === 'role-selection' ? 'view-role-selection' :
                  (viewId.indexOf('view-') === 0 ? viewId : 'view-' + viewId);
+  if (viewId === 'coordinator-signup') targetId = 'view-coordinator-signup';
   var target = document.getElementById(targetId) ||
                document.getElementById('view-role-selection');
   if (target) {
@@ -389,6 +390,13 @@ window.clearFieldError = function (fieldId) {
   if (field) clearError(field);
 };
 window.showFormSuccess = function (message) {
+  var box = document.querySelector('.auth-view.active .auth-form-message');
+  if (box) {
+    box.textContent = message;
+    box.classList.add('visible');
+    box.classList.toggle('error', /invalid|unable|already|exists|failed|required|error|short|mismatch/i.test(message));
+    return;
+  }
   return showSuccess(message);
 };
 
@@ -400,8 +408,10 @@ document.addEventListener('submit', function (e) {
   var form = e.target;
   if (!form.classList.contains('auth-form') && !form.matches('[id$="-login-form"], [id$="-signup-form"]')) return;
 
-  e.preventDefault();
-  clearAllErrors();
+    e.preventDefault();
+    clearAllErrors();
+    var messageBox = form.closest('.auth-card') && form.closest('.auth-card').querySelector('.auth-form-message');
+    if (messageBox) { messageBox.textContent = ''; messageBox.classList.remove('visible', 'error'); }
 
   // Helper for POST JSON
   function postJSON(url, data) {
@@ -410,20 +420,54 @@ document.addEventListener('submit', function (e) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data)
     }).then(function (response) {
-      return response.json().then(function (body) {
-        if (!response.ok && !body.message) body.message = 'Request failed';
+      return response.json().catch(function () { return {}; }).then(function (body) {
+        if (!response.ok && !body.message) body.message = 'Request failed (' + response.status + ')';
         return body;
       });
     });
   }
   function storeToken(tok) { sessionStorage.setItem('pec_jwt', tok); }
+  function showSignupComplete(response) {
+    var card = form.closest('.auth-card');
+    if (card) {
+      var steps = card.querySelector('.signup-steps');
+      if (steps) steps.querySelectorAll('.signup-step').forEach(function (step, index) { step.classList.toggle('active', index === 2); step.classList.toggle('completed', index < 2); });
+      var header = card.querySelector('.auth-card-header');
+      if (header) header.querySelector('p').textContent = 'Your account is ready. Keep your PEC ID safe.';
+    }
+    form.innerHTML = '';
+    form.className = 'auth-form signup-complete';
+    var title = document.createElement('h2');
+    title.textContent = 'Account created successfully!';
+    var description = document.createElement('p');
+    description.textContent = 'Your PEC ID is:';
+    var pecId = document.createElement('strong');
+    pecId.className = 'generated-pec-id';
+    pecId.textContent = response.pec_id || 'PEC ID unavailable';
+    var button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'btn btn-primary';
+    button.textContent = 'Continue to Dashboard';
+    button.addEventListener('click', function () {
+      storeToken(response.token);
+      sessionStorage.setItem('pec_user', JSON.stringify(response.user));
+      window.location.replace('../pages/dashboard.html');
+    });
+    form.append(title, description, pecId, button);
+  }
   function completeAuth(response) {
     if (!response.success) {
       showFormSuccess(response.message || 'Unable to complete request');
-      return;
+      return Promise.resolve(false);
+    }
+    if (response.pec_id) {
+      storeToken(response.token);
+      showSignupComplete(response);
+      return Promise.resolve(true);
     }
     storeToken(response.token);
     window.location.replace('../pages/dashboard.html');
+    return Promise.resolve(true);
   }
 
   window.addEventListener('pageshow', function () {
@@ -474,22 +518,24 @@ document.addEventListener('submit', function (e) {
     var email = document.getElementById('student-signup-email').value.trim();
     var password = document.getElementById('student-signup-password').value;
     var confirm = document.getElementById('student-confirm-password').value;
-    var student_id = document.getElementById('student-id').value.trim();
-    var enrollment_no = document.getElementById('student-enrollment').value.trim();
+    var collegeId = document.getElementById('student-college-id').value.trim();
+    var enrollmentNo = document.getElementById('student-enrollment-number').value.trim();
     var branch = document.getElementById('student-branch').value;
-    var skills = document.getElementById('student-skills').value.trim();
+    var year = document.getElementById('student-year').value;
+    var section = document.getElementById('student-section').value.trim();
     if (!name) return showFieldError('student-fullname', 'Name required');
+    if (!collegeId) return showFieldError('student-college-id', 'College ID required');
+    if (!enrollmentNo) return showFieldError('student-enrollment-number', 'Enrollment number required');
     if (!validateEmail(email)) return showFieldError('student-signup-email', 'Invalid email');
+    if (!['IT', 'CS', 'AI', 'DS'].includes(branch)) return showFieldError('student-branch', 'Select a valid branch');
+    if (!year) return showFieldError('student-year', 'Select your year');
+    if (!section) return showFieldError('student-section', 'Section required');
     if (!validatePassword(password)) return showFieldError('student-signup-password', 'Password must be at least 8 characters');
     if (!confirmPasswordMatch(password, confirm)) return showFieldError('student-confirm-password', 'Passwords do not match');
-    var year = document.getElementById('student-year').value;
-    if (!student_id) return showFieldError('student-id', 'Student ID required');
-    if (!enrollment_no) return showFieldError('student-enrollment', 'Enrollment number required');
+    var profileUrl = function (id) { var value = document.getElementById(id).value.trim(); if (!value) return ''; return /^https?:\/\//i.test(value) ? value : 'https://' + value; };
+    var payload = { name: name, college_id: collegeId, enrollment_no: enrollmentNo, email: email, branch: branch, year: Number(year), section: section, linkedin_profile: profileUrl('student-linkedin'), github_profile: profileUrl('student-github'), leetcode_profile: profileUrl('student-leetcode'), password: password, role: 'student' };
     setLoading(true);
-    postJSON('/api/auth/register', { name: name, email: email, password: password, role: 'student', student_id: student_id, enrollment_no: enrollment_no, branch: branch, year: year, skills: skills })
-      .then(completeAuth)
-      .catch(function () { showFormSuccess('Unable to connect to PEC server'); })
-      .finally(function () { setLoading(false); });
+    postJSON('/api/auth/register', payload).then(completeAuth).catch(function () { showFormSuccess('Unable to connect to PEC server'); }).finally(function () { setLoading(false); });
     return;
   }
 
@@ -498,25 +544,21 @@ document.addEventListener('submit', function (e) {
     var email = document.getElementById('mentor-signup-email').value.trim();
     var password = document.getElementById('mentor-signup-password').value;
     var confirm = document.getElementById('mentor-confirm-password').value;
-    var mentor_id = document.getElementById('mentor-id').value.trim();
-    var group_id = document.getElementById('mentor-group-id').value.trim();
-    var group_name = document.getElementById('mentor-group-name').value.trim();
-    var experience = document.getElementById('mentor-experience').value.trim();
-    var skills = document.getElementById('mentor-skills').value.trim();
+    var collegeId = document.getElementById('mentor-college-id').value.trim();
+    var branch = document.getElementById('mentor-branch').value;
+    var year = document.getElementById('mentor-year').value;
+    var section = document.getElementById('mentor-section').value.trim();
     if (!name) return showFieldError('mentor-fullname', 'Name required');
-    if (!mentor_id) return showFieldError('mentor-id', 'Mentor ID required');
-    if (!group_id) return showFieldError('mentor-group-id', 'Group ID required');
-    if (!group_name) return showFieldError('mentor-group-name', 'Group name required');
+    if (!collegeId) return showFieldError('mentor-college-id', 'College ID required');
     if (!validateEmail(email)) return showFieldError('mentor-signup-email', 'Invalid email');
-    if (!validatePassword(password)) return showFieldError('mentor-signup-password', 'Password too short');
+    if (!['IT', 'CS', 'AI', 'DS'].includes(branch)) return showFieldError('mentor-branch', 'Select a valid branch');
+    if (!year) return showFieldError('mentor-year', 'Select your year');
+    if (!section) return showFieldError('mentor-section', 'Section required');
+    if (!validatePassword(password)) return showFieldError('mentor-signup-password', 'Password must be at least 8 characters');
     if (!confirmPasswordMatch(password, confirm)) return showFieldError('mentor-confirm-password', 'Passwords do not match');
-    var department = document.getElementById('mentor-department').value;
-    var designation = document.getElementById('mentor-designation').value;
+    var payload = { name: name, college_id: collegeId, email: email, branch: branch, year: Number(year), section: section, password: password, role: 'mentor' };
     setLoading(true);
-    postJSON('/api/auth/register', { name: name, email: email, password: password, role: 'mentor', mentor_id: mentor_id, group_id: group_id, group_name: group_name, experience: experience, skills: skills, department: department, designation: designation })
-      .then(completeAuth)
-      .catch(function () { showFormSuccess('Unable to connect to PEC server'); })
-      .finally(function () { setLoading(false); });
+    postJSON('/api/auth/register', payload).then(completeAuth).catch(function () { showFormSuccess('Unable to connect to PEC server'); }).finally(function () { setLoading(false); });
     return;
   }
 
@@ -525,16 +567,23 @@ document.addEventListener('submit', function (e) {
     var email = document.getElementById('coordinator-signup-email').value.trim();
     var password = document.getElementById('coordinator-signup-password').value;
     var confirm = document.getElementById('coordinator-confirm-password').value;
-    var department = document.getElementById('coordinator-department').value;
+    var collegeId = document.getElementById('coordinator-college-id').value.trim();
+    var branch = document.getElementById('coordinator-branch').value;
+    var year = document.getElementById('coordinator-year').value;
+    var section = document.getElementById('coordinator-section').value.trim();
     if (!name) return showFieldError('coordinator-fullname', 'Name required');
+    if (!collegeId) return showFieldError('coordinator-college-id', 'College ID required');
     if (!validateEmail(email)) return showFieldError('coordinator-signup-email', 'Invalid email');
+    if (!['IT', 'CS', 'AI', 'DS'].includes(branch)) return showFieldError('coordinator-branch', 'Select a valid branch');
+    if (!year) return showFieldError('coordinator-year', 'Select your year');
+    if (!section) return showFieldError('coordinator-section', 'Section required');
     if (!validatePassword(password)) return showFieldError('coordinator-signup-password', 'Password must be at least 8 characters');
     if (!confirmPasswordMatch(password, confirm)) return showFieldError('coordinator-confirm-password', 'Passwords do not match');
     setLoading(true);
-    postJSON('/api/auth/register', { name: name, email: email, password: password, role: 'coordinator', department: department })
-      .then(completeAuth)
-      .catch(function () { showFormSuccess('Unable to connect to PEC server'); })
-      .finally(function () { setLoading(false); });
+    postJSON('/api/auth/register', { name: name, college_id: collegeId, email: email, branch: branch, year: Number(year), section: section, password: password, role: 'coordinator' }).then(function (response) {
+      if (!response.success) return showFormSuccess(response.message || 'Unable to create coordinator account');
+      showSignupComplete(response);
+    }).catch(function () { showFormSuccess('Unable to connect to PEC server'); }).finally(function () { setLoading(false); });
     return;
   }
 
@@ -547,16 +596,22 @@ document.addEventListener('submit', function (e) {
    ============================================================ */
 
 document.addEventListener('DOMContentLoaded', function () {
+  document.querySelectorAll('.auth-view').forEach(function (view) {
+    if (view.id === 'view-coordinator-signup') {
+      var coordinatorCard = view.querySelector('.auth-card');
+      if (coordinatorCard) coordinatorCard.id = 'coordinator-signup-card';
+    }
+  });
   var requestedView = new URLSearchParams(window.location.search).get('view');
-  if (requestedView && document.getElementById('view-' + requestedView)) {
+  if (requestedView && (document.getElementById('view-' + requestedView) || requestedView === 'coordinator-signup')) {
     document.body.classList.add('shared-signup-link');
     showAuth(requestedView);
-    if (requestedView === 'student-signup' || requestedView === 'mentor-signup') {
+    if (requestedView === 'student-signup' || requestedView === 'mentor-signup' || requestedView === 'coordinator-signup') {
       document.documentElement.classList.add('shared-signup-link');
       document.querySelectorAll('.auth-view').forEach(function (view) { view.classList.remove('active'); });
-      var signupView = document.getElementById('view-' + requestedView);
+      var signupView = requestedView === 'coordinator-signup' ? document.getElementById('view-role-selection') : document.getElementById('view-' + requestedView);
       signupView.classList.add('active');
-      var signupCard = signupView.querySelector('.signup-card');
+      var signupCard = requestedView === 'coordinator-signup' ? document.getElementById('coordinator-signup-card') : signupView.querySelector('.signup-card');
       if (signupCard) signupCard.classList.add('active');
     }
   }

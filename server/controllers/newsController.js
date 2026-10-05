@@ -10,10 +10,21 @@ exports.getAll = async (req, res) => {
   }
 };
 
+exports.markRead = async (req, res) => {
+  const id = Number(req.params.id);
+  if (!Number.isInteger(id) || id < 1) return res.status(400).json({ success: false, message: 'Valid news ID is required' });
+  try {
+    const [[news]] = await pool.query("SELECT id FROM news WHERE id = ? AND status = 'published'", [id]);
+    if (!news) return res.status(404).json({ success: false, message: 'News not found' });
+    await pool.query('INSERT INTO news_reads (user_id, news_id) VALUES (?,?) ON DUPLICATE KEY UPDATE read_at = CURRENT_TIMESTAMP', [req.user.user_id, id]);
+    res.json({ success: true });
+  } catch (err) { console.error(err); res.status(500).json({ success: false, message: 'Server error' }); }
+};
+
 exports.getById = async (req, res) => {
   const id = req.params.id;
   try {
-    const [rows] = await pool.query('SELECT * FROM news WHERE id = ?', [id]);
+    const [rows] = await pool.query("SELECT * FROM news WHERE id = ? AND status = 'published'", [id]);
     if (!rows.length) return res.status(404).json({ success: false, message: 'News not found' });
     res.json({ success: true, news: rows[0] });
   } catch (err) {
