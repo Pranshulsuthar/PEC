@@ -23,13 +23,13 @@ exports.register = async (req, res) => {
     return res.status(400).json({ success: false, message: 'Missing required fields' });
   }
     if (!['student', 'mentor', 'coordinator'].includes(role)) return res.status(400).json({ success: false, message: 'Invalid role' });
-  if (role === 'coordinator' && req.get('x-pec-coordinator-invite') !== process.env.COORDINATOR_REGISTRATION_TOKEN) return res.status(403).json({ success: false, message: 'Coordinator registration requires an administrator invite' });
   if (String(password).length < 8) return res.status(400).json({ success: false, message: 'Password must be at least 8 characters' });
   if (!String(name).trim() || String(name).trim().length > 160 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return res.status(400).json({ success: false, message: 'Enter a valid name and email address' });
   const collegeId = typeof req.body.college_id === 'string' ? req.body.college_id.trim() : '';
   const branch = req.body.branch;
   const year = Number(req.body.year);
   const section = typeof req.body.section === 'string' ? req.body.section.trim() : '';
+  if (!['student', 'mentor'].includes(role)) return res.status(403).json({ success: false, message: 'Use the coordinator invite flow to register a coordinator' });
   if (!collegeId || collegeId.length > 80) return res.status(400).json({ success: false, message: 'College ID is required (maximum 80 characters)' });
   const enrollmentNo = role === 'student' ? String(req.body.enrollment_no || '').trim() : collegeId;
   if (role === 'student' && (!enrollmentNo || enrollmentNo.length > 80)) return res.status(400).json({ success: false, message: 'Enrollment number is required (maximum 80 characters)' });
@@ -74,6 +74,8 @@ exports.register = async (req, res) => {
       const { college_id, branch, year, section } = req.body;
       const [[mentorNumberRow]] = await connection.query('SELECT COALESCE(MAX(mentor_number), 0) + 1 AS mentor_number FROM mentor_profiles');
       await connection.query('INSERT INTO mentor_profiles (user_id, mentor_code, email, mentor_number, college_id, branch, year, section, designation, department) VALUES (?,?,?,?,?,?,?,?,?,?)', [user_id, pecId, String(email).trim().toLowerCase(), mentorNumberRow.mentor_number, String(college_id).trim(), branch, Number(year), String(section).trim(), 'Mentor', branch]);
+    } else if (role === 'coordinator') {
+      await connection.query('INSERT INTO coordinator_profiles (user_id, coordinator_code, email, employee_id, college_id, branch, year, section, designation, department) VALUES (?,?,?,?,?,?,?,?,?,?)', [user_id, pecId, String(email).trim().toLowerCase(), pecId, String(collegeId).trim(), branch, year, section, 'Coordinator', branch]);
     }
     await connection.commit();
     const token = generateToken({ id: user_id, name: String(name).trim(), email: String(email).trim().toLowerCase(), role });

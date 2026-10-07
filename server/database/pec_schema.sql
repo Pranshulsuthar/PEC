@@ -3,11 +3,6 @@
 -- No DROP DATABASE statements – only CREATE TABLE IF NOT EXISTS
 -- All tables use InnoDB and UTF8MB4 charset
 
-CREATE TABLE IF NOT EXISTS account_id_counters (
-    prefix VARCHAR(20) NOT NULL PRIMARY KEY,
-    next_value BIGINT UNSIGNED NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
 SET NAMES utf8mb4;
 SET foreign_key_checks = 0;
 
@@ -39,7 +34,7 @@ CREATE TABLE IF NOT EXISTS student_profiles (
     college_id VARCHAR(80) NULL UNIQUE,
     enrollment_no VARCHAR(80) NULL UNIQUE,
     roll_number VARCHAR(50) NULL,
-    branch VARCHAR(100) NULL,
+    branch VARCHAR(20) NULL,
     semester INT NULL,
     phone VARCHAR(20) NULL,
     `section` VARCHAR(50) NULL,
@@ -105,7 +100,6 @@ CREATE TABLE IF NOT EXISTS coordinator_profiles (
     employee_id VARCHAR(50) NULL,
     designation VARCHAR(100) NULL,
     department VARCHAR(100) NULL,
-    employee_id VARCHAR(50) NULL,
     bio TEXT NULL,
     profile_image VARCHAR(500) NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

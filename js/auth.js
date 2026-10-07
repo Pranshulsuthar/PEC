@@ -17,6 +17,7 @@ function showAuth(viewId) {
   var targetId = viewId === 'role-selection' ? 'view-role-selection' :
                  (viewId.indexOf('view-') === 0 ? viewId : 'view-' + viewId);
   if (viewId === 'coordinator-signup') targetId = 'view-coordinator-signup';
+  if (viewId === 'coordinator-signup') targetId = 'view-coordinator-signup';
   var target = document.getElementById(targetId) ||
                document.getElementById('view-role-selection');
   if (target) {
@@ -426,7 +427,18 @@ document.addEventListener('submit', function (e) {
       });
     });
   }
-  function storeToken(tok) { sessionStorage.setItem('pec_jwt', tok); }
+  function storeToken(tok, user) {
+    sessionStorage.setItem('pec_jwt', tok);
+    if (user) {
+      sessionStorage.setItem('pec_user', JSON.stringify(user));
+      window.currentUser = user;
+    }
+  }
+  function continueToDashboard(response) {
+    storeToken(response.token, response.user);
+    var destination = '../pages/dashboard.html?role=' + encodeURIComponent(response.user && response.user.role || '') + '#';
+    window.location.replace(destination);
+  }
   function showSignupComplete(response) {
     var card = form.closest('.auth-card');
     if (card) {
@@ -449,9 +461,7 @@ document.addEventListener('submit', function (e) {
     button.className = 'btn btn-primary';
     button.textContent = 'Continue to Dashboard';
     button.addEventListener('click', function () {
-      storeToken(response.token);
-      sessionStorage.setItem('pec_user', JSON.stringify(response.user));
-      window.location.replace('../pages/dashboard.html');
+      continueToDashboard(response);
     });
     form.append(title, description, pecId, button);
   }
@@ -461,12 +471,10 @@ document.addEventListener('submit', function (e) {
       return Promise.resolve(false);
     }
     if (response.pec_id) {
-      storeToken(response.token);
       showSignupComplete(response);
       return Promise.resolve(true);
     }
-    storeToken(response.token);
-    window.location.replace('../pages/dashboard.html');
+    continueToDashboard(response);
     return Promise.resolve(true);
   }
 
@@ -603,15 +611,15 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   });
   var requestedView = new URLSearchParams(window.location.search).get('view');
-  if (requestedView && (document.getElementById('view-' + requestedView) || requestedView === 'coordinator-signup')) {
+  if (requestedView && document.getElementById('view-' + requestedView)) {
     document.body.classList.add('shared-signup-link');
     showAuth(requestedView);
     if (requestedView === 'student-signup' || requestedView === 'mentor-signup' || requestedView === 'coordinator-signup') {
       document.documentElement.classList.add('shared-signup-link');
       document.querySelectorAll('.auth-view').forEach(function (view) { view.classList.remove('active'); });
-      var signupView = requestedView === 'coordinator-signup' ? document.getElementById('view-role-selection') : document.getElementById('view-' + requestedView);
+      var signupView = document.getElementById('view-' + requestedView);
       signupView.classList.add('active');
-      var signupCard = requestedView === 'coordinator-signup' ? document.getElementById('coordinator-signup-card') : signupView.querySelector('.signup-card');
+      var signupCard = signupView.querySelector('.signup-card');
       if (signupCard) signupCard.classList.add('active');
     }
   }

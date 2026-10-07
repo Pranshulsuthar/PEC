@@ -122,6 +122,7 @@ async function init() {
     await pool.query('ALTER TABLE student_profiles ADD COLUMN IF NOT EXISTS github_url VARCHAR(500) NULL');
     await pool.query('ALTER TABLE student_profiles ADD COLUMN IF NOT EXISTS linkedin_url VARCHAR(500) NULL');
     await pool.query('ALTER TABLE student_profiles ADD COLUMN IF NOT EXISTS profile_image VARCHAR(500) NULL');
+    await pool.query('ALTER TABLE student_profiles ADD COLUMN IF NOT EXISTS is_active BOOLEAN DEFAULT TRUE');
     await pool.query('ALTER TABLE student_profiles ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP');
     await pool.query('ALTER TABLE student_profiles ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP');
     await pool.query('ALTER TABLE mentor_profiles ADD COLUMN IF NOT EXISTS mentor_code VARCHAR(50) NULL');
@@ -152,7 +153,6 @@ async function init() {
     await pool.query('ALTER TABLE coordinator_profiles ADD COLUMN IF NOT EXISTS profile_image VARCHAR(500) NULL');
     await pool.query('ALTER TABLE coordinator_profiles ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP');
     await pool.query('ALTER TABLE coordinator_profiles ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP');
-    await pool.query('ALTER TABLE coordinator_profiles ADD COLUMN IF NOT EXISTS employee_id VARCHAR(50) NULL');
     await pool.query('ALTER TABLE student_profiles ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP');
     await pool.query('ALTER TABLE student_profiles ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP');
     await pool.query('ALTER TABLE mentor_profiles ADD COLUMN IF NOT EXISTS is_active BOOLEAN DEFAULT TRUE');
@@ -160,13 +160,10 @@ async function init() {
     await pool.query('ALTER TABLE mentor_profiles ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP');
     await pool.query('UPDATE student_profiles sp JOIN users u ON u.id = sp.user_id SET sp.email = u.email WHERE sp.email IS NULL');
     await pool.query('UPDATE student_profiles SET enrollment_no = COALESCE(enrollment_no, roll_number, college_id) WHERE enrollment_no IS NULL');
-    await pool.query('UPDATE student_profiles SET roll_number = COALESCE(roll_number, enrollment_no) WHERE roll_number IS NULL');
     await pool.query('UPDATE student_profiles SET college_id = COALESCE(college_id, enrollment_no) WHERE college_id IS NULL');
+    await pool.query('UPDATE student_profiles SET roll_number = COALESCE(roll_number, enrollment_no) WHERE roll_number IS NULL');
     await pool.query('UPDATE mentor_profiles mp JOIN users u ON u.id = mp.user_id SET mp.email = u.email WHERE mp.email IS NULL');
     await pool.query('UPDATE coordinator_profiles cp JOIN users u ON u.id = cp.user_id SET cp.email = u.email WHERE cp.email IS NULL');
-    await pool.query('UPDATE student_profiles SET enrollment_no = college_id WHERE enrollment_no IS NULL AND college_id IS NOT NULL');
-    await pool.query('UPDATE student_profiles SET college_id = enrollment_no WHERE college_id IS NULL AND enrollment_no IS NOT NULL');
-    await pool.query('UPDATE student_profiles SET roll_number = enrollment_no WHERE roll_number IS NULL AND enrollment_no IS NOT NULL');
     const profileUniqueIndexes = [
       ['uq_student_profiles_college_id', 'student_profiles', 'college_id'],
       ['uq_mentor_profiles_college_id', 'mentor_profiles', 'college_id'],
@@ -189,30 +186,32 @@ async function init() {
     await pool.query('ALTER TABLE mentor_profiles ADD COLUMN IF NOT EXISTS is_active BOOLEAN DEFAULT TRUE');
     const [counterTables] = await pool.query("SELECT TABLE_NAME FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'account_id_counters'");
     if (!counterTables.length) await pool.query('CREATE TABLE account_id_counters (prefix VARCHAR(20) NOT NULL PRIMARY KEY, next_value BIGINT UNSIGNED NOT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4');
-    const pecMigrationLock = await pool.getConnection();
-    try {
-      const [[pecLock]] = await pecMigrationLock.query("SELECT GET_LOCK('pec_ids_migration_v1', 30) AS acquired");
-      if (Number(pecLock.acquired) !== 1) throw new Error('Could not obtain PEC ID migration lock');
-    } finally { pecMigrationLock.release(); }
     const [markerTables] = await pool.query("SELECT TABLE_NAME FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'user_profiles_migration_marker'");
     if (!markerTables.length) await pool.query('CREATE TABLE user_profiles_migration_marker (migration_key VARCHAR(80) NOT NULL PRIMARY KEY, applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4');
     await pool.query('UPDATE student_profiles SET enrollment_no = college_id WHERE enrollment_no IS NULL AND college_id IS NOT NULL');
     await pool.query('UPDATE student_profiles SET college_id = enrollment_no WHERE college_id IS NULL AND enrollment_no IS NOT NULL');
-    const [[studentEnrollmentDuplicates]] = await pool.query('SELECT COUNT(*) AS count FROM (SELECT college_id FROM student_profiles WHERE college_id IS NOT NULL GROUP BY college_id HAVING COUNT(*) > 1) duplicates_found');
-    if (Number(studentEnrollmentDuplicates.count) === 0) {
-      try { await pool.query('CREATE UNIQUE INDEX IF NOT EXISTS uq_student_profiles_college_id ON student_profiles (college_id)'); }
-      catch (error) { if (error.code !== 'ER_DUP_ENTRY') throw error; console.error('Duplicate college IDs remain in existing records; preserving data and not enforcing the unique index.'); }
-    } else {
-      console.error('Existing duplicate college IDs found; records are preserved and college ID uniqueness is not enforced until duplicates are resolved.');
+    for (const [table, column, index] of [
+      ['student_profiles', 'college_id', 'uq_student_profiles_college_id'],
+      ['student_profiles', 'enrollment_no', 'uq_student_profiles_enrollment_no'],
+      ['mentor_profiles', 'college_id', 'uq_mentor_profiles_college_id'],
+      ['coordinator_profiles', 'college_id', 'uq_coordinator_profiles_college_id']
+    ]) {
+      const [[duplicate]] = await pool.query(`SELECT ${column} AS duplicate_value, COUNT(*) AS total FROM ${table} WHERE ${column} IS NOT NULL AND ${column} <> '' GROUP BY ${column} HAVING COUNT(*) > 1 LIMIT 1`);
+      if (duplicate) {
+        console.error('Existing duplicate ' + table + '.' + column + ' (' + duplicate.duplicate_value + ') found; preserved data and skipped unique index.');
+        continue;
+      }
+      try { await pool.query(`CREATE UNIQUE INDEX IF NOT EXISTS ${index} ON ${table} (${column})`); }
+      catch (error) { if (error.code !== 'ER_DUP_ENTRY') throw error; console.error('Could not enforce uniqueness for ' + table + '.' + column + '; existing rows were retained.'); }
     }
-    const [[migrationApplied]] = await pool.query("SELECT migration_key FROM user_profiles_migration_marker WHERE migration_key = 'generated-pec-ids-v1'");
-    if (!migrationApplied) {
-      const counterConnection = await pool.getConnection();
-      let migrationLock = false;
-      try {
-        const [[lock]] = await counterConnection.query("SELECT GET_LOCK('pec_ids_migration_v1', 30) AS acquired");
-        migrationLock = Number(lock.acquired) === 1;
-        if (!migrationLock) throw new Error('Could not obtain PEC ID migration lock');
+    const counterConnection = await pool.getConnection();
+    let migrationLock = false;
+    try {
+      const [[lock]] = await counterConnection.query("SELECT GET_LOCK('pec_ids_migration_v1', 30) AS acquired");
+      migrationLock = Number(lock.acquired) === 1;
+      if (!migrationLock) throw new Error('Could not obtain PEC ID migration lock');
+      const [[migrationApplied]] = await counterConnection.query("SELECT migration_key FROM user_profiles_migration_marker WHERE migration_key = 'generated-pec-ids-v1'");
+      if (!migrationApplied) {
         const [[alreadyApplied]] = await counterConnection.query("SELECT migration_key FROM user_profiles_migration_marker WHERE migration_key = 'generated-pec-ids-v1'");
         if (!alreadyApplied) {
           await counterConnection.beginTransaction();
@@ -243,14 +242,11 @@ async function init() {
           await counterConnection.query("INSERT INTO user_profiles_migration_marker (migration_key) VALUES ('generated-pec-ids-v1')");
           await counterConnection.commit();
         }
-      } catch (error) {
-        try { await counterConnection.rollback(); } catch (rollbackError) { console.error('PEC ID migration rollback failed:', rollbackError); }
-        throw error;
-      } finally {
-        if (migrationLock) { try { await counterConnection.query("SELECT RELEASE_LOCK('pec_ids_migration_v1')"); } catch (error) { console.error('PEC ID migration lock release failed:', error); } }
-        counterConnection.release();
       }
-    }
+    } catch (error) {
+      if (migrationLock) { try { await counterConnection.query("SELECT RELEASE_LOCK('pec_ids_migration_v1')"); } catch (releaseError) { console.error('PEC ID migration lock release failed:', releaseError); } }
+      throw error;
+    } finally { counterConnection.release(); }
     await pool.query('UPDATE student_profiles SET email = (SELECT email FROM users WHERE users.id = student_profiles.user_id) WHERE email IS NULL');
     await pool.query('UPDATE mentor_profiles SET email = (SELECT email FROM users WHERE users.id = mentor_profiles.user_id) WHERE email IS NULL');
     await pool.query('UPDATE coordinator_profiles SET email = (SELECT email FROM users WHERE users.id = coordinator_profiles.user_id) WHERE email IS NULL');
