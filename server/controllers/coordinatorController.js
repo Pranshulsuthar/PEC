@@ -1,10 +1,20 @@
 const pool = require('../config/db');
 const bcrypt = require('bcryptjs');
+const { publishDashboardUpdate } = require('../services/realtime');
 
 function validEmail(email) { return typeof email === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email); }
 
+function getRoleAccountPrefix(role) {
+  switch (role) {
+    case 'student': return 'PECSTU';
+    case 'mentor': return 'PECMTR';
+    case 'coordinator': return 'PECCRD';
+    default: return 'PEC';
+  }
+}
+
 async function createAccountId(connection, prefix) {
-  await connection.query('INSERT IGNORE INTO account_id_counters (prefix, next_value) VALUES (?, 100)', [prefix]);
+  await connection.query('INSERT IGNORE INTO account_id_counters (prefix, next_value) VALUES (?, 1000)', [prefix]);
   const [[counter]] = await connection.query('SELECT next_value FROM account_id_counters WHERE prefix = ? FOR UPDATE', [prefix]);
   const value = Number(counter.next_value);
   await connection.query('UPDATE account_id_counters SET next_value = ? WHERE prefix = ?', [value + 1, prefix]);
@@ -27,12 +37,12 @@ exports.createStudent = async (req, res) => {
     await connection.beginTransaction();
     const [[duplicate]] = await connection.query('SELECT u.id FROM users u LEFT JOIN student_profiles sp ON sp.user_id = u.id LEFT JOIN mentor_profiles mp ON mp.user_id = u.id LEFT JOIN coordinator_profiles cp ON cp.user_id = u.id WHERE u.email = ? OR sp.college_id = ? OR sp.enrollment_no = ? OR mp.college_id = ? OR cp.college_id = ? LIMIT 1 FOR UPDATE', [String(email).trim().toLowerCase(), String(college_id).trim(), String(enrollment_no).trim(), String(college_id).trim(), String(college_id).trim()]);
     if (duplicate) { await connection.rollback(); return res.status(409).json({ success: false, message: 'Email, College ID, or enrollment number already exists' }); }
-    const pecId = await createAccountId(connection, 'PEC');
+    const pecId = await createAccountId(connection, getRoleAccountPrefix('student'));
     const passwordHash = await bcrypt.hash(password, 12);
     const [user] = await connection.query("INSERT INTO users (name,email,password,role,is_active) VALUES (?,?,?,'student',1)", [String(name).trim(), String(email).trim().toLowerCase(), passwordHash]);
     await connection.query('INSERT INTO student_profiles (user_id,student_code,email,college_id,enrollment_no,roll_number,branch,year,section,linkedin_profile,github_profile,leetcode_profile) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)', [user.insertId, pecId, String(email).trim().toLowerCase(), String(college_id).trim(), String(enrollment_no).trim(), String(enrollment_no).trim(), branch, Number(year), String(section).trim(), linkedin_profile || null, github_profile || null, leetcode_profile || null]);
-    await connection.query('UPDATE account_id_counters SET next_value = GREATEST(next_value, ?) WHERE prefix = ?', [Number(String(pecId).split('_')[1]) + 1, 'PEC']);
     await connection.commit();
+    publishDashboardUpdate(req, { roles: ['coordinator'], resource: 'student.created' });
     res.status(201).json({ success: true, message: 'Account created successfully', pec_id: pecId, student_id: user.insertId });
   } catch (error) { try { await connection.rollback(); } catch (rollbackError) { console.error(rollbackError); } if (error.code === 'ER_DUP_ENTRY') return res.status(409).json({ success: false, message: 'Email, College ID, or PEC ID already exists' }); console.error(error); res.status(500).json({ success: false, message: 'Unable to create student' }); }
   finally { connection.release(); }
@@ -40,6 +50,7 @@ exports.createStudent = async (req, res) => {
 
 exports.createCoordinator = async (req, res) => {
   const { name, email, password, college_id, branch, year, section } = req.body;
+  if (req.user && req.user.role !== 'coordinator') return res.status(403).json({ success: false, message: 'Only an existing coordinator can create coordinator accounts' });
   if (!name || String(name).trim().length > 160 || !validEmail(email) || typeof password !== 'string' || password.length < 8 || !college_id || !branch || !year || !section) return res.status(400).json({ success: false, message: 'Name, valid email, password, College ID, branch, year, and section are required' });
   if (!['IT', 'CS', 'AI', 'DS'].includes(branch) || !Number.isInteger(Number(year)) || Number(year) < 1 || Number(year) > 8 || String(section).trim().length > 50 || String(college_id).trim().length > 80) return res.status(400).json({ success: false, message: 'Invalid branch, year, section, or College ID' });
   const connection = await pool.getConnection();
@@ -47,12 +58,12 @@ exports.createCoordinator = async (req, res) => {
     await connection.beginTransaction();
     const [[duplicate]] = await connection.query('SELECT u.id FROM users u LEFT JOIN student_profiles sp ON sp.user_id = u.id LEFT JOIN mentor_profiles mp ON mp.user_id = u.id LEFT JOIN coordinator_profiles cp ON cp.user_id = u.id WHERE u.email = ? OR sp.college_id = ? OR mp.college_id = ? OR cp.college_id = ? LIMIT 1 FOR UPDATE', [String(email).trim().toLowerCase(), String(college_id).trim(), String(college_id).trim(), String(college_id).trim()]);
     if (duplicate) { await connection.rollback(); return res.status(409).json({ success: false, message: 'Email or College ID already exists' }); }
-    const pecId = await createAccountId(connection, 'PEC');
+    const pecId = await createAccountId(connection, getRoleAccountPrefix('coordinator'));
     const passwordHash = await bcrypt.hash(password, 12);
     const [user] = await connection.query("INSERT INTO users (name,email,password,role,is_active) VALUES (?,?,?,'coordinator',1)", [String(name).trim(), String(email).trim().toLowerCase(), passwordHash]);
     await connection.query('INSERT INTO coordinator_profiles (user_id,coordinator_code,email,employee_id,college_id,branch,year,section) VALUES (?,?,?,?,?,?,?,?)', [user.insertId, pecId, String(email).trim().toLowerCase(), pecId, String(college_id).trim(), branch, Number(year), String(section).trim()]);
-    await connection.query('UPDATE account_id_counters SET next_value = GREATEST(next_value, ?) WHERE prefix = ?', [Number(String(pecId).split('_')[1]) + 1, 'PEC']);
     await connection.commit();
+    publishDashboardUpdate(req, { roles: ['coordinator'], resource: 'coordinator.created' });
     res.status(201).json({ success: true, message: 'Account created successfully', pec_id: pecId, coordinator_id: user.insertId });
   } catch (error) { try { await connection.rollback(); } catch (rollbackError) { console.error(rollbackError); } if (error.code === 'ER_DUP_ENTRY') return res.status(409).json({ success: false, message: 'Email, College ID, or PEC ID already exists' }); console.error(error); res.status(500).json({ success: false, message: 'Unable to create coordinator' }); }
   finally { connection.release(); }
@@ -67,13 +78,13 @@ exports.createMentor = async (req, res) => {
     await connection.beginTransaction();
     const [[duplicate]] = await connection.query('SELECT u.id FROM users u LEFT JOIN student_profiles sp ON sp.user_id = u.id LEFT JOIN mentor_profiles mp ON mp.user_id = u.id LEFT JOIN coordinator_profiles cp ON cp.user_id = u.id WHERE u.email = ? OR sp.college_id = ? OR mp.college_id = ? OR cp.college_id = ? LIMIT 1 FOR UPDATE', [String(email).trim().toLowerCase(), String(college_id).trim(), String(college_id).trim(), String(college_id).trim()]);
     if (duplicate) { await connection.rollback(); return res.status(409).json({ success: false, message: 'Email or College ID already exists' }); }
-    const pecId = await createAccountId(connection, 'PEC');
+    const pecId = await createAccountId(connection, getRoleAccountPrefix('mentor'));
     const [[number]] = await connection.query('SELECT COALESCE(MAX(mentor_number),0)+1 AS next_number FROM mentor_profiles');
     const passwordHash = await bcrypt.hash(password, 12);
     const [user] = await connection.query("INSERT INTO users (name,email,password,role,is_active) VALUES (?,?,?,'mentor',1)", [String(name).trim(), String(email).trim().toLowerCase(), passwordHash]);
     await connection.query('INSERT INTO mentor_profiles (user_id,mentor_code,email,mentor_number,college_id,branch,year,section) VALUES (?,?,?,?,?,?,?,?)', [user.insertId, pecId, String(email).trim().toLowerCase(), number.next_number, String(college_id).trim(), branch, Number(year), String(section).trim()]);
-    await connection.query('UPDATE account_id_counters SET next_value = GREATEST(next_value, ?) WHERE prefix = ?', [Number(String(pecId).split('_')[1]) + 1, 'PEC']);
     await connection.commit();
+    publishDashboardUpdate(req, { roles: ['coordinator'], resource: 'mentor.created' });
     res.status(201).json({ success: true, message: 'Account created successfully', pec_id: pecId, mentor_id: user.insertId });
   } catch (error) { try { await connection.rollback(); } catch (rollbackError) { console.error(rollbackError); } if (error.code === 'ER_DUP_ENTRY') return res.status(409).json({ success: false, message: 'Email, College ID, or PEC ID already exists' }); console.error(error); res.status(500).json({ success: false, message: 'Unable to create mentor' }); }
   finally { connection.release(); }
@@ -86,6 +97,7 @@ exports.updateStudent = async (req, res) => {
   try {
     const [result] = await pool.query("UPDATE users u JOIN student_profiles sp ON sp.user_id = u.id SET u.name = COALESCE(?,u.name),u.email = COALESCE(?,u.email),sp.branch = COALESCE(?,sp.branch),sp.year = COALESCE(?,sp.year),sp.skills = COALESCE(?,sp.skills),sp.roll_number = COALESCE(?,sp.roll_number) WHERE u.id = ? AND u.role = 'student'", [name || null,email || null,branch || null,year || null,skills || null,enrollment_no || null,req.params.id]);
     if (!result.affectedRows) return res.status(404).json({ success: false, message: 'Student not found' });
+    publishDashboardUpdate(req, { userIds: [req.params.id], roles: ['coordinator'], resource: 'student.updated' });
     res.json({ success: true });
   } catch (error) { if (error.code === 'ER_DUP_ENTRY') return res.status(409).json({ success: false, message: 'Email or enrollment number already exists' }); console.error(error); res.status(500).json({ success: false, message: 'Unable to update student' }); }
 };
@@ -97,6 +109,7 @@ exports.updateMentor = async (req, res) => {
   try {
     const [result] = await pool.query("UPDATE users u JOIN mentor_profiles mp ON mp.user_id = u.id SET u.name = COALESCE(?,u.name),u.email = COALESCE(?,u.email),mp.department = COALESCE(?,mp.department),mp.designation = COALESCE(?,mp.designation),mp.group_id = COALESCE(?,mp.group_id),mp.group_name = COALESCE(?,mp.group_name),mp.specialization = COALESCE(?,mp.specialization),mp.bio = COALESCE(?,mp.bio) WHERE u.id = ? AND u.role = 'mentor'", [name || null,email || null,department || null,designation || null,group_id || null,group_name || null,expertise || null,bio || null,req.params.id]);
     if (!result.affectedRows) return res.status(404).json({ success: false, message: 'Mentor not found' });
+    publishDashboardUpdate(req, { userIds: [req.params.id], roles: ['coordinator'], resource: 'mentor.updated' });
     res.json({ success: true });
   } catch (error) { if (error.code === 'ER_DUP_ENTRY') return res.status(409).json({ success: false, message: 'Email or Group ID already exists' }); console.error(error); res.status(500).json({ success: false, message: 'Unable to update mentor' }); }
 };
@@ -106,6 +119,7 @@ exports.updateStudentStatus = async (req, res) => {
   try {
     const [result] = await pool.query("UPDATE users SET is_active = ? WHERE id = ? AND role = 'student'", [isActive ? 1 : 0, req.params.id]);
     if (!result.affectedRows) return res.status(404).json({ success: false, message: 'Student not found' });
+    publishDashboardUpdate(req, { userIds: [req.params.id], roles: ['coordinator'], resource: 'student.status' });
     res.json({ success: true });
   } catch (error) { console.error(error); res.status(500).json({ success: false, message: 'Unable to update student status' }); }
 };
@@ -115,6 +129,7 @@ exports.updateMentorStatus = async (req, res) => {
   try {
     const [result] = await pool.query("UPDATE users SET is_active = ? WHERE id = ? AND role = 'mentor'", [isActive ? 1 : 0, req.params.id]);
     if (!result.affectedRows) return res.status(404).json({ success: false, message: 'Mentor not found' });
+    publishDashboardUpdate(req, { userIds: [req.params.id], roles: ['coordinator'], resource: 'mentor.status' });
     res.json({ success: true });
   } catch (error) { console.error(error); res.status(500).json({ success: false, message: 'Unable to update mentor status' }); }
 };
@@ -238,9 +253,9 @@ exports.assignMentorToStudent = async (req, res) => {
         return res.status(409).json({ success: false, message: 'Student is already assigned to another mentor. Remove the current assignment first.' });
       }
       const [[capacity]] = await connection.query("SELECT COUNT(*) AS count FROM mentor_student ms JOIN users student ON student.id = ms.student_id AND student.role = 'student' WHERE ms.mentor_id = ? AND ms.status = 'active'", [mentorId]);
-      if (Number(capacity.count) >= 7) {
+      if (Number(capacity.count) >= 8) {
         await connection.rollback();
-        return res.status(409).json({ success: false, message: 'Mentor capacity reached. Maximum 7 mentees are allowed.' });
+        return res.status(409).json({ success: false, message: 'Mentor capacity reached. Maximum 8 mentees are allowed.' });
       }
       const [[activeAssignment]] = await connection.query("SELECT ms.id, ms.mentor_id FROM mentor_student ms JOIN users mentor ON mentor.id = ms.mentor_id AND mentor.role = 'mentor' WHERE ms.student_id = ? AND ms.status = 'active' LIMIT 1 FOR UPDATE", [studentId]);
       if (activeAssignment) {
@@ -254,6 +269,7 @@ exports.assignMentorToStudent = async (req, res) => {
         await connection.query("INSERT INTO mentor_student (mentor_id, student_id, assigned_by, status) VALUES (?, ?, ?, 'active')", [mentorId, studentId, req.user.user_id]);
       }
       await connection.commit();
+      publishDashboardUpdate(req, { userIds: [studentId, mentorId], roles: ['coordinator'], resource: 'mentor.assignment' });
       res.status(201).json({ success: true, message: 'Mentor assigned to student' });
     } catch (err) {
       await connection.rollback();
@@ -306,6 +322,7 @@ exports.createTask = async (req, res) => {
         for (const student of students) await connection.query('INSERT INTO notifications (user_id, title, `message`, type) VALUES (?,?,?,?)', [student.id, 'New challenge available', String(title).trim(), 'challenge']);
       }
       await connection.commit();
+      publishDashboardUpdate(req, { roles: ['student', 'coordinator'], resource: 'challenge.published' });
       res.status(201).json({ success: true, task_id: result.insertId });
     } catch (err) {
       await connection.rollback();
@@ -330,6 +347,7 @@ exports.updateTask = async (req, res) => {
       await pool.query("INSERT INTO task_assignments (task_id, student_id, assigned_by, deadline) SELECT ?, u.id, ?, COALESCE(?, t.deadline) FROM users u JOIN tasks t ON t.id = ? WHERE u.role = 'student' AND NOT EXISTS (SELECT 1 FROM task_assignments ta WHERE ta.task_id = t.id AND ta.student_id = u.id)", [req.params.id, req.user.user_id, deadline || null, req.params.id]);
       for (const student of students) await pool.query('INSERT INTO notifications (user_id, title, `message`, type) VALUES (?,?,?,?)', [student.id, 'New challenge available', title || existing.title || 'A challenge was published', 'challenge']);
     }
+    publishDashboardUpdate(req, { roles: ['student', 'coordinator'], resource: 'challenge.updated' });
     res.json({ success: true, message: 'Task updated' });
   } catch (err) { console.error(err); res.status(500).json({ success: false, message: 'Server error' }); }
 };
@@ -338,6 +356,7 @@ exports.deleteTask = async (req, res) => {
   try {
     const [result] = await pool.query("UPDATE tasks SET status = 'archived' WHERE id = ?", [req.params.id]);
     if (!result.affectedRows) return res.status(404).json({ success: false, message: 'Challenge not found' });
+    publishDashboardUpdate(req, { roles: ['student', 'coordinator'], resource: 'challenge.archived' });
     res.json({ success: true, message: 'Challenge archived' });
   } catch (err) { console.error(err); res.status(500).json({ success: false, message: 'Server error' }); }
 };
@@ -351,6 +370,7 @@ exports.createNews = async (req, res) => {
       'INSERT INTO news (title, content, image_url, category, created_by, status, published_at) VALUES (?,?,?,?,?,?,?)',
       [String(title).trim(), String(content).trim(), image_url || null, category || null, req.user.user_id, status || 'draft', status === 'published' ? new Date() : null]
     );
+    publishDashboardUpdate(req, { roles: ['student', 'mentor', 'coordinator'], resource: 'news.created' });
     res.status(201).json({ success: true, news_id: result.insertId });
   } catch (err) { console.error(err); res.status(500).json({ success: false, message: 'Server error' }); }
 };
@@ -360,6 +380,7 @@ exports.updateNews = async (req, res) => {
   try {
     const [result] = await pool.query('UPDATE news SET title = COALESCE(?, title), content = COALESCE(?, content), image_url = COALESCE(?, image_url), category = COALESCE(?, category), status = COALESCE(?, status), published_at = CASE WHEN ? = \'published\' THEN COALESCE(published_at, NOW()) WHEN ? = \'draft\' THEN NULL ELSE published_at END WHERE id = ?', [title || null, content || null, image_url || null, category || null, status || null, status || null, status || null, req.params.id]);
     if (!result.affectedRows) return res.status(404).json({ success: false, message: 'News not found' });
+    publishDashboardUpdate(req, { roles: ['student', 'mentor', 'coordinator'], resource: 'news.updated' });
     res.json({ success: true, message: 'News updated' });
   } catch (err) { console.error(err); res.status(500).json({ success: false, message: 'Server error' }); }
 };
@@ -368,6 +389,7 @@ exports.deleteNews = async (req, res) => {
   try {
     const [result] = await pool.query('DELETE FROM news WHERE id = ?', [req.params.id]);
     if (!result.affectedRows) return res.status(404).json({ success: false, message: 'News not found' });
+    publishDashboardUpdate(req, { roles: ['student', 'mentor', 'coordinator'], resource: 'news.deleted' });
     res.json({ success: true, message: 'News deleted' });
   } catch (err) { console.error(err); res.status(500).json({ success: false, message: 'Server error' }); }
 };
@@ -381,6 +403,7 @@ exports.createEvent = async (req, res) => {
       'INSERT INTO events (title, description, event_date, start_time, end_time, location, image_url, status, created_by) VALUES (?,?,?,?,?,?,?,?,?)',
       [String(title).trim(), description || null, event_date, start_time || null, end_time || null, location || null, image_url || null, status || 'published', req.user.user_id]
     );
+    publishDashboardUpdate(req, { roles: ['student', 'mentor', 'coordinator'], resource: 'event.created' });
     res.status(201).json({ success: true, event_id: result.insertId });
   } catch (err) { console.error(err); res.status(500).json({ success: false, message: 'Server error' }); }
 };
@@ -390,6 +413,7 @@ exports.updateEvent = async (req, res) => {
   try {
     const [result] = await pool.query('UPDATE events SET title = COALESCE(?, title), description = COALESCE(?, description), event_date = COALESCE(?, event_date), start_time = COALESCE(?, start_time), end_time = COALESCE(?, end_time), location = COALESCE(?, location), image_url = COALESCE(?, image_url), status = COALESCE(?, status) WHERE id = ?', [title || null, description || null, event_date || null, start_time || null, end_time || null, location || null, image_url || null, status || null, req.params.id]);
     if (!result.affectedRows) return res.status(404).json({ success: false, message: 'Event not found' });
+    publishDashboardUpdate(req, { roles: ['student', 'mentor', 'coordinator'], resource: 'event.updated' });
     res.json({ success: true, message: 'Event updated' });
   } catch (err) { console.error(err); res.status(500).json({ success: false, message: 'Server error' }); }
 };
@@ -398,6 +422,7 @@ exports.deleteEvent = async (req, res) => {
   try {
     const [result] = await pool.query('DELETE FROM events WHERE id = ?', [req.params.id]);
     if (!result.affectedRows) return res.status(404).json({ success: false, message: 'Event not found' });
+    publishDashboardUpdate(req, { roles: ['student', 'mentor', 'coordinator'], resource: 'event.deleted' });
     res.json({ success: true, message: 'Event deleted' });
   } catch (err) { console.error(err); res.status(500).json({ success: false, message: 'Server error' }); }
 };
@@ -427,6 +452,8 @@ exports.getDashboard = async (req, res) => {
     const [recentStudents] = await pool.query("SELECT u.id, u.name, u.email, sp.student_code, sp.branch, sp.year, u.created_at FROM users u LEFT JOIN student_profiles sp ON sp.user_id = u.id WHERE u.role = 'student' ORDER BY u.created_at DESC LIMIT 6");
     const [recentSubmissions] = await pool.query("SELECT ts.id, ts.status, ts.submitted_at, ts.score, t.title, u.name AS student_name FROM task_submissions ts JOIN tasks t ON t.id = ts.task_id JOIN users u ON u.id = ts.student_id ORDER BY ts.submitted_at DESC LIMIT 5");
     const [upcomingEvents] = await pool.query("SELECT * FROM events WHERE status = 'published' AND event_date >= CURDATE() ORDER BY event_date ASC LIMIT 5");
-    res.json({ success: true, stats: { students: Number(students.count), mentors: Number(mentors.count), assignedMentees: Number(assigned.count), unassignedStudents: Number(unassigned.count), tasks: Number(tasks.count), submissions: Number(submissions.count), pendingSubmissions: Number(pendingSubmissions.count), events: Number(publishedEvents.count), upcomingEvents: Number(events.count), news: Number(newsCount.count), resources: Number(resourcesCount.count) }, recentStudents, recentSubmissions, upcomingEvents });
+    const [monthlyActivity] = await pool.query("SELECT DATE_FORMAT(submitted_at, '%b') AS label, COUNT(*) AS submissions FROM task_submissions WHERE submitted_at >= DATE_SUB(CURDATE(), INTERVAL 5 MONTH) GROUP BY YEAR(submitted_at), MONTH(submitted_at), DATE_FORMAT(submitted_at, '%b') ORDER BY YEAR(submitted_at), MONTH(submitted_at)");
+    const [[challengeCompletion]] = await pool.query("SELECT COUNT(ta.id) AS assigned, COALESCE(SUM(ts.status = 'accepted'), 0) AS accepted, COALESCE(SUM(ts.status IN ('submitted', 'late')), 0) AS pending FROM task_assignments ta JOIN tasks t ON t.id = ta.task_id AND t.status = 'published' LEFT JOIN task_submissions ts ON ts.task_id = ta.task_id AND ts.student_id = ta.student_id");
+    res.json({ success: true, stats: { students: Number(students.count), mentors: Number(mentors.count), assignedMentees: Number(assigned.count), unassignedStudents: Number(unassigned.count), tasks: Number(tasks.count), submissions: Number(submissions.count), pendingSubmissions: Number(pendingSubmissions.count), events: Number(publishedEvents.count), upcomingEvents: Number(events.count), news: Number(newsCount.count), resources: Number(resourcesCount.count) }, recentStudents, recentSubmissions, upcomingEvents, monthlyActivity, challengeCompletion: { assigned: Number(challengeCompletion.assigned), accepted: Number(challengeCompletion.accepted), pending: Number(challengeCompletion.pending) } });
   } catch (err) { console.error(err); res.status(500).json({ success: false, message: 'Server error' }); }
 };

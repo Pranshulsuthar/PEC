@@ -15,6 +15,7 @@ const dashboardRoutes = require('./routes/dashboard');
 const { verifyToken } = require('./middleware/authMiddleware');
 const pool = require('./config/db');
 const { init } = require('./config/initDb');
+const { attachRealtime } = require('./services/realtime');
 
 const app = express();
 app.use(cors());
@@ -86,19 +87,22 @@ app.use('/api/notifications', notificationRoutes);
 const PORT = Number.parseInt(process.env.PORT || '5000', 10);
 
 async function start() {
+  const server = app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+  app.set('realtime', attachRealtime(server, pool));
+  const shutdown = async () => {
+    server.close(async () => {
+      await pool.end();
+      process.exit(0);
+    });
+  };
+  process.once('SIGINT', shutdown);
+  process.once('SIGTERM', shutdown);
+
   try {
     await init();
-    const server = app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-    const shutdown = async () => {
-      server.close(async () => {
-        await pool.end();
-        process.exit(0);
-      });
-    };
-    process.once('SIGINT', shutdown);
-    process.once('SIGTERM', shutdown);
   } catch (error) {
-    process.exitCode = 1;
+    console.error('Database initialization failed; the website is available, but database-backed features are unavailable.');
+    console.error(error);
   }
 }
 

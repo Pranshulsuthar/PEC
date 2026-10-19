@@ -2,6 +2,63 @@
 // SECTION 1 - ROLE SWITCHING
 // ========================================
 
+var dashboardSocket = null;
+var dashboardSocketRetryTimer = null;
+var dashboardSocketRetryDelay = 1000;
+var dashboardSocketRefreshTimer = null;
+
+function connectDashboardRealtime(token) {
+  if (dashboardSocketRetryTimer) clearTimeout(dashboardSocketRetryTimer);
+  if (dashboardSocket) {
+    dashboardSocket.onclose = null;
+    dashboardSocket.close();
+  }
+  if (!window.WebSocket || !['http:', 'https:'].includes(window.location.protocol) || !window.location.host || !window.currentUser || sessionStorage.getItem('pec_jwt') !== token) return;
+
+  var socketUrl = (window.location.protocol === 'https:' ? 'wss://' : 'ws://') + window.location.host + '/ws';
+  var socket = new WebSocket(socketUrl);
+  dashboardSocket = socket;
+  socket.addEventListener('open', function () {
+    if (sessionStorage.getItem('pec_jwt') === token) {
+      socket.send(JSON.stringify({ type: 'authenticate', token: token }));
+    } else {
+      socket.close();
+    }
+  });
+  socket.addEventListener('message', function (event) {
+    var message;
+    try {
+      message = JSON.parse(event.data);
+    } catch (error) {
+      console.error('Invalid dashboard update received.');
+      return;
+    }
+    if (message.type === 'authenticated') {
+      dashboardSocketRetryDelay = 1000;
+      refreshActiveDashboard();
+    } else if (message.type === 'dashboard.refresh') {
+      if (dashboardSocketRefreshTimer) clearTimeout(dashboardSocketRefreshTimer);
+      dashboardSocketRefreshTimer = setTimeout(refreshActiveDashboard, 150);
+    }
+  });
+  socket.addEventListener('close', function () {
+    if (dashboardSocket !== socket || !window.currentUser || sessionStorage.getItem('pec_jwt') !== token) return;
+    dashboardSocketRetryTimer = setTimeout(function () {
+      dashboardSocketRetryDelay = Math.min(dashboardSocketRetryDelay * 2, 30000);
+      connectDashboardRealtime(token);
+    }, dashboardSocketRetryDelay);
+  });
+}
+
+function refreshActiveDashboard() {
+  if (document.hidden || !window.currentUser) return;
+  var activeElement = document.activeElement;
+  if (activeElement && activeElement.closest('#app-' + window.currentUser.role + ' form')) return;
+  if (window.currentUser.role === 'student') loadStudentDashboard();
+  else if (window.currentUser.role === 'mentor') loadMentorDashboard();
+  else if (window.currentUser.role === 'coordinator') loadCoordinatorDashboard();
+}
+
 function switchRole(role) {
   if (!role) {
     sessionStorage.removeItem('pec_jwt');
@@ -29,25 +86,19 @@ function switchRole(role) {
     role = tokenUser.role;
   }
   window.currentUser = tokenUser;
-  var roleLabel = role.charAt(0).toUpperCase() + role.slice(1) + ' Portal';
+  var portalLabelMap = {
+    student: '🎓 Student Portal',
+    mentor: '👨‍🏫 Mentor Portal',
+    coordinator: '🧑‍💼 Coordinator Portal'
+  };
+  var roleLabel = portalLabelMap[role] || (role.charAt(0).toUpperCase() + role.slice(1) + ' Portal');
+  sessionStorage.setItem('pec_user', JSON.stringify({ user_id: tokenUser.user_id, name: tokenUser.name, email: tokenUser.email, role: tokenUser.role }));
   document.querySelectorAll('[data-role-context]').forEach(function (el) { el.textContent = roleLabel; });
-  if (window.currentUser && window.currentUser.user_id === tokenUser.user_id && window.currentUser.role === tokenUser.role) {
-    if (role === 'coordinator') loadCoordinatorDashboard();
-    else if (role === 'student') loadStudentDashboard();
-    else if (role === 'mentor') loadMentorDashboard();
-    return;
-  }
 
   document.querySelectorAll('[id^="app-"]').forEach(function(el) {
     el.style.display = 'none';
     el.classList.remove('active');
   });
-
-  if (!role) {
-    document.getElementById('app-role-select').style.display = 'flex';
-    document.getElementById('app-role-select').classList.add('active');
-    return;
-  }
 
   var app = document.getElementById('app-' + role);
   if (app) {
@@ -71,6 +122,7 @@ function switchRole(role) {
   if (role === 'student') loadStudentDashboard();
   else if (role === 'mentor') loadMentorDashboard();
   else if (role === 'coordinator') loadCoordinatorDashboard();
+  connectDashboardRealtime(token);
 }
 
 // ========================================
@@ -430,6 +482,14 @@ function initToastTriggers() {
 // SECTION 13 - INIT
 // ========================================
 
+var dashboardLoadErrorsShown = Object.create(null);
+
+function showDashboardLoadError(role, message) {
+  if (dashboardLoadErrorsShown[role]) return;
+  dashboardLoadErrorsShown[role] = true;
+  showToast(message, 'error');
+}
+
 function apiRequest(path) {
   var token = sessionStorage.getItem('pec_jwt');
   return fetch(path, {
@@ -680,7 +740,8 @@ function loadStudentDashboard() {
   initStudentSubmissionForm();
   initStudentSettingsForm();
   apiRequest('/api/dashboard/student').then(function (data) {
-    if (!data || !data.success) return;
+    if (!data || !data.success) throw new Error(data && data.message || 'Unable to load student dashboard.');
+    dashboardLoadErrorsShown.student = false;
     renderRoleIdentity('#app-student', data.profile, 'Student');
     data.profile = data.profile || {};
     data.progress = data.progress || {};
@@ -761,7 +822,10 @@ function loadStudentDashboard() {
     }
     var challengeContainer = document.querySelector('#app-student .student-current-challenge');
     if (challengeContainer) challengeContainer.innerHTML = data.tasks.length ? data.tasks.map(function (task) { return '<div class="task-item"><div class="task-title">' + escapeHtml(task.title) + '</div><div class="task-desc">' + escapeHtml(task.description || 'No description') + '</div></div>'; }).join('') : '<p class="empty-state">No tasks assigned yet. Your mentor will add tasks here.</p>';
-  }).catch(function (error) { console.error('Student dashboard failed', error); });
+  }).catch(function (error) {
+    console.error('Student dashboard failed', error);
+    showDashboardLoadError('student', error.message || 'Unable to load student dashboard. Check that the PEC server and database are running.');
+  });
 }
 
 function renderMentorStudentProfile(student) {
@@ -775,8 +839,11 @@ function renderMentorStudentProfile(student) {
     return;
   }
   if (card) card.innerHTML = '<div style="display:flex;gap:24px;align-items:center;flex-wrap:wrap;"><div class="user-avatar" style="width:72px;height:72px;font-size:28px;">' + escapeHtml(initials(student.name)) + '</div><div><h3 style="margin:0;">' + escapeHtml(student.name) + '</h3><p style="color:var(--text-secondary);margin:4px 0;">Student ID: ' + escapeHtml(student.student_code || 'Unavailable') + '</p><p style="color:var(--text-secondary);margin:0;">Enrollment: ' + escapeHtml(student.enrollment_no || 'Unavailable') + ' · ' + escapeHtml(student.branch || 'Branch unavailable') + (student.year ? ' · Year ' + escapeHtml(student.year) : '') + '</p><p style="color:#22c55e;font-size:13px;margin:4px 0 0;"><i class="fas fa-circle" style="font-size:8px;"></i> Assigned to you</p><p style="color:var(--text-secondary);margin:4px 0 0;">Skills: ' + escapeHtml(student.skills || 'Not provided') + '</p></div></div>';
-  if (stats) stats.innerHTML = '<p class="empty-state">Challenge and score stats will appear once this student has submissions.</p>';
-  if (progress) progress.innerHTML = '<p class="empty-state">No progress data recorded yet.</p>';
+  var assignedTasks = Number(student.assigned_tasks || 0);
+  var completedTasks = Number(student.completed_tasks || 0);
+  var completion = assignedTasks ? Math.min(100, Math.round(completedTasks / assignedTasks * 100)) : 0;
+  if (stats) stats.innerHTML = [['Assigned tasks', assignedTasks], ['Accepted tasks', completedTasks], ['Average score', Math.round(Number(student.average_score || 0))]].map(function (item) { return '<div class="student-list-item"><div class="student-info"><div class="student-name">' + item[0] + '</div></div><strong>' + item[1] + '</strong></div>'; }).join('');
+  if (progress) progress.innerHTML = assignedTasks ? '<div class="progress-bar-container"><div class="progress-header"><span class="progress-label">Accepted task completion</span><span class="progress-value">' + completion + '%</span></div><div class="progress-bar"><div class="progress-fill blue" style="width:' + completion + '%"></div></div><p class="student-meta">' + completedTasks + ' of ' + assignedTasks + ' assigned tasks accepted</p></div>' : '<p class="empty-state">No tasks assigned to this student yet.</p>';
 }
 
 function renderMentorProfile(profile, menteeCount, submissionCount, averageScore) {
@@ -837,7 +904,8 @@ function loadMentorDashboard() {
   var initialMenteeList = document.querySelector('#app-mentor .mentor-mentees-list');
   if (initialMenteeList) initialMenteeList.innerHTML = '<div class="dashboard-section mentor-empty-state"><div class="dashboard-section-body"><p class="empty-state">Loading assigned mentees...</p></div></div>';
   apiRequest('/api/dashboard/mentor').then(function (data) {
-    if (!data || !data.success) return;
+    if (!data || !data.success) throw new Error(data && data.message || 'Unable to load mentor dashboard.');
+    dashboardLoadErrorsShown.mentor = false;
     renderRoleIdentity('#app-mentor', data.profile, 'Mentor');
     data.profile = data.profile || {};
     data.students = data.students || [];
@@ -925,7 +993,10 @@ function loadMentorDashboard() {
     if (reportRows) reportRows.innerHTML = data.students.length ? data.students.map(function (student) { return '<tr><td>' + escapeHtml(student.name) + '</td><td>' + Number(student.assigned_tasks || 0) + '</td><td>' + Number(student.completed_tasks || 0) + '</td><td>' + Math.round(Number(student.average_score || 0)) + '</td><td>' + Number(student.progress || 0) + '%</td></tr>'; }).join('') : '<tr><td colspan="5" class="empty-state">No mentee activity yet.</td></tr>';
     renderMentorSubmissions(data.submissions || []);
     renderMentorTasks(data.tasks || []);
-  }).catch(function (error) { console.error('Mentor dashboard failed', error); });
+  }).catch(function (error) {
+    console.error('Mentor dashboard failed', error);
+    showDashboardLoadError('mentor', error.message || 'Unable to load mentor dashboard. Check that the PEC server and database are running.');
+  });
 }
 
 function setCoordinatorLoadingMessage(id, message) {
@@ -965,6 +1036,33 @@ function renderCoordinatorRequestErrors(responses) {
   }
 }
 
+function renderCoordinatorAnalytics(data) {
+  var container = document.querySelector('#app-coordinator .coordinator-analytics-stats');
+  var monthlyBody = document.querySelector('#coord-analytics .dashboard-section:nth-of-type(1) .dashboard-section-body');
+  var completionBody = document.querySelector('#coord-analytics .dashboard-section:nth-of-type(2) .dashboard-section-body');
+  var stats = data.stats || {};
+  if (container) container.innerHTML = [['Students', stats.students], ['Mentors', stats.mentors], ['Assigned mentees', stats.assignedMentees], ['Challenges', stats.tasks], ['Submissions', stats.submissions]].map(function (item) { return '<div class="dashboard-stat-card"><div class="stat-value">' + Number(item[1] || 0) + '</div><div class="stat-label">' + item[0] + '</div></div>'; }).join('');
+  var months = data.monthlyActivity || [];
+  if (monthlyBody) {
+    if (!months.length) monthlyBody.innerHTML = '<p class="empty-state">No submission activity recorded yet.</p>';
+    else {
+      var maxSubmissions = Math.max.apply(null, months.map(function (month) { return Number(month.submissions || 0); }));
+      monthlyBody.innerHTML = '<div class="chart-bar">' + months.map(function (month) {
+        var count = Number(month.submissions || 0);
+        var height = maxSubmissions ? Math.max(4, Math.round(count / maxSubmissions * 100)) : 0;
+        return '<div class="chart-bar-item"><span>' + count + '</span><div class="bar" style="height:' + height + '%"></div><span class="label">' + escapeHtml(month.label) + '</span></div>';
+      }).join('') + '</div>';
+    }
+  }
+  var completion = data.challengeCompletion || {};
+  if (completionBody) {
+    var assigned = Number(completion.assigned || 0);
+    var accepted = Number(completion.accepted || 0);
+    var percentage = assigned ? Math.min(100, Math.round(accepted / assigned * 100)) : 0;
+    completionBody.innerHTML = assigned ? '<div class="progress-bar-container"><div class="progress-header"><span class="progress-label">Accepted assignments</span><span class="progress-value">' + percentage + '%</span></div><div class="progress-bar"><div class="progress-fill blue" style="width:' + percentage + '%"></div></div><p class="student-meta">' + accepted + ' of ' + assigned + ' assigned challenges accepted · ' + Number(completion.pending || 0) + ' awaiting review</p></div>' : '<p class="empty-state">No challenge assignments recorded yet.</p>';
+  }
+}
+
 function loadCoordinatorDashboard() {
   ['coordinator-recent-students', 'coordinator-recent-submissions', 'coordinator-upcoming-events', 'coordinator-latest-news'].forEach(function (id) { setCoordinatorLoadingMessage(id, 'Loading...'); });
   [['coordinator-students', 7], ['coordinator-mentors', 7], ['coordinator-assignments', 6], ['coordinator-submissions', 6], ['coordinator-challenges', 7], ['coordinator-events', 6], ['coordinator-news', 5], ['coordinator-leaderboard', 5]].forEach(function (item) { var target = document.getElementById(item[0]); if (target) target.innerHTML = '<tr><td colspan="' + item[1] + '" class="empty-state">Loading...</td></tr>'; });
@@ -991,8 +1089,11 @@ function loadCoordinatorDashboard() {
     var data = responses[0].data;
     if (!data || !data.success) {
       ['coordinator-recent-students', 'coordinator-recent-submissions', 'coordinator-upcoming-events', 'coordinator-latest-news'].forEach(function (id) { setCoordinatorLoadingMessage(id, responses[0].error ? responses[0].error.message : 'Unable to load data. Please refresh and try again.'); });
+      renderCoordinatorRequestErrors(responses);
+      showDashboardLoadError('coordinator', responses[0].error ? responses[0].error.message : 'Unable to load coordinator dashboard. Check that the PEC server and database are running.');
       return;
     }
+    dashboardLoadErrorsShown.coordinator = false;
     renderRoleIdentity('#app-coordinator', { name: window.currentUser.name }, 'Coordinator');
     var values = document.querySelectorAll('#app-coordinator #coord-dashboard .dashboard-stat-card .stat-value');
     if (values[0]) values[0].textContent = data.stats.students;
@@ -1001,6 +1102,7 @@ function loadCoordinatorDashboard() {
     if (values[3]) values[3].textContent = data.stats.tasks;
     if (values[4]) values[4].textContent = data.stats.submissions;
     if (values[5]) values[5].textContent = data.stats.upcomingEvents;
+    renderCoordinatorAnalytics(data);
     renderCoordinatorRecentStudents(data.recentStudents || []);
     renderCoordinatorRecentSubmissions(data.recentSubmissions || []);
     renderCoordinatorUpcomingEvents(data.upcomingEvents || []);
@@ -1045,13 +1147,29 @@ function renderStudentCollections(data) {
   var leaderboard = document.getElementById('student-leaderboard-rows');
   if (leaderboard) leaderboard.innerHTML = (data.leaderboard || []).length ? data.leaderboard.map(function (item, index) { return '<tr><td>' + (index + 1) + '</td><td>' + escapeHtml(item.name) + '</td><td>' + Number(item.completed_challenges || 0) + '</td><td>' + Number(item.points || 0) + '</td></tr>'; }).join('') : '<tr><td colspan="4" class="empty-state">No leaderboard data available yet.</td></tr>';
   var events = document.querySelector('#app-student .student-events-list');
-  if (events) events.innerHTML = (data.events || []).length ? data.events.map(function (event) { return '<div class="dashboard-section"><div class="dashboard-section-body"><h4>' + escapeHtml(event.title) + '</h4><p>' + escapeHtml(event.description || '') + '</p><p class="student-meta">' + new Date(event.event_date).toLocaleDateString() + ' · ' + escapeHtml(event.location || 'Location not set') + '</p><button type="button" class="btn btn-primary student-event-register" data-event-id="' + escapeHtml(event.id) + '"' + (event.registration_status === 'registered' ? ' disabled' : '') + '>' + (event.registration_status === 'registered' ? 'Registered' : 'Register') + '</button></div></div>'; }).join('') : '<div class="dashboard-section"><div class="dashboard-section-body"><p class="empty-state">No upcoming events.</p></div></div>';
+  if (events) events.innerHTML = (data.events || []).length ? data.events.map(function (event) {
+    var registered = event.registration_status === 'registered';
+    return '<div class="dashboard-section"><div class="dashboard-section-body"><h4>' + escapeHtml(event.title) + '</h4><p>' + escapeHtml(event.description || '') + '</p><p class="student-meta">' + new Date(event.event_date).toLocaleDateString() + ' · ' + escapeHtml(event.location || 'Location not set') + '</p><button type="button" class="btn ' + (registered ? 'btn-ghost' : 'btn-primary') + ' student-event-registration" data-event-id="' + escapeHtml(event.id) + '" data-registered="' + registered + '">' + (registered ? 'Cancel registration' : 'Register') + '</button></div></div>';
+  }).join('') : '<div class="dashboard-section"><div class="dashboard-section-body"><p class="empty-state">No upcoming events.</p></div></div>';
   if (events && !events.dataset.registerBound) {
     events.dataset.registerBound = 'true';
     events.addEventListener('click', function (event) {
-      var button = event.target.closest('.student-event-register');
+      var button = event.target.closest('.student-event-registration');
       if (!button || button.disabled) return;
-      apiMutation('/api/events/' + encodeURIComponent(button.dataset.eventId) + '/register', 'POST', {}).then(function (result) { if (!result || !result.success) return showToast(result && result.message || 'Unable to register for event', 'error'); showToast('Registered for event', 'success'); loadStudentDashboard(); });
+      button.disabled = true;
+      var isRegistered = button.dataset.registered === 'true';
+      var method = isRegistered ? 'DELETE' : 'POST';
+      apiMutation('/api/events/' + encodeURIComponent(button.dataset.eventId) + '/register', method, {}).then(function (result) {
+        if (!result || !result.success) {
+          button.disabled = false;
+          return showToast(result && result.message || 'Unable to update event registration', 'error');
+        }
+        showToast(isRegistered ? 'Event registration cancelled' : 'Registered for event', 'success');
+        loadStudentDashboard();
+      }).catch(function (error) {
+        button.disabled = false;
+        showToast(error.message || 'Unable to update event registration', 'error');
+      });
     });
   }
   renderStudentCollectionsNews(data);
@@ -1213,7 +1331,7 @@ function refreshCoordinatorAssignmentOptions(mentors, students) {
   var studentSelect = document.getElementById('assignment-student');
   var selectedMentor = mentorSelect.value;
   var selectedStudent = studentSelect.value;
-  mentorSelect.innerHTML = '<option value="">Select a mentor</option>' + mentors.map(function (mentor) { return '<option value="' + escapeHtml(mentor.mentor_id) + '">' + escapeHtml(mentor.name) + ' (' + escapeHtml(mentor.mentor_code || 'No ID') + ') · ' + Number(mentor.assigned_students || 0) + '/7</option>'; }).join('');
+  mentorSelect.innerHTML = '<option value="">Select a mentor</option>' + mentors.map(function (mentor) { return '<option value="' + escapeHtml(mentor.mentor_id) + '">' + escapeHtml(mentor.name) + ' (' + escapeHtml(mentor.mentor_code || 'No ID') + ') · ' + Number(mentor.assigned_students || 0) + '/8</option>'; }).join('');
   var availableStudents = students.filter(function (student) { return !student.mentor_id; });
   studentSelect.innerHTML = '<option value="">Select a student</option>' + availableStudents.map(function (student) { return '<option value="' + escapeHtml(student.student_id) + '">' + escapeHtml(student.name) + ' (' + escapeHtml(student.student_code || 'No ID') + ')</option>'; }).join('');
   if (mentors.some(function (mentor) { return String(mentor.mentor_id) === selectedMentor; })) mentorSelect.value = selectedMentor;
@@ -1449,5 +1567,16 @@ document.addEventListener('DOMContentLoaded', function() {
         if (activePage) animateDashSections(activePage);
       }
     }, 200);
+  } else {
+    window.location.replace('../pages/auth.html');
   }
+
+  window.setInterval(function () {
+    if (document.hidden || !window.currentUser) return;
+    var activeElement = document.activeElement;
+    if (activeElement && activeElement.closest('#app-' + window.currentUser.role + ' form')) return;
+    if (window.currentUser.role === 'student') loadStudentDashboard();
+    else if (window.currentUser.role === 'mentor') loadMentorDashboard();
+    else if (window.currentUser.role === 'coordinator') loadCoordinatorDashboard();
+  }, 30000);
 });

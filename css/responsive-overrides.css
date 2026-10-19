@@ -142,7 +142,7 @@ img {
 }
 .dashboard-topbar-actions { display: flex; align-items: center; gap: 14px; margin-left: auto; }
 .dashboard-layout .dashboard-main { min-width: 0; padding-top: 0 !important; }
-.dashboard-layout .theme-toggle { display: none !important; }
+.dashboard-layout .theme-toggle { display: inline-flex !important; }
 .dashboard-layout .mobile-back-link { display: none; }
 
 @media (max-width: 768px) {

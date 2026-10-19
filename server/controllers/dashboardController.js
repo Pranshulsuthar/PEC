@@ -22,17 +22,32 @@ exports.student = async (req, res) => {
     const [[profile]] = await pool.query(`SELECT u.id AS user_id, u.name, u.email, u.created_at AS joined_at, sp.* FROM users u LEFT JOIN student_profiles sp ON sp.user_id = u.id WHERE u.id = ? AND u.role = 'student'`, [userId]);
     if (!profile) return res.status(404).json({ success: false, message: 'Student profile not found' });
     const [mentor] = await pool.query(`SELECT u.id, u.name, u.email, mp.mentor_code, mp.group_id, mp.group_name, mp.specialization, mp.department, mp.designation FROM mentor_student ms JOIN users u ON u.id = ms.mentor_id AND u.role = 'mentor' LEFT JOIN mentor_profiles mp ON mp.user_id = u.id WHERE ms.student_id = ? AND ms.status = 'active' LIMIT 1`, [userId]);
-    const [tasks] = await pool.query(`SELECT t.id, t.title, t.description, t.difficulty, t.deadline, t.max_score, ta.status AS assignment_status FROM task_assignments ta JOIN tasks t ON t.id = ta.task_id WHERE ta.student_id = ? AND ta.status = 'assigned' AND t.status = 'published' ORDER BY ta.deadline ASC LIMIT 50`, [userId]);
+    const [tasks] = await pool.query(`SELECT t.id, t.title, t.description, t.difficulty, t.deadline, t.max_score, ta.status AS assignment_status FROM task_assignments ta JOIN tasks t ON t.id = ta.task_id WHERE ta.student_id = ? AND ta.status = 'assigned' AND t.status = 'published' AND NOT EXISTS (SELECT 1 FROM task_submissions ts WHERE ts.task_id = ta.task_id AND ts.student_id = ta.student_id) ORDER BY ta.deadline ASC LIMIT 50`, [userId]);
     const [[completed]] = await pool.query("SELECT COUNT(*) AS count, COALESCE(SUM(score), 0) AS points FROM task_submissions WHERE student_id = ? AND status = 'accepted'", [userId]);
     const [[assigned]] = await pool.query("SELECT COUNT(*) AS count FROM task_assignments ta JOIN tasks t ON t.id = ta.task_id WHERE ta.student_id = ? AND t.status = 'published'", [userId]);
     const [submissions] = await pool.query("SELECT ts.*, t.title, t.max_score FROM task_submissions ts JOIN tasks t ON t.id = ts.task_id WHERE ts.student_id = ? ORDER BY ts.submitted_at DESC", [userId]);
     const [courses] = await pool.query("SELECT r.id, r.title, r.description, r.resource_type, r.resource_url, r.category FROM resources r WHERE r.status = 'published' ORDER BY r.created_at DESC");
     const [[rank]] = await pool.query("SELECT COUNT(*) + 1 AS rank FROM (SELECT u.id, COALESCE(SUM(ts.score), 0) AS points FROM users u LEFT JOIN task_submissions ts ON ts.student_id = u.id AND ts.status = 'accepted' WHERE u.role = 'student' GROUP BY u.id) ranked WHERE points > ?", [completed.points]);
-    const [leaderboard] = await pool.query("SELECT u.id, u.name, COALESCE(lb.points, SUM(ts.score),0) AS points, COALESCE(lb.challenges_completed, COUNT(DISTINCT CASE WHEN ts.status = 'accepted' THEN ts.task_id END),0) AS completed_challenges FROM users u LEFT JOIN leaderboard lb ON lb.student_id = u.id LEFT JOIN task_submissions ts ON ts.student_id = u.id AND ts.status = 'accepted' WHERE u.role = 'student' GROUP BY u.id,u.name,lb.points,lb.challenges_completed HAVING points > 0 OR completed_challenges > 0 ORDER BY points DESC,completed_challenges DESC,u.name LIMIT 100");
+    const [leaderboard] = await pool.query("SELECT u.id, u.name, COUNT(DISTINCT CASE WHEN ts.status = 'accepted' THEN ts.task_id END) AS completed_challenges, COALESCE(SUM(CASE WHEN ts.status = 'accepted' THEN ts.score ELSE 0 END), 0) AS points FROM users u LEFT JOIN task_submissions ts ON ts.student_id = u.id WHERE u.role = 'student' GROUP BY u.id, u.name HAVING points > 0 OR completed_challenges > 0 ORDER BY points DESC, completed_challenges DESC, u.name LIMIT 100");
     const [activity] = await pool.query("SELECT DATE(submitted_at) AS activity_date, COUNT(*) AS submissions FROM task_submissions WHERE student_id = ? AND status = 'accepted' AND submitted_at >= DATE_SUB(CURDATE(), INTERVAL 6 DAY) GROUP BY DATE(submitted_at) ORDER BY activity_date", [userId]);
-    const [[streak]] = await pool.query("SELECT COUNT(*) AS days FROM (SELECT DISTINCT DATE(submitted_at) AS submission_date FROM task_submissions WHERE student_id = ? AND status = 'accepted' ORDER BY submission_date DESC LIMIT 30) streak_days", [userId]);
+    const [[databaseDate]] = await pool.query("SELECT DATE_FORMAT(CURDATE(), '%Y-%m-%d') AS today");
+    const [activeDates] = await pool.query("SELECT DISTINCT DATE_FORMAT(DATE(submitted_at), '%Y-%m-%d') AS activity_date FROM task_submissions WHERE student_id = ? AND status = 'accepted' ORDER BY activity_date DESC", [userId]);
+    const activeDateSet = new Set(activeDates.map((row) => row.activity_date));
+    let streakDate = new Date(`${databaseDate.today}T00:00:00Z`);
+    const yesterday = new Date(streakDate);
+    yesterday.setUTCDate(yesterday.getUTCDate() - 1);
+    const yesterdayKey = yesterday.toISOString().slice(0, 10);
+    if (!activeDateSet.has(databaseDate.today)) {
+      if (!activeDateSet.has(yesterdayKey)) streakDate = null;
+      else streakDate = yesterday;
+    }
+    let currentStreak = 0;
+    while (streakDate && activeDateSet.has(streakDate.toISOString().slice(0, 10))) {
+      currentStreak += 1;
+      streakDate.setUTCDate(streakDate.getUTCDate() - 1);
+    }
     const [[attendanceSummary]] = await pool.query("SELECT COUNT(*) AS total, SUM(status = 'present') AS present FROM attendance WHERE student_id = ?", [userId]);
-    const [skills] = await pool.query('SELECT s.name, ss.proficiency_level FROM student_skills ss JOIN skills s ON s.id = ss.skill_id WHERE ss.student_id = ? ORDER BY s.name', [userId]);
+    const [skills] = await pool.query("SELECT s.name, ss.proficiency_level, CASE ss.proficiency_level WHEN 'beginner' THEN 25 WHEN 'intermediate' THEN 50 WHEN 'advanced' THEN 75 WHEN 'expert' THEN 100 ELSE 0 END AS progress FROM student_skills ss JOIN skills s ON s.id = ss.skill_id WHERE ss.student_id = ? ORDER BY s.name", [userId]);
     const [[profileExtras]] = await pool.query('SELECT bio FROM student_profiles WHERE user_id = ?', [userId]);
     profile.bio = profileExtras && profileExtras.bio || null;
     const [resources] = await pool.query("SELECT id, title, description, resource_type, resource_url, category, created_at FROM resources WHERE status = 'published' ORDER BY created_at DESC LIMIT 20");
@@ -40,7 +55,7 @@ exports.student = async (req, res) => {
     const [notifications] = await pool.query('SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC LIMIT 50', [userId]);
     const news = await getNews(userId);
     const events = await getStudentEvents(userId);
-    res.json({ success: true, profile, mentor: mentor[0] || null, tasks, submissions, courses, leaderboard, activity, progress: { total_tasks: assigned.count, completed_tasks: completed.count, current_streak: Number(streak.days || 0), rank: assigned.count ? Number(rank.rank) : null, points: Number(completed.points), progress_percentage: assigned.count ? Math.round((completed.count / assigned.count) * 100) : 0 }, skills, achievements: [], resources, achievements, attendance: { present: Number(attendanceSummary.present || 0), total: Number(attendanceSummary.total || 0) }, notifications, news, events });
+    res.json({ success: true, profile, mentor: mentor[0] || null, tasks, submissions, courses, leaderboard, activity, progress: { total_tasks: assigned.count, completed_tasks: completed.count, current_streak: currentStreak, rank: assigned.count ? Number(rank.rank) : null, points: Number(completed.points), progress_percentage: assigned.count ? Math.round((completed.count / assigned.count) * 100) : 0 }, skills, resources, achievements, attendance: { present: Number(attendanceSummary.present || 0), total: Number(attendanceSummary.total || 0) }, notifications, news, events });
   } catch (err) { console.error(err); res.status(500).json({ success: false, message: 'Server error' }); }
 };
 
@@ -63,7 +78,7 @@ exports.mentor = async (req, res) => {
       const [[stats]] = await pool.query("SELECT COUNT(DISTINCT ta.task_id) AS assigned_tasks, COUNT(DISTINCT CASE WHEN ts.status = 'accepted' THEN ts.task_id END) AS completed_tasks, COALESCE(AVG(CASE WHEN ts.status = 'accepted' THEN ts.score END), 0) AS average_score FROM task_assignments ta LEFT JOIN task_submissions ts ON ts.task_id = ta.task_id AND ts.student_id = ta.student_id WHERE ta.student_id = ?", [student.id]);
       return Object.assign({}, student, stats, { progress: stats.assigned_tasks ? Math.round(Number(stats.completed_tasks) / Number(stats.assigned_tasks) * 100) : 0 });
     });
-    res.json({ success: true, profile, students: await Promise.all(reportStudents), capacity: { assigned: students.length, maximum: 7, available: Math.max(0, 7 - students.length), full: students.length >= 7 }, submissions, pendingReviews: Number(pendingReviews.count), meetings: Number(meetings.count), tasks, reportStats: { assignedTasks: Number(reportStats.assigned_tasks), completedTasks: Number(reportStats.completed_tasks), averageScore: Number(reportStats.average_score) }, notifications, news, events });
+    res.json({ success: true, profile, students: await Promise.all(reportStudents), capacity: { assigned: students.length, maximum: 8, available: Math.max(0, 8 - students.length), full: students.length >= 8 }, submissions, pendingReviews: Number(pendingReviews.count), meetings: Number(meetings.count), tasks, reportStats: { assignedTasks: Number(reportStats.assigned_tasks), completedTasks: Number(reportStats.completed_tasks), averageScore: Number(reportStats.average_score) }, notifications, news, events });
   } catch (err) { console.error(err); res.status(500).json({ success: false, message: 'Server error' }); }
 };
 

@@ -1,6 +1,25 @@
 const pool = require('../config/db');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const { publishDashboardUpdate } = require('../services/realtime');
+
+function getRoleAccountPrefix(role) {
+  switch (role) {
+    case 'student': return 'PECSTU';
+    case 'mentor': return 'PECMTR';
+    case 'coordinator': return 'PECCRD';
+    default: return 'PEC';
+  }
+}
+
+async function createRoleAccountId(connection, role) {
+  const prefix = getRoleAccountPrefix(role);
+  await connection.query('INSERT IGNORE INTO account_id_counters (prefix, next_value) VALUES (?, 1000)', [prefix]);
+  const [[counter]] = await connection.query('SELECT next_value FROM account_id_counters WHERE prefix = ? FOR UPDATE', [prefix]);
+  const value = Number(counter.next_value);
+  await connection.query('UPDATE account_id_counters SET next_value = ? WHERE prefix = ?', [value + 1, prefix]);
+  return prefix + '_' + value;
+}
 
 // Helper: create JWT payload
 function generateToken(user) {
@@ -22,14 +41,14 @@ exports.register = async (req, res) => {
   if (!name || !email || !password || !role) {
     return res.status(400).json({ success: false, message: 'Missing required fields' });
   }
-    if (!['student', 'mentor', 'coordinator'].includes(role)) return res.status(400).json({ success: false, message: 'Invalid role' });
+  if (!['student', 'mentor', 'coordinator'].includes(role)) return res.status(400).json({ success: false, message: 'Only student, mentor, and coordinator self-registration is allowed' });
+  if (typeof email !== 'string' || typeof password !== 'string') return res.status(400).json({ success: false, message: 'Invalid credentials' });
   if (String(password).length < 8) return res.status(400).json({ success: false, message: 'Password must be at least 8 characters' });
   if (!String(name).trim() || String(name).trim().length > 160 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return res.status(400).json({ success: false, message: 'Enter a valid name and email address' });
   const collegeId = typeof req.body.college_id === 'string' ? req.body.college_id.trim() : '';
   const branch = req.body.branch;
   const year = Number(req.body.year);
   const section = typeof req.body.section === 'string' ? req.body.section.trim() : '';
-  if (!['student', 'mentor'].includes(role)) return res.status(403).json({ success: false, message: 'Use the coordinator invite flow to register a coordinator' });
   if (!collegeId || collegeId.length > 80) return res.status(400).json({ success: false, message: 'College ID is required (maximum 80 characters)' });
   const enrollmentNo = role === 'student' ? String(req.body.enrollment_no || '').trim() : collegeId;
   if (role === 'student' && (!enrollmentNo || enrollmentNo.length > 80)) return res.status(400).json({ success: false, message: 'Enrollment number is required (maximum 80 characters)' });
@@ -60,10 +79,7 @@ exports.register = async (req, res) => {
     const [[duplicateUser]] = await connection.query('SELECT id FROM users WHERE email = ?', [String(email).trim().toLowerCase()]);
     const [[duplicateProfileEmail]] = await connection.query('SELECT user_id FROM student_profiles WHERE email = ? UNION ALL SELECT user_id FROM mentor_profiles WHERE email = ? UNION ALL SELECT user_id FROM coordinator_profiles WHERE email = ? LIMIT 1', [String(email).trim().toLowerCase(), String(email).trim().toLowerCase(), String(email).trim().toLowerCase()]);
     if (duplicateUser || duplicateProfileEmail) throw Object.assign(new Error('Email already exists'), { statusCode: 409 });
-    await connection.query("INSERT INTO account_id_counters (prefix, next_value) VALUES ('PEC', 100) ON DUPLICATE KEY UPDATE next_value = GREATEST(next_value, 100)");
-    const [[counter]] = await connection.query("SELECT next_value FROM account_id_counters WHERE prefix = 'PEC' FOR UPDATE");
-    const pecId = 'PEC_' + Number(counter.next_value);
-    await connection.query("UPDATE account_id_counters SET next_value = next_value + 1 WHERE prefix = 'PEC'");
+    const pecId = await createRoleAccountId(connection, role);
     const hashed = await bcrypt.hash(password, 12);
     const [result] = await connection.query('INSERT INTO users (name, email, password, role) VALUES (?,?,?,?)', [String(name).trim(), String(email).trim().toLowerCase(), hashed, role]);
     const user_id = result.insertId;
@@ -75,9 +91,11 @@ exports.register = async (req, res) => {
       const [[mentorNumberRow]] = await connection.query('SELECT COALESCE(MAX(mentor_number), 0) + 1 AS mentor_number FROM mentor_profiles');
       await connection.query('INSERT INTO mentor_profiles (user_id, mentor_code, email, mentor_number, college_id, branch, year, section, designation, department) VALUES (?,?,?,?,?,?,?,?,?,?)', [user_id, pecId, String(email).trim().toLowerCase(), mentorNumberRow.mentor_number, String(college_id).trim(), branch, Number(year), String(section).trim(), 'Mentor', branch]);
     } else if (role === 'coordinator') {
-      await connection.query('INSERT INTO coordinator_profiles (user_id, coordinator_code, email, employee_id, college_id, branch, year, section, designation, department) VALUES (?,?,?,?,?,?,?,?,?,?)', [user_id, pecId, String(email).trim().toLowerCase(), pecId, String(collegeId).trim(), branch, year, section, 'Coordinator', branch]);
+      const { college_id, branch, year, section } = req.body;
+      await connection.query('INSERT INTO coordinator_profiles (user_id, coordinator_code, email, employee_id, college_id, branch, year, section, designation, department) VALUES (?,?,?,?,?,?,?,?,?,?)', [user_id, pecId, String(email).trim().toLowerCase(), pecId, String(college_id).trim(), branch, Number(year), String(section).trim(), 'Coordinator', branch]);
     }
     await connection.commit();
+    publishDashboardUpdate(req, { roles: ['coordinator'], resource: role + '.registered' });
     const token = generateToken({ id: user_id, name: String(name).trim(), email: String(email).trim().toLowerCase(), role });
     return res.status(201).json({ success: true, message: 'Account registered successfully', pec_id: pecId, token, user: { user_id, name: String(name).trim(), email: String(email).trim().toLowerCase(), role } });
   } catch (err) {

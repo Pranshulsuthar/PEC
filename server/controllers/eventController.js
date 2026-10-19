@@ -1,4 +1,5 @@
 const pool = require('../config/db');
+const { publishDashboardUpdate } = require('../services/realtime');
 
 exports.getAll = async (req, res) => {
   try {
@@ -25,6 +26,7 @@ exports.register = async (req, res) => {
     const [[event]] = await pool.query("SELECT id FROM events WHERE id = ? AND status = 'published' AND event_date >= CURDATE()", [eventId]);
     if (!event) return res.status(404).json({ success: false, message: 'Event is unavailable or has ended' });
     await pool.query("INSERT INTO event_registrations (event_id, user_id, registration_status) VALUES (?, ?, 'registered') ON DUPLICATE KEY UPDATE registration_status = 'registered', registered_at = CURRENT_TIMESTAMP", [eventId, req.user.user_id]);
+    publishDashboardUpdate(req, { userIds: [req.user.user_id], roles: ['coordinator'], resource: 'event.registration' });
     res.status(201).json({ success: true, message: 'Registered for event' });
   } catch (err) { console.error(err); res.status(500).json({ success: false, message: 'Server error' }); }
 };
@@ -35,6 +37,7 @@ exports.cancelRegistration = async (req, res) => {
   try {
     const [result] = await pool.query("UPDATE event_registrations SET registration_status = 'cancelled' WHERE event_id = ? AND user_id = ? AND registration_status = 'registered'", [eventId, req.user.user_id]);
     if (!result.affectedRows) return res.status(404).json({ success: false, message: 'Registration not found' });
+    publishDashboardUpdate(req, { userIds: [req.user.user_id], roles: ['coordinator'], resource: 'event.registration' });
     res.json({ success: true, message: 'Registration cancelled' });
   } catch (err) { console.error(err); res.status(500).json({ success: false, message: 'Server error' }); }
 };
@@ -60,6 +63,7 @@ exports.create = async (req, res) => {
       'INSERT INTO events (title, description, event_date, start_time, end_time, location, image_url, status, created_by) VALUES (?,?,?,?,?,?,?,?,?)',
       [title, description || null, event_date, start_time || null, end_time || null, location || null, image_url || null, status || 'draft', req.user.user_id]
     );
+    publishDashboardUpdate(req, { roles: ['student', 'mentor', 'coordinator'], resource: 'event.created' });
     res.status(201).json({ success: true, event_id: result.insertId });
   } catch (err) {
     console.error(err);
@@ -76,6 +80,7 @@ exports.update = async (req, res) => {
       [title, description, event_date, start_time, end_time, location, image_url, status, id]
     );
     if (!result.affectedRows) return res.status(404).json({ success: false, message: 'Event not found' });
+    publishDashboardUpdate(req, { roles: ['student', 'mentor', 'coordinator'], resource: 'event.updated' });
     res.json({ success: true, message: 'Event updated' });
   } catch (err) {
     console.error(err);
@@ -88,6 +93,7 @@ exports.delete = async (req, res) => {
   try {
     const [result] = await pool.query('DELETE FROM events WHERE id = ?', [id]);
     if (!result.affectedRows) return res.status(404).json({ success: false, message: 'Event not found' });
+    publishDashboardUpdate(req, { roles: ['student', 'mentor', 'coordinator'], resource: 'event.deleted' });
     res.json({ success: true, message: 'Event deleted' });
   } catch (err) {
     console.error(err);

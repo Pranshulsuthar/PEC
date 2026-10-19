@@ -1,4 +1,5 @@
 const pool = require('../config/db');
+const { publishDashboardUpdate } = require('../services/realtime');
 
 exports.create = async (req, res) => {
   const { task_id, submission_url, code } = req.body;
@@ -13,14 +14,18 @@ exports.create = async (req, res) => {
     let submissionId;
     try {
       await connection.beginTransaction();
-      const [existing] = await connection.query('SELECT id FROM task_submissions WHERE task_id = ? AND student_id = ? FOR UPDATE', [task_id, req.user.user_id]);
-      if (existing.length) {
+      const [[existing]] = await connection.query('SELECT id, status FROM task_submissions WHERE task_id = ? AND student_id = ? FOR UPDATE', [task_id, req.user.user_id]);
+      if (existing && existing.status !== 'rejected') {
         await connection.rollback();
         return res.status(409).json({ success: false, message: 'You already submitted this task' });
       }
-      const [result] = await connection.query('INSERT INTO task_submissions (task_id, student_id, submission_text, submission_url, status) VALUES (?,?,?,?,?)', [task_id, req.user.user_id, code || null, submission_url || null, isLate ? 'late' : 'submitted']);
-      submissionId = result.insertId;
-      await connection.query("UPDATE task_assignments SET status = 'submitted' WHERE task_id = ? AND student_id = ?", [task_id, req.user.user_id]);
+      if (existing) {
+        submissionId = existing.id;
+        await connection.query("UPDATE task_submissions SET submission_text = ?, submission_url = ?, submitted_at = NOW(), status = ?, score = NULL, feedback = NULL, reviewed_by = NULL, reviewed_at = NULL WHERE id = ?", [code || null, submission_url || null, isLate ? 'late' : 'submitted', submissionId]);
+      } else {
+        const [result] = await connection.query('INSERT INTO task_submissions (task_id, student_id, submission_text, submission_url, status) VALUES (?,?,?,?,?)', [task_id, req.user.user_id, code || null, submission_url || null, isLate ? 'late' : 'submitted']);
+        submissionId = result.insertId;
+      }
       await connection.commit();
     } catch (error) {
       await connection.rollback();
@@ -35,6 +40,7 @@ exports.create = async (req, res) => {
       notificationTargets = coordinators.map(function (user) { return user.id; });
     }
     for (const recipientId of notificationTargets) await pool.query('INSERT INTO notifications (user_id, title, `message`, type) VALUES (?,?,?,?)', [recipientId, 'New challenge submission', 'A student submitted work for a challenge.', 'submission']);
+    publishDashboardUpdate(req, { userIds: notificationTargets, roles: ['coordinator'], resource: 'submission.created' });
     res.status(201).json({ success: true, submission_id: submissionId });
   } catch (err) {
     if (err.code === 'ER_DUP_ENTRY') return res.status(409).json({ success: false, message: 'You already submitted this task' });
@@ -104,6 +110,7 @@ exports.update = async (req, res) => {
       await connection.query('UPDATE task_assignments SET status = ? WHERE task_id = ? AND student_id = ?', [status === 'accepted' ? 'completed' : 'assigned', rows[0].task_id, rows[0].student_id]);
       await connection.query('INSERT INTO notifications (user_id, title, `message`, type) VALUES (?,?,?,?)', [rows[0].student_id, 'Submission reviewed', feedback || 'Your submission has been reviewed.', 'submission']);
       await connection.commit();
+      publishDashboardUpdate(req, { userIds: [rows[0].student_id, req.user.user_id], roles: ['coordinator'], resource: 'submission.reviewed' });
       res.json({ success: true, message: 'Submission reviewed' });
     } catch (error) {
       await connection.rollback();

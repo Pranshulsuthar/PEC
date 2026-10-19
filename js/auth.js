@@ -17,7 +17,6 @@ function showAuth(viewId) {
   var targetId = viewId === 'role-selection' ? 'view-role-selection' :
                  (viewId.indexOf('view-') === 0 ? viewId : 'view-' + viewId);
   if (viewId === 'coordinator-signup') targetId = 'view-coordinator-signup';
-  if (viewId === 'coordinator-signup') targetId = 'view-coordinator-signup';
   var target = document.getElementById(targetId) ||
                document.getElementById('view-role-selection');
   if (target) {
@@ -470,10 +469,6 @@ document.addEventListener('submit', function (e) {
       showFormSuccess(response.message || 'Unable to complete request');
       return Promise.resolve(false);
     }
-    if (response.pec_id) {
-      showSignupComplete(response);
-      return Promise.resolve(true);
-    }
     continueToDashboard(response);
     return Promise.resolve(true);
   }
@@ -604,17 +599,12 @@ document.addEventListener('submit', function (e) {
    ============================================================ */
 
 document.addEventListener('DOMContentLoaded', function () {
-  document.querySelectorAll('.auth-view').forEach(function (view) {
-    if (view.id === 'view-coordinator-signup') {
-      var coordinatorCard = view.querySelector('.auth-card');
-      if (coordinatorCard) coordinatorCard.id = 'coordinator-signup-card';
-    }
-  });
   var requestedView = new URLSearchParams(window.location.search).get('view');
+  if (requestedView === 'coordinator-signup') requestedView = 'role-selection';
   if (requestedView && document.getElementById('view-' + requestedView)) {
     document.body.classList.add('shared-signup-link');
     showAuth(requestedView);
-    if (requestedView === 'student-signup' || requestedView === 'mentor-signup' || requestedView === 'coordinator-signup') {
+    if (requestedView === 'student-signup' || requestedView === 'mentor-signup') {
       document.documentElement.classList.add('shared-signup-link');
       document.querySelectorAll('.auth-view').forEach(function (view) { view.classList.remove('active'); });
       var signupView = document.getElementById('view-' + requestedView);

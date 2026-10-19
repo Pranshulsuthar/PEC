@@ -1,4 +1,5 @@
 const pool = require('../config/db');
+const { publishDashboardUpdate } = require('../services/realtime');
 
 exports.getAll = async (req, res) => {
   try {
@@ -98,6 +99,11 @@ exports.create = async (req, res) => {
         return res.status(400).json({ success: false, message: 'Select a mentee before creating a task.' });
       }
       await connection.commit();
+      if (creatorRole === 'mentor') {
+        publishDashboardUpdate(req, { userIds: [targetStudent, req.user.user_id], resource: 'task.assigned' });
+      } else {
+        publishDashboardUpdate(req, { roles: ['student', 'coordinator'], resource: 'challenge.published' });
+      }
       res.status(201).json({ success: true, task_id: result.insertId, assigned_count: assignedCount });
     } catch (error) {
       await connection.rollback();
