@@ -312,6 +312,7 @@ function showModal(title, bodyHtml, buttons) {
   if (!overlay) {
     overlay = document.createElement('div');
     overlay.id = 'modal-overlay';
+    overlay.className = 'modal-overlay';
     overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:9999;';
     overlay.innerHTML = '<div style="background:var(--bg-card);border-radius:12px;padding:24px;max-width:480px;width:90%;max-height:80vh;overflow:auto;"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><h3 id="modal-title"></h3><button class="btn-close" onclick="closeModal()" style="background:none;border:none;font-size:18px;cursor:pointer;">&times;</button></div><div id="modal-body"></div><div id="modal-footer" style="display:flex;gap:8px;justify-content:flex-end;margin-top:24px;"></div></div>';
     document.body.appendChild(overlay);
@@ -344,12 +345,16 @@ function showModal(title, bodyHtml, buttons) {
     });
   }
 
+  overlay.classList.add('active');
   overlay.style.display = 'flex';
 }
 
 function closeModal() {
   var overlay = document.getElementById('modal-overlay');
-  if (overlay) overlay.style.display = 'none';
+  if (overlay) {
+    overlay.classList.remove('active');
+    overlay.style.display = 'none';
+  }
 }
 
 // ========================================
@@ -518,7 +523,16 @@ function apiMutation(path, method, body) {
     method: method,
     headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + sessionStorage.getItem('pec_jwt') },
     body: JSON.stringify(body || {})
-  }).then(function (response) { return response.json(); });
+  }).then(function (response) {
+    return response.json().catch(function () { return null; }).then(function (data) {
+      if (!data || typeof data !== 'object') throw new Error('The server returned an invalid response');
+      if (!response.ok && data.success !== false) throw new Error(data.message || 'Request failed (' + response.status + ')');
+      return data;
+    });
+  }).catch(function (error) {
+    console.error('Dashboard action failed:', error);
+    return { success: false, message: error instanceof TypeError ? 'Unable to reach the server. Check your connection and try again.' : error.message || 'Unable to complete this action' };
+  });
 }
 
 function initials(name) {
@@ -598,28 +612,58 @@ function renderStudentTasks(tasks) {
 function renderStudentProgress(data) {
   var total = Number(data.progress.total_tasks || 0);
   var completed = Number(data.progress.completed_tasks || 0);
-  var percent = total ? Math.round(completed / total * 100) : 0;
+  var percent = Math.max(0, Math.min(100, Number(data.progress.progress_percentage || (total ? Math.round(completed / total * 100) : 0))));
   var overall = document.querySelector('#app-student .student-overall-progress');
   if (overall) overall.innerHTML = '<div class="progress-bar-container"><div class="progress-header"><span class="progress-label">Overall Completion</span><span class="progress-value">' + percent + '%</span></div><div class="progress-bar"><div class="progress-fill blue" style="width:' + percent + '%"></div></div></div>';
   var skills = document.querySelector('#app-student .student-skill-progress');
   if (skills) skills.innerHTML = data.skills && data.skills.length ? data.skills.map(function (skill) { var value = Math.max(0, Math.min(100, Number(skill.progress || 0))); return '<div class="progress-bar-container"><div class="progress-header"><span class="progress-label">' + escapeHtml(skill.name || skill.skill_name || 'Skill') + '</span><span class="progress-value">' + value + '%</span></div><div class="progress-bar"><div class="progress-fill blue" style="width:' + value + '%"></div></div></div>'; }).join('') : '<p class="empty-state">No skill progress recorded yet.</p>';
+  var breakdown = document.querySelector('#app-student .student-progress-breakdown');
+  if (breakdown) breakdown.innerHTML = '<div class="progress-bar-container"><div class="progress-header"><span class="progress-label">Overall Completion</span><span class="progress-value">' + percent + '%</span></div><div class="progress-bar"><div class="progress-fill blue" style="width:' + percent + '%"></div></div></div>' + (data.skills && data.skills.length ? data.skills.map(function (skill) { var value = Math.max(0, Math.min(100, Number(skill.progress || 0))); return '<div class="progress-bar-container"><div class="progress-header"><span class="progress-label">' + escapeHtml(skill.name || skill.skill_name || 'Skill') + '</span><span class="progress-value">' + value + '%</span></div><div class="progress-bar"><div class="progress-fill blue" style="width:' + value + '%"></div></div></div>'; }).join('') : '<p class="empty-state">Add skills to your profile to track skill progress.</p>');
   var bio = document.querySelector('#app-student .student-profile-bio');
   if (bio) bio.textContent = data.profile.bio || 'No profile bio provided.';
   var profileSkills = document.querySelector('#app-student .student-profile-skills');
   if (profileSkills) profileSkills.innerHTML = data.skills && data.skills.length ? data.skills.map(function (skill) { return '<span class="chip">' + escapeHtml(skill.name || skill.skill_name) + '</span>'; }).join('') : '<p class="empty-state">No skills added yet.</p>';
-  var weekly = document.querySelector('#app-student .student-weekly-activity');
-  if (weekly) {
-    var activityDays = [];
-    for (var dayIndex = 6; dayIndex >= 0; dayIndex--) {
-      var day = new Date();
-      day.setHours(0, 0, 0, 0);
-      day.setDate(day.getDate() - dayIndex);
-      var matching = (data.activity || []).find(function (item) { return new Date(item.activity_date).toDateString() === day.toDateString(); });
-      activityDays.push({ label: day.toLocaleDateString(undefined, { weekday: 'short' }), count: Number(matching && matching.submissions || 0) });
-    }
-    var maxActivity = Math.max.apply(null, activityDays.map(function (item) { return item.count; }));
-    weekly.innerHTML = maxActivity ? '<div class="chart-bar">' + activityDays.map(function (item) { return '<div class="chart-bar-item"><div class="bar" style="height:' + Math.max(5, item.count / maxActivity * 100) + '%"></div><div class="label">' + item.label + '</div></div>'; }).join('') + '</div>' : '<p class="empty-state">No accepted challenge activity in the last seven days.</p>';
+  renderStudentActivityChart(document.querySelector('#app-student .student-weekly-activity'), data.activity);
+  renderStudentActivityChart(document.querySelector('#app-student .student-dashboard-activity'), data.activity);
+}
+
+function renderStudentActivityChart(container, activity) {
+  if (!container) return;
+  var countsByDate = Object.create(null);
+  (activity || []).forEach(function (item) {
+    var dateKey = typeof item.activity_date === 'string' ? item.activity_date.slice(0, 10) : new Date(item.activity_date).toISOString().slice(0, 10);
+    countsByDate[dateKey] = Number(item.submissions || 0);
+  });
+  var days = [];
+  for (var dayIndex = 6; dayIndex >= 0; dayIndex--) {
+    var day = new Date();
+    day.setHours(0, 0, 0, 0);
+    day.setDate(day.getDate() - dayIndex);
+    var key = [day.getFullYear(), String(day.getMonth() + 1).padStart(2, '0'), String(day.getDate()).padStart(2, '0')].join('-');
+    days.push({ label: day.toLocaleDateString(undefined, { weekday: 'short' }), count: countsByDate[key] || 0 });
   }
+  var maxActivity = Math.max.apply(null, days.map(function (item) { return item.count; }));
+  container.innerHTML = maxActivity ? '<div class="chart-bar">' + days.map(function (item) { return '<div class="chart-bar-item"><div class="bar" title="' + item.count + ' accepted submissions" style="height:' + Math.max(5, item.count / maxActivity * 100) + '%"></div><div class="label">' + item.label + '</div></div>'; }).join('') + '</div>' : '<p class="empty-state">No accepted challenge activity in the last seven days.</p>';
+}
+
+function initCoordinatorAppearanceSettings() {
+  var form = document.getElementById('coordinator-appearance-form');
+  if (!form || form.dataset.initialized) return;
+  form.dataset.initialized = 'true';
+  var select = form.elements.theme;
+  function syncThemeSelection() {
+    if (window.PECTheme) select.value = window.PECTheme.get();
+  }
+  syncThemeSelection();
+  form.addEventListener('submit', function (event) {
+    event.preventDefault();
+    if (!window.PECTheme) return showToast('Theme settings are unavailable. Please reload the page.', 'error');
+    window.PECTheme.set(select.value);
+    showToast('Dashboard theme updated', 'success');
+  });
+  document.addEventListener('click', function (event) {
+    if (event.target.closest('.theme-toggle')) window.setTimeout(syncThemeSelection, 0);
+  });
 }
 
 function renderStudentSubmissions(submissions) {
@@ -655,7 +699,7 @@ function markNotificationRead(id) {
 
 function markNewsRead(id) {
   apiMutation('/api/news/' + encodeURIComponent(id) + '/read', 'PUT', {}).then(function (result) {
-    if (!result || !result.success) return;
+    if (!result || !result.success) return showToast(result && result.message || 'Unable to mark announcement as read', 'error');
     loadStudentDashboard();
   });
 }
@@ -798,8 +842,12 @@ function loadStudentDashboard() {
     if (profileRank) profileRank.textContent = data.progress.rank ? '#' + data.progress.rank : '—';
     if (profilePoints) profilePoints.textContent = data.progress.points || 0;
     var attempted = document.querySelector('#app-student .student-stats-attempted');
+    var completedStat = document.querySelector('#app-student .student-stats-completed');
+    var pointsStat = document.querySelector('#app-student .student-stats-points');
     var streak = document.querySelector('#app-student .student-stats-streak');
     if (attempted) attempted.textContent = data.submissions.length;
+    if (completedStat) completedStat.textContent = data.progress.completed_tasks || 0;
+    if (pointsStat) pointsStat.textContent = data.progress.points || 0;
     if (streak) streak.textContent = (stats.current_streak || 0) + ' days';
     renderNews('#app-student', data.news);
     renderStudentCollections(data);
@@ -819,6 +867,15 @@ function loadStudentDashboard() {
     } else {
       if (mentorDetails) mentorDetails.innerHTML = '<p class="empty-state">No mentor assigned yet. A coordinator will assign a mentor to your account.</p>';
       if (mentorGroup) mentorGroup.innerHTML = '<p class="empty-state">No group access until a mentor is assigned.</p>';
+    }
+    var studentMessageForm = document.getElementById('student-mentor-message-form');
+    var studentMessageThread = document.getElementById('student-mentor-message-thread');
+    if (studentMessageForm) {
+      studentMessageForm.dataset.mentorId = data.mentor ? String(data.mentor.id) : '';
+      studentMessageForm.elements.body.disabled = !data.mentor;
+      studentMessageForm.querySelector('button[type="submit"]').disabled = !data.mentor;
+      if (data.mentor) loadMentorMessages(data.mentor.id, window.currentUser.user_id, studentMessageThread);
+      else if (studentMessageThread) studentMessageThread.innerHTML = '<p class="empty-state">A mentor must be assigned before you can send messages.</p>';
     }
     var challengeContainer = document.querySelector('#app-student .student-current-challenge');
     if (challengeContainer) challengeContainer.innerHTML = data.tasks.length ? data.tasks.map(function (task) { return '<div class="task-item"><div class="task-title">' + escapeHtml(task.title) + '</div><div class="task-desc">' + escapeHtml(task.description || 'No description') + '</div></div>'; }).join('') : '<p class="empty-state">No tasks assigned yet. Your mentor will add tasks here.</p>';
@@ -900,6 +957,104 @@ function showMentorTaskForm(students) {
   ]);
 }
 
+function showMentorNewsForm() {
+  showModal('Message My Mentees', '<form id="mentor-news-form" style="display:grid;gap:12px;"><label>Title<input class="form-input" name="title" maxlength="255" required></label><label>Category<input class="form-input" name="category" maxlength="100" placeholder="Update, reminder, or announcement"></label><label>Message<textarea class="form-input" name="content" rows="5" maxlength="20000" required></textarea></label><p class="student-meta">This announcement will be sent to your currently assigned mentees.</p></form>', [
+    { text: 'Send Announcement', class: 'btn-primary', action: function () {
+      var form = document.getElementById('mentor-news-form');
+      if (!form.reportValidity()) return false;
+      var values = Object.fromEntries(new FormData(form).entries());
+      return apiMutation('/api/mentors/' + encodeURIComponent(window.currentUser.user_id) + '/news', 'POST', values).then(function (result) {
+        if (!result || !result.success) { showToast(result && result.message || 'Unable to send announcement', 'error'); return false; }
+        showToast('Announcement sent to ' + Number(result.recipient_count || 0) + ' mentee(s)', 'success');
+        loadMentorDashboard();
+        return true;
+      });
+    } }
+  ]);
+}
+
+function renderMentorMessageThread(container, messages) {
+  if (!container) return;
+  if (!messages.length) {
+    container.innerHTML = '<p class="empty-state">No messages yet. Start the conversation.</p>';
+    return;
+  }
+  container.innerHTML = messages.map(function (message) {
+    var ownMessage = Number(message.sender_id) === Number(window.currentUser.user_id);
+    return '<div class="mentor-message' + (ownMessage ? ' mentor-message-own' : '') + '"><div class="mentor-message-meta">' + escapeHtml(ownMessage ? 'You' : message.sender_name || 'PEC member') + ' · ' + new Date(message.created_at).toLocaleString() + '</div><p>' + escapeHtml(message.body) + '</p></div>';
+  }).join('');
+  container.scrollTop = container.scrollHeight;
+}
+
+function loadMentorMessages(mentorId, studentId, container) {
+  if (!mentorId || !studentId || !container) return;
+  apiRequest('/api/mentors/' + encodeURIComponent(mentorId) + '/messages?student_id=' + encodeURIComponent(studentId)).then(function (result) {
+    if (!result || !result.success) throw new Error(result && result.message || 'Unable to load messages');
+    renderMentorMessageThread(container, result.messages || []);
+  }).catch(function (error) {
+    container.innerHTML = '<p class="empty-state">' + escapeHtml(error.message || 'Unable to load messages') + '</p>';
+  });
+}
+
+function showMentorMeetingForm() {
+  if (!document.querySelector('#app-mentor .mentor-mentees-list .mentor-view-student')) {
+    return showToast('You need an assigned mentee before scheduling a meeting.', 'error');
+  }
+  showModal('Schedule a Mentee Meeting', '<form id="mentor-meeting-form" style="display:grid;gap:12px;"><label>Meeting title<input class="form-input" name="title" maxlength="200" required></label><label>Details<textarea class="form-input" name="description" rows="3"></textarea></label><label>Date<input class="form-input" name="event_date" type="date" required></label><div style="display:flex;gap:12px;"><label style="flex:1;">Start time<input class="form-input" name="start_time" type="time" required></label><label style="flex:1;">End time<input class="form-input" name="end_time" type="time"></label></div><label>Location or meeting link<input class="form-input" name="location" maxlength="255" placeholder="Room, campus, or video link"></label><p class="student-meta">This meeting will be published to your active mentees.</p></form>', [
+    { text: 'Schedule Meeting', class: 'btn-primary', action: function () {
+      var form = document.getElementById('mentor-meeting-form');
+      if (!form.reportValidity()) return false;
+      var values = Object.fromEntries(new FormData(form).entries());
+      values.status = 'published';
+      return apiMutation('/api/events', 'POST', values).then(function (result) {
+        if (!result || !result.success) { showToast(result && result.message || 'Unable to schedule meeting', 'error'); return false; }
+        showToast('Meeting scheduled for your mentees', 'success');
+        loadMentorDashboard();
+        return true;
+      });
+    } }
+  ]);
+}
+
+function renderMentorMeetings(events) {
+  var container = document.getElementById('mentor-meeting-list');
+  if (!container) return;
+  var ownMeetings = (events || []).filter(function (event) { return Number(event.created_by) === Number(window.currentUser.user_id); });
+  container.innerHTML = ownMeetings.length ? ownMeetings.map(function (event) {
+    return '<div class="dashboard-section"><div class="dashboard-section-body"><h3>' + escapeHtml(event.title) + '</h3><p>' + escapeHtml(event.description || 'Mentee meeting') + '</p><p class="student-meta">' + new Date(event.event_date + 'T00:00:00').toLocaleDateString() + (event.start_time ? ' · ' + escapeHtml(event.start_time) : '') + (event.end_time ? '–' + escapeHtml(event.end_time) : '') + '</p><p class="student-meta">' + escapeHtml(event.location || 'Location not set') + '</p><button type="button" class="btn btn-ghost btn-sm" data-delete-mentor-event="' + escapeHtml(event.id) + '">Cancel Meeting</button></div></div>';
+  }).join('') : '<div class="dashboard-section"><div class="dashboard-section-body"><p class="empty-state">No meetings scheduled yet.</p></div></div>';
+}
+
+function initMentorMessageForms() {
+  if (document.body.dataset.mentorMessagesInitialized) return;
+  document.body.dataset.mentorMessagesInitialized = 'true';
+  document.addEventListener('submit', function (event) {
+    var form = event.target;
+    if (form.id !== 'student-mentor-message-form' && form.id !== 'mentor-message-form') return;
+    event.preventDefault();
+    var mentorId = form.dataset.mentorId || (window.currentUser && window.currentUser.role === 'mentor' ? window.currentUser.user_id : '');
+    var studentId = form.id === 'mentor-message-form' ? document.getElementById('mentor-message-student').value : (window.currentUser && window.currentUser.user_id);
+    var body = String(new FormData(form).get('body') || '').trim();
+    if (!mentorId || !studentId || !body) return showToast('Select an active mentor conversation and enter a message.', 'error');
+    apiMutation('/api/mentors/' + encodeURIComponent(mentorId) + '/messages', 'POST', { student_id: studentId, body: body }).then(function (result) {
+      if (!result || !result.success) return showToast(result && result.message || 'Unable to send message', 'error');
+      form.elements.body.value = '';
+      showToast('Message sent', 'success');
+      var thread = document.getElementById(form.id === 'mentor-message-form' ? 'mentor-message-thread' : 'student-mentor-message-thread');
+      loadMentorMessages(mentorId, studentId, thread);
+    });
+  });
+  document.addEventListener('click', function (event) {
+    var requestButton = event.target.closest('[data-request-mentor-meeting]');
+    if (!requestButton) return;
+    var form = document.getElementById('student-mentor-message-form');
+    if (!form || !form.dataset.mentorId || form.elements.body.disabled) return showToast('A mentor must be assigned before requesting a meeting.', 'error');
+    form.elements.body.value = 'Hi, I would like to schedule a meeting. Please let me know a suitable time.';
+    form.elements.body.focus();
+    form.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  });
+}
+
 function loadMentorDashboard() {
   var initialMenteeList = document.querySelector('#app-mentor .mentor-mentees-list');
   if (initialMenteeList) initialMenteeList.innerHTML = '<div class="dashboard-section mentor-empty-state"><div class="dashboard-section-body"><p class="empty-state">Loading assigned mentees...</p></div></div>';
@@ -911,7 +1066,26 @@ function loadMentorDashboard() {
     data.students = data.students || [];
     data.submissions = data.submissions || [];
     data.tasks = data.tasks || [];
+    data.events = data.events || [];
     data.reportStats = data.reportStats || { assignedTasks: 0, completedTasks: 0, averageScore: 0 };
+    var mentorMessageSelect = document.getElementById('mentor-message-student');
+    var previousMessageStudent = mentorMessageSelect && mentorMessageSelect.value;
+    if (mentorMessageSelect) {
+      mentorMessageSelect.innerHTML = '<option value="">Select an assigned mentee</option>' + data.students.map(function (student) { return '<option value="' + escapeHtml(student.id) + '">' + escapeHtml(student.name) + ' (' + escapeHtml(student.student_code || 'Student ID') + ')</option>'; }).join('');
+      if (data.students.some(function (student) { return String(student.id) === previousMessageStudent; })) mentorMessageSelect.value = previousMessageStudent;
+      else if (data.students.length) mentorMessageSelect.value = String(data.students[0].id);
+      mentorMessageSelect.disabled = data.students.length === 0;
+      var mentorMessageForm = document.getElementById('mentor-message-form');
+      if (mentorMessageForm) {
+        mentorMessageForm.dataset.mentorId = String(window.currentUser.user_id);
+        mentorMessageForm.elements.body.disabled = data.students.length === 0;
+        mentorMessageForm.querySelector('button[type="submit"]').disabled = data.students.length === 0;
+      }
+      var mentorMessageThread = document.getElementById('mentor-message-thread');
+      if (data.students.length) loadMentorMessages(window.currentUser.user_id, mentorMessageSelect.value, mentorMessageThread);
+      else if (mentorMessageThread) mentorMessageThread.innerHTML = '<p class="empty-state">No active mentees are assigned yet.</p>';
+    }
+    renderMentorMeetings(data.events);
     var mentorName = document.querySelector('#app-mentor .mentor-dashboard-name');
     var mentorSidebarAvatar = document.querySelector('#app-mentor .mentor-dashboard-avatar');
     if (mentorName) mentorName.textContent = data.profile.name || 'Mentor';
@@ -946,6 +1120,31 @@ function loadMentorDashboard() {
       mentorChallengesPage.dataset.createBound = 'true';
       mentorChallengesPage.addEventListener('click', function (event) { if (event.target.closest('[data-mentor-create-task]')) showMentorTaskForm(data.students || []); });
     }
+    var mentorNewsPage = document.getElementById('mentor-news');
+    if (mentorNewsPage && !mentorNewsPage.dataset.createBound) {
+      mentorNewsPage.dataset.createBound = 'true';
+      mentorNewsPage.addEventListener('click', function (event) { if (event.target.closest('[data-mentor-create-news]')) showMentorNewsForm(); });
+    }
+    var mentorApp = document.getElementById('app-mentor');
+    if (mentorApp && !mentorApp.dataset.meetingActionsBound) {
+      mentorApp.dataset.meetingActionsBound = 'true';
+      mentorApp.addEventListener('click', function (event) {
+        if (event.target.closest('[data-mentor-create-meeting]')) return showMentorMeetingForm();
+        var cancelButton = event.target.closest('[data-delete-mentor-event]');
+        if (!cancelButton) return;
+        if (!window.confirm('Cancel this meeting for your mentees?')) return;
+        apiMutation('/api/events/' + encodeURIComponent(cancelButton.dataset.deleteMentorEvent), 'DELETE').then(function (result) {
+          if (!result || !result.success) return showToast(result && result.message || 'Unable to cancel meeting', 'error');
+          showToast('Meeting cancelled', 'success');
+          loadMentorDashboard();
+        });
+      });
+    }
+    var mentorMessageSelect = document.getElementById('mentor-message-student');
+    if (mentorMessageSelect && !mentorMessageSelect.dataset.changeBound) {
+      mentorMessageSelect.dataset.changeBound = 'true';
+      mentorMessageSelect.addEventListener('change', function () { loadMentorMessages(window.currentUser.user_id, mentorMessageSelect.value, document.getElementById('mentor-message-thread')); });
+    }
     var reviewContainer = document.getElementById('app-mentor');
     var studentProfilePage = document.getElementById('mentor-student-profile');
     if (studentProfilePage && !studentProfilePage.dataset.feedbackBound) {
@@ -976,6 +1175,9 @@ function loadMentorDashboard() {
     var pendingSubmissions = (data.submissions || []).filter(function (submission) { return submission.status === 'submitted' || submission.status === 'late'; });
     if (mentorRecentReviews) mentorRecentReviews.innerHTML = pendingSubmissions.length ? pendingSubmissions.slice(0, 5).map(function (submission) { return '<div class="student-list-item"><div class="student-info"><div class="student-name">' + escapeHtml(submission.title) + '</div><div class="student-meta">' + escapeHtml(submission.student_name) + '</div></div><button type="button" class="btn btn-sm btn-primary" data-mentor-review="' + escapeHtml(submission.id) + '">Review</button></div>'; }).join('') : '<p class="empty-state">No pending reviews.</p>';
     renderNews('#app-mentor', data.news);
+    var mentorNews = document.querySelector('#app-mentor .mentor-news-list');
+    var visibleNews = (data.news || []).filter(function (item) { return item.status === 'published'; });
+    if (mentorNews) mentorNews.innerHTML = visibleNews.length ? visibleNews.map(function (item) { return '<div class="dashboard-section"><div class="dashboard-section-body"><span class="chip">' + escapeHtml(item.category || 'News') + '</span><h4>' + escapeHtml(item.title) + '</h4><p>' + escapeHtml(item.content || '') + '</p><span class="student-meta">' + new Date(item.published_at || item.created_at).toLocaleDateString() + (Number(item.created_by) === Number(window.currentUser.user_id) ? ' · Posted by you' : '') + '</span></div></div>'; }).join('') : '<div class="dashboard-section"><div class="dashboard-section-body"><p class="empty-state">No announcements available yet.</p></div></div>';
     var menteeList = document.querySelector('#app-mentor .mentor-mentees-list');
     if (menteeList) {
       menteeList.innerHTML = data.students.length ? data.students.map(function (student) { return '<div class="dashboard-section"><div class="dashboard-section-body"><div style="display:flex;gap:12px;align-items:center;margin-bottom:12px;"><div class="student-avatar">' + escapeHtml(initials(student.name)) + '</div><div><h4 style="margin:0;">' + escapeHtml(student.name) + '</h4><p style="margin:0;font-size:12px;color:var(--text-secondary);">' + escapeHtml(student.student_code || 'Student ID unavailable') + '</p><p style="margin:4px 0 0;font-size:12px;color:var(--text-secondary);">' + escapeHtml([student.branch, student.year ? student.year + ' Year' : ''].filter(Boolean).join(' · ') || 'Profile details unavailable') + '</p></div></div><button class="btn btn-primary btn-sm mentor-view-student" data-student-id="' + escapeHtml(student.id) + '" style="margin-top:12px;width:100%;">View Profile</button></div></div>'; }).join('') : '<div class="dashboard-section mentor-empty-state"><div class="dashboard-section-body"><p class="empty-state">No mentees assigned yet. Coordinators can assign students from Mentor Allocation.</p></div></div>';
@@ -1133,6 +1335,9 @@ function initCoordinatorReviewActions() {
     apiRequest('/api/submissions/' + encodeURIComponent(button.dataset.reviewSubmission)).then(function (result) {
       if (!result || !result.success) { button.dataset.loaded = ''; return showToast(result && result.message || 'Unable to load submission', 'error'); }
       openSubmissionReview(result.submission);
+    }).catch(function (error) {
+      button.dataset.loaded = '';
+      showToast(error.message || 'Unable to load submission', 'error');
     });
   });
 }
@@ -1188,8 +1393,15 @@ function renderStudentCollectionsNews(data) {
   var news = document.querySelector('#app-student .student-news-list');
   var dashboardNews = document.querySelector('#app-student .student-dashboard-news');
   var latest = items.filter(function (item) { return item.status === 'published'; });
-  if (news) news.innerHTML = latest.length ? latest.map(function (item) { return '<div class="dashboard-section"><div class="dashboard-section-body"><span class="chip">' + escapeHtml(item.category || 'News') + '</span><h4>' + escapeHtml(item.title) + '</h4><p>' + escapeHtml(item.content || '') + '</p><span class="student-meta">' + new Date(item.published_at || item.created_at).toLocaleDateString() + '</span></div></div>'; }).join('') : '<div class="dashboard-section"><div class="dashboard-section-body"><p class="empty-state">No announcements available.</p></div></div>';
+  if (news) news.innerHTML = latest.length ? latest.map(function (item) { return '<div class="dashboard-section"><div class="dashboard-section-body"><span class="chip">' + escapeHtml(item.category || 'News') + '</span><h4>' + escapeHtml(item.title) + '</h4><p>' + escapeHtml(item.content || '') + '</p><span class="student-meta">' + new Date(item.published_at || item.created_at).toLocaleDateString() + '</span>' + (!item.is_read ? '<button type="button" class="btn btn-sm btn-ghost" data-mark-news-read="' + escapeHtml(item.id) + '">Mark as read</button>' : '') + '</div></div>'; }).join('') : '<div class="dashboard-section"><div class="dashboard-section-body"><p class="empty-state">No announcements available.</p></div></div>';
   if (dashboardNews) dashboardNews.innerHTML = latest.slice(0, 5).map(function (item) { return '<div class="student-list-item"><div class="student-info"><div class="student-name">' + escapeHtml(item.title) + '</div><div class="student-meta">' + new Date(item.published_at || item.created_at).toLocaleDateString() + '</div></div></div>'; }).join('') || '<p class="empty-state">No announcements available.</p>';
+  if (news && !news.dataset.readBound) {
+    news.dataset.readBound = 'true';
+    news.addEventListener('click', function (event) {
+      var button = event.target.closest('[data-mark-news-read]');
+      if (button) markNewsRead(button.dataset.markNewsRead);
+    });
+  }
 }
 
 function renderCoordinatorRecentStudents(students) {
@@ -1282,8 +1494,9 @@ function renderCoordinatorEvents(events) {
 function renderCoordinatorResources(resources) {
   var container = document.getElementById('coordinator-resources');
   if (!container) return;
-  container.innerHTML = resources.length ? resources.map(function (resource) { return '<div class="dashboard-section"><div class="dashboard-section-body"><h4>' + escapeHtml(resource.title) + '</h4><p>' + escapeHtml(resource.description || resource.category || resource.resource_type) + '</p><a class="btn btn-primary btn-sm" href="' + escapeHtml(resource.resource_url) + '" target="_blank" rel="noopener">Open Resource</a> <button class="btn btn-ghost btn-sm" data-delete-resource="' + escapeHtml(resource.id) + '">Archive</button></div></div>'; }).join('') : '<div class="dashboard-section"><div class="dashboard-section-body"><p class="empty-state">No learning resources yet.</p></div></div>';
-  container.querySelectorAll('[data-delete-resource]').forEach(function (button) { button.addEventListener('click', function () { apiMutation('/api/coordinators/resources/' + encodeURIComponent(button.dataset.deleteResource), 'DELETE').then(function (result) { if (!result || !result.success) return showToast(result && result.message || 'Unable to delete resource', 'error'); showToast('Resource archived', 'success'); loadCoordinatorDashboard(); }); }); });
+  var visibleResources = resources.filter(function (resource) { return resource.status !== 'archived'; });
+  container.innerHTML = visibleResources.length ? visibleResources.map(function (resource) { return '<div class="dashboard-section"><div class="dashboard-section-body"><h4>' + escapeHtml(resource.title) + '</h4><p>' + escapeHtml(resource.description || resource.category || resource.resource_type) + '</p><a class="btn btn-primary btn-sm" href="' + escapeHtml(resource.resource_url) + '" target="_blank" rel="noopener">Open Resource</a> <button type="button" class="btn btn-ghost btn-sm" data-delete-resource="' + escapeHtml(resource.id) + '">Delete</button></div></div>'; }).join('') : '<div class="dashboard-section"><div class="dashboard-section-body"><p class="empty-state">No learning resources yet.</p></div></div>';
+  container.querySelectorAll('[data-delete-resource]').forEach(function (button) { button.addEventListener('click', function () { apiMutation('/api/coordinators/resources/' + encodeURIComponent(button.dataset.deleteResource), 'DELETE').then(function (result) { if (!result || !result.success) return showToast(result && result.message || 'Unable to delete resource', 'error'); showToast('Resource deleted', 'success'); loadCoordinatorDashboard(); }); }); });
 }
 
 function renderCoordinatorLeaderboard(leaderboard) {
@@ -1358,7 +1571,10 @@ function initCoordinatorAssignmentForm() {
         loadCoordinatorDashboard();
       });
     });
-  }).catch(function (error) { console.error('Coordinator assignment form failed', error); });
+  }).catch(function (error) {
+    console.error('Coordinator assignment form failed', error);
+    showToast(error.message || 'Unable to load mentor assignment options', 'error');
+  });
 }
 
 function showNewsForm() {
@@ -1413,7 +1629,7 @@ function showEventForm() {
 }
 
 function showResourceForm() {
-  showModal('Add Learning Resource', '<form id="coordinator-resource-form" style="display:grid;gap:12px;"><label>Title<input class="form-input" name="title" required maxlength="255"></label><label>Description<textarea class="form-input" name="description" rows="3"></textarea></label><label>Type<select class="form-input" name="resource_type" required><option value="link">Link</option><option value="document">Document</option><option value="video">Video</option><option value="tutorial">Tutorial</option><option value="pdf">PDF</option><option value="github">GitHub</option></select></label><label>URL<input class="form-input" name="resource_url" type="url" required></label><label>Category<input class="form-input" name="category" maxlength="100"></label></form>', [
+  showModal('Add Learning Resource', '<form id="coordinator-resource-form" style="display:grid;gap:12px;"><label>Title<input class="form-input" name="title" required maxlength="255"></label><label>Description<textarea class="form-input" name="description" rows="3"></textarea></label><label>Type<select class="form-input" name="resource_type" required><option value="link">Link</option><option value="document">Document</option><option value="video">Video</option><option value="tutorial">Tutorial</option><option value="pdf">PDF</option><option value="github">GitHub</option></select></label><label>URL<input class="form-input" name="resource_url" type="url" required></label><label>Category<input class="form-input" name="category" maxlength="100"></label><label>Visibility<select class="form-input" name="status"><option value="published">Publish for students</option><option value="draft">Save as draft</option></select></label></form>', [
     { text: 'Save Resource', class: 'btn-primary', action: function () {
       var form = document.getElementById('coordinator-resource-form');
       if (!form.reportValidity()) return false;
@@ -1533,6 +1749,8 @@ document.addEventListener('DOMContentLoaded', function() {
   initSidebarToggle();
   initSearch();
   initFilterChips();
+  initMentorMessageForms();
+  initCoordinatorAppearanceSettings();
   animateProgressBars();
   renderBarCharts();
   initToastTriggers();

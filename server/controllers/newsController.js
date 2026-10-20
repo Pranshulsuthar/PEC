@@ -1,8 +1,26 @@
 const pool = require('../config/db');
 
+function visibleNewsPredicate(role, userId) {
+  if (role === 'coordinator') return { sql: '1 = 1', params: [] };
+  if (role === 'mentor') {
+    return {
+      sql: "(EXISTS (SELECT 1 FROM users author WHERE author.id = n.created_by AND author.role = 'coordinator') OR n.created_by = ? OR EXISTS (SELECT 1 FROM news_recipients recipients WHERE recipients.news_id = n.id AND recipients.user_id = ?))",
+      params: [userId, userId]
+    };
+  }
+  if (role === 'student') {
+    return {
+      sql: "(EXISTS (SELECT 1 FROM users author WHERE author.id = n.created_by AND author.role = 'coordinator') OR EXISTS (SELECT 1 FROM news_recipients recipients WHERE recipients.news_id = n.id AND recipients.user_id = ?))",
+      params: [userId]
+    };
+  }
+  return { sql: '1 = 0', params: [] };
+}
+
 exports.getAll = async (req, res) => {
   try {
-    const [rows] = await pool.query("SELECT * FROM news WHERE status = 'published' ORDER BY created_at DESC LIMIT 10");
+    const visibility = visibleNewsPredicate(req.user.role, req.user.user_id);
+    const [rows] = await pool.query("SELECT n.* FROM news n WHERE n.status = 'published' AND " + visibility.sql + ' ORDER BY n.created_at DESC LIMIT 100', visibility.params);
     res.json({ success: true, news: rows });
   } catch (err) {
     console.error(err);
@@ -14,7 +32,8 @@ exports.markRead = async (req, res) => {
   const id = Number(req.params.id);
   if (!Number.isInteger(id) || id < 1) return res.status(400).json({ success: false, message: 'Valid news ID is required' });
   try {
-    const [[news]] = await pool.query("SELECT id FROM news WHERE id = ? AND status = 'published'", [id]);
+    const visibility = visibleNewsPredicate(req.user.role, req.user.user_id);
+    const [[news]] = await pool.query("SELECT n.id FROM news n WHERE n.id = ? AND n.status = 'published' AND " + visibility.sql, [id, ...visibility.params]);
     if (!news) return res.status(404).json({ success: false, message: 'News not found' });
     await pool.query('INSERT INTO news_reads (user_id, news_id) VALUES (?,?) ON DUPLICATE KEY UPDATE read_at = CURRENT_TIMESTAMP', [req.user.user_id, id]);
     res.json({ success: true });
@@ -24,7 +43,8 @@ exports.markRead = async (req, res) => {
 exports.getById = async (req, res) => {
   const id = req.params.id;
   try {
-    const [rows] = await pool.query("SELECT * FROM news WHERE id = ? AND status = 'published'", [id]);
+    const visibility = visibleNewsPredicate(req.user.role, req.user.user_id);
+    const [rows] = await pool.query("SELECT n.* FROM news n WHERE n.id = ? AND n.status = 'published' AND " + visibility.sql, [id, ...visibility.params]);
     if (!rows.length) return res.status(404).json({ success: false, message: 'News not found' });
     res.json({ success: true, news: rows[0] });
   } catch (err) {

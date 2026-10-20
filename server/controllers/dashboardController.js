@@ -1,7 +1,7 @@
 const pool = require('../config/db');
 
-async function getNews(userId) {
-  const [rows] = await pool.query("SELECT n.id, n.title, n.content, n.category, n.created_at, n.published_at, (nr.user_id IS NOT NULL) AS is_read FROM news n LEFT JOIN news_reads nr ON nr.news_id = n.id AND nr.user_id = ? WHERE n.status = 'published' ORDER BY n.created_at DESC LIMIT 100", [userId]);
+async function getNews(userId, role) {
+  const [rows] = await pool.query("SELECT n.id, n.title, n.content, n.category, n.created_by, n.created_at, n.published_at, (news_read.user_id IS NOT NULL) AS is_read FROM news n LEFT JOIN news_reads news_read ON news_read.news_id = n.id AND news_read.user_id = ? WHERE n.status = 'published' AND (EXISTS (SELECT 1 FROM users author WHERE author.id = n.created_by AND author.role = 'coordinator') OR EXISTS (SELECT 1 FROM news_recipients recipients WHERE recipients.news_id = n.id AND recipients.user_id = ?) OR (? = 'mentor' AND n.created_by = ?)) ORDER BY n.created_at DESC LIMIT 100", [userId, userId, role, userId]);
   return rows;
 }
 
@@ -10,8 +10,11 @@ async function getEvents() {
   return rows;
 }
 
-async function getStudentEvents(userId) {
-  const [rows] = await pool.query("SELECT e.id, e.title, e.description, e.event_date, e.start_time, e.end_time, e.location, er.registration_status FROM events e LEFT JOIN event_registrations er ON er.event_id = e.id AND er.user_id = ? AND er.registration_status = 'registered' WHERE e.status = 'published' AND e.event_date >= CURDATE() ORDER BY e.event_date ASC LIMIT 50", [userId]);
+async function getStudentEvents(userId, role) {
+  const visibility = role === 'mentor'
+    ? "(e.created_by = ? OR EXISTS (SELECT 1 FROM users author WHERE author.id = e.created_by AND author.role = 'coordinator'))"
+    : "(EXISTS (SELECT 1 FROM users author WHERE author.id = e.created_by AND author.role = 'coordinator') OR EXISTS (SELECT 1 FROM mentor_student ms WHERE ms.student_id = ? AND ms.mentor_id = e.created_by AND ms.status = 'active'))";
+  const [rows] = await pool.query("SELECT e.id, e.title, e.description, e.event_date, e.start_time, e.end_time, e.location, e.created_by, er.registration_status FROM events e LEFT JOIN event_registrations er ON er.event_id = e.id AND er.user_id = ? AND er.registration_status = 'registered' WHERE e.status = 'published' AND e.event_date >= CURDATE() AND " + visibility + ' ORDER BY e.event_date ASC LIMIT 50', [userId, userId]);
   return rows;
 }
 
@@ -53,8 +56,8 @@ exports.student = async (req, res) => {
     const [resources] = await pool.query("SELECT id, title, description, resource_type, resource_url, category, created_at FROM resources WHERE status = 'published' ORDER BY created_at DESC LIMIT 20");
     const [achievements] = await pool.query('SELECT id, title, description, achievement_type, certificate_url, `date` FROM achievements WHERE student_id = ? ORDER BY `date` DESC, created_at DESC', [userId]);
     const [notifications] = await pool.query('SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC LIMIT 50', [userId]);
-    const news = await getNews(userId);
-    const events = await getStudentEvents(userId);
+    const news = await getNews(userId, req.user.role);
+    const events = await getStudentEvents(userId, req.user.role);
     res.json({ success: true, profile, mentor: mentor[0] || null, tasks, submissions, courses, leaderboard, activity, progress: { total_tasks: assigned.count, completed_tasks: completed.count, current_streak: currentStreak, rank: assigned.count ? Number(rank.rank) : null, points: Number(completed.points), progress_percentage: assigned.count ? Math.round((completed.count / assigned.count) * 100) : 0 }, skills, resources, achievements, attendance: { present: Number(attendanceSummary.present || 0), total: Number(attendanceSummary.total || 0) }, notifications, news, events });
   } catch (err) { console.error(err); res.status(500).json({ success: false, message: 'Server error' }); }
 };
@@ -72,8 +75,8 @@ exports.mentor = async (req, res) => {
     const [[pendingReviews]] = await pool.query("SELECT COUNT(*) AS count FROM task_submissions ts JOIN mentor_student ms ON ms.student_id = ts.student_id AND ms.mentor_id = ? AND ms.status = 'active' WHERE ts.status IN ('submitted','late')", [userId]);
     const [[reportStats]] = await pool.query("SELECT COUNT(DISTINCT ta.task_id) AS assigned_tasks, COUNT(DISTINCT CASE WHEN ts.status = 'accepted' THEN ts.task_id END) AS completed_tasks, COALESCE(AVG(CASE WHEN ts.status = 'accepted' THEN ts.score END), 0) AS average_score FROM mentor_student ms JOIN task_assignments ta ON ta.student_id = ms.student_id LEFT JOIN task_submissions ts ON ts.student_id = ta.student_id AND ts.task_id = ta.task_id WHERE ms.mentor_id = ? AND ms.status = 'active'", [userId]);
     const [notifications] = await pool.query('SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC LIMIT 50', [userId]);
-    const news = await getNews(userId);
-    const events = await getStudentEvents(userId);
+    const news = await getNews(userId, req.user.role);
+    const events = await getStudentEvents(userId, req.user.role);
     const reportStudents = students.map(async (student) => {
       const [[stats]] = await pool.query("SELECT COUNT(DISTINCT ta.task_id) AS assigned_tasks, COUNT(DISTINCT CASE WHEN ts.status = 'accepted' THEN ts.task_id END) AS completed_tasks, COALESCE(AVG(CASE WHEN ts.status = 'accepted' THEN ts.score END), 0) AS average_score FROM task_assignments ta LEFT JOIN task_submissions ts ON ts.task_id = ta.task_id AND ts.student_id = ta.student_id WHERE ta.student_id = ?", [student.id]);
       return Object.assign({}, student, stats, { progress: stats.assigned_tasks ? Math.round(Number(stats.completed_tasks) / Number(stats.assigned_tasks) * 100) : 0 });

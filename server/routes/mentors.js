@@ -3,7 +3,7 @@ const router = express.Router();
 const mentorController = require('../controllers/mentorController');
 const { allowRoles } = require('../middleware/roleMiddleware');
 
-router.use(allowRoles('mentor', 'coordinator'));
+router.use(allowRoles('mentor', 'coordinator', 'student'));
 
 router.post('/', allowRoles('coordinator'), require('../controllers/coordinatorController').createMentor);
 router.put('/:id/status', allowRoles('coordinator'), require('../controllers/coordinatorController').updateMentorStatus);
@@ -13,6 +13,9 @@ router.get('/', allowRoles('coordinator'), mentorController.getAll);
 router.get('/:id', allowRoles('mentor', 'coordinator'), mentorController.getById);
 router.put('/:id', allowRoles('mentor'), mentorController.update);
 router.get('/:id/mentees', allowRoles('mentor', 'coordinator'), mentorController.getMentees);
+router.post('/:id/news', allowRoles('mentor'), mentorController.createNews);
+router.get('/:id/messages', allowRoles('mentor', 'student'), mentorController.getMessages);
+router.post('/:id/messages', allowRoles('mentor', 'student'), mentorController.sendMessage);
 router.post('/:id/feedback', allowRoles('mentor'), mentorController.createFeedback);
 router.get('/:id/feedback', allowRoles('mentor', 'student', 'coordinator'), mentorController.getFeedback);
 

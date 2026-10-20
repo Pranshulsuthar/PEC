@@ -70,6 +70,16 @@ async function init() {
       INDEX idx_news_reads_news (news_id)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`);
 
+    await pool.query(`CREATE TABLE IF NOT EXISTS news_recipients (
+      news_id INT NOT NULL,
+      user_id INT NOT NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      PRIMARY KEY (news_id, user_id),
+      FOREIGN KEY (news_id) REFERENCES news(id) ON DELETE CASCADE,
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+      INDEX idx_news_recipients_user (user_id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`);
+
     await pool.query(`CREATE TABLE IF NOT EXISTS resources (
       id INT AUTO_INCREMENT PRIMARY KEY,
       title VARCHAR(255) NOT NULL,

@@ -7,8 +7,8 @@ router.get('/', allowRoles('student', 'mentor', 'coordinator'), eventController.
 router.post('/:id/register', allowRoles('student', 'mentor'), eventController.register);
 router.delete('/:id/register', allowRoles('student', 'mentor'), eventController.cancelRegistration);
 router.get('/:id', allowRoles('student', 'mentor', 'coordinator'), eventController.getById);
-router.post('/', allowRoles('coordinator'), eventController.create);
-router.put('/:id', allowRoles('coordinator'), eventController.update);
-router.delete('/:id', allowRoles('coordinator'), eventController.delete);
+router.post('/', allowRoles('coordinator', 'mentor'), eventController.create);
+router.put('/:id', allowRoles('coordinator', 'mentor'), eventController.update);
+router.delete('/:id', allowRoles('coordinator', 'mentor'), eventController.delete);
 
 module.exports = router;

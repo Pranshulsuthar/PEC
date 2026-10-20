@@ -205,8 +205,11 @@ exports.createResource = async (req, res) => {
   const { title, description, resource_type, resource_url, category, status } = req.body;
   const allowedTypes = ['document', 'video', 'link', 'tutorial', 'pdf', 'github'];
   if (!title || !resource_url || !allowedTypes.includes(resource_type)) return res.status(400).json({ success: false, message: 'Title, resource type, and URL are required' });
+  if (status && !['draft', 'published'].includes(status)) return res.status(400).json({ success: false, message: 'Invalid resource status' });
   try {
-    const [result] = await pool.query('INSERT INTO resources (title, description, resource_type, resource_url, category, uploaded_by, status) VALUES (?,?,?,?,?,?,?)', [String(title).trim(), description || null, resource_type, resource_url, category || null, req.user.user_id, status === 'published' ? 'published' : 'draft']);
+    const resourceStatus = status || 'published';
+    const [result] = await pool.query('INSERT INTO resources (title, description, resource_type, resource_url, category, uploaded_by, status) VALUES (?,?,?,?,?,?,?)', [String(title).trim(), description || null, resource_type, resource_url, category || null, req.user.user_id, resourceStatus]);
+    if (resourceStatus === 'published') publishDashboardUpdate(req, { roles: ['student'], resource: 'resource.published' });
     res.status(201).json({ success: true, resource_id: result.insertId });
   } catch (err) { console.error(err); res.status(500).json({ success: false, message: 'Server error' }); }
 };

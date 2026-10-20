@@ -47,7 +47,6 @@ function initRoleCards() {
   var isMobile = window.matchMedia('(max-width: 768px)').matches ||
                  ('ontouchstart' in window) ||
                  (navigator.maxTouchPoints > 0);
-  if (isMobile) return;
 
   cards.forEach(function (card) {
     card.removeEventListener('mousemove', card._mouseMoveHandler);
@@ -95,8 +94,10 @@ function initRoleCards() {
       }
     };
 
-    card.addEventListener('mousemove', card._mouseMoveHandler);
-    card.addEventListener('mouseleave', card._mouseLeaveHandler);
+    if (!isMobile) {
+      card.addEventListener('mousemove', card._mouseMoveHandler);
+      card.addEventListener('mouseleave', card._mouseLeaveHandler);
+    }
     card.addEventListener('click', card._clickHandler);
     card.addEventListener('keydown', card._keyDownHandler);
   });
