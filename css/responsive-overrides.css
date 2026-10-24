@@ -133,13 +133,18 @@ img {
   top: 0 !important;
 }
 .dashboard-topbar {
-  display: flex !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) !important;
+  align-items: center;
   min-height: 64px !important;
   margin: 0 -32px 28px !important;
   padding: 0 32px !important;
   position: relative;
   z-index: 2;
 }
+.dashboard-topbar > .dashboard-global-back { grid-column: 1; justify-self: start; }
+.dashboard-topbar-branding { grid-column: 2; justify-self: center; }
+.dashboard-topbar-actions { grid-column: 3; justify-self: end; }
 .dashboard-topbar-actions { display: flex; align-items: center; gap: 14px; margin-left: auto; }
 .dashboard-layout .dashboard-main { min-width: 0; padding-top: 0 !important; }
 .dashboard-layout .theme-toggle { display: inline-flex !important; }
@@ -272,4 +277,3 @@ img {
   .coordinator-team { grid-template-columns: minmax(0, 100%); }
   .coordinator-profile { min-height: 320px; }
 }
-
